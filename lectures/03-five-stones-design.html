@@ -1,0 +1,1653 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Five Stones, Step by Step</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* A lecture deck in an ink-and-paper key — the world of the board itself. Single light theme, painted explicitly, for a bright classroom projector. */
+:root{
+  --paper:#F1EEE7; --panel:#FDFBF7; --panel-2:#F7F3EA;
+  --ink:#1A1613; --ink-2:#57504A; --ink-3:#8C8378; --rule:#DCD4C6;
+  --bamboo:#2E4A7D;      /* structure, headings, primary marks — indigo ink */
+  --dusk:#B3372B;        /* the live / runnable things — the seal red */
+  --code-bg:#211D18; --code-ink:#EDE6D9; --code-dim:#8B8275;
+  --predict:#9A6410; --poll:#2E4A7D; --pair:#1F6B5A; --debug:#B3372B;
+  --good:#1F6B5A;
+  --wood:#D8A55A; --wood-2:#C48F44;
+  --shadow:0 24px 50px -30px rgba(20,24,20,.5), 0 2px 6px -2px rgba(20,24,20,.14);
+  --sw:1280px; --sh:720px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.5;
+  overflow:hidden;
+}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--dusk);outline-offset:2px}
+
+/* ---------- shell ---------- */
+.deck{position:fixed;inset:0;display:grid;grid-template-rows:1fr auto;}
+.stagewrap{position:relative;overflow:hidden}
+.stage{
+  position:absolute;top:0;left:0;width:var(--sw);height:var(--sh);
+  transform-origin:top left;background:var(--panel);
+  box-shadow:var(--shadow);border-radius:4px;overflow:hidden;
+}
+.slide{position:absolute;inset:0;padding:52px 64px 62px;display:none;flex-direction:column;background:var(--panel)}
+.slide.on{display:flex}
+.slide.pad-tight{padding:40px 52px 56px}
+
+/* ---------- slide furniture ---------- */
+.eyebrow{
+  font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;
+  color:var(--ink-3);display:flex;align-items:center;gap:12px;margin-bottom:14px;flex:0 0 auto;
+}
+.eyebrow .tick{width:26px;height:2px;background:var(--bamboo);border-radius:1px}
+h1.big{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:78px;line-height:.98;letter-spacing:-.02em;margin:0;text-wrap:balance}
+h2{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:43px;line-height:1.06;letter-spacing:-.015em;margin:0 0 18px;text-wrap:balance;flex:0 0 auto}
+h3{font-family:"Newsreader",Georgia,serif;font-weight:700;font-size:19px;margin:0 0 8px;letter-spacing:-.005em}
+p{margin:0 0 14px;font-size:21px;line-height:1.44;max-width:34em}
+p.lead{font-size:25px;color:var(--ink-2);max-width:30em}
+.small{font-size:17px;color:var(--ink-2)}
+.body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:18px;overflow:hidden}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:34px;flex:1 1 auto;min-height:0;overflow:hidden}
+.cols.wide-left{grid-template-columns:1.25fr 1fr}
+.cols.wide-right{grid-template-columns:1fr 1.35fr}
+.stack{display:flex;flex-direction:column;gap:14px;min-height:0}
+em.key{font-style:normal;font-weight:600;color:var(--bamboo)}
+strong{font-weight:600}
+ul.pts{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px}
+ul.pts li{position:relative;padding-left:26px;font-size:20px;line-height:1.36}
+ul.pts li::before{content:"";position:absolute;left:2px;top:.55em;width:9px;height:9px;border-radius:2px;background:var(--bamboo)}
+ul.pts.num{counter-reset:n}
+ul.pts.num li{counter-increment:n;padding-left:38px}
+ul.pts.num li::before{content:counter(n);all:unset;position:absolute;left:0;top:.06em;width:24px;height:24px;border-radius:5px;background:var(--bamboo);color:#fff;font:700 13px/24px "IBM Plex Mono",monospace;text-align:center;counter-increment:none}
+.note-line{font-size:17px;color:var(--ink-3);border-top:1px solid var(--rule);padding-top:12px;margin-top:auto}
+
+/* code */
+pre.code{
+  margin:0;background:var(--code-bg);color:var(--code-ink);border-radius:8px;
+  padding:18px 20px;font-family:"IBM Plex Mono",monospace;font-size:16.5px;line-height:1.62;
+  overflow:auto;max-height:100%;tab-size:2;
+}
+pre.code.sm{font-size:14.5px;line-height:1.55;padding:14px 16px}
+pre.code .c{color:var(--code-dim)}
+pre.code .k{color:#8FD3B6}
+pre.code .n{color:#F0B27A}
+pre.code .s{color:#9DC7E8}
+pre.code mark{background:rgba(196,86,47,.28);color:#FFD9C7;border-radius:3px;padding:0 2px}
+pre.code mark.ok{background:rgba(46,125,91,.3);color:#B6E9CE}
+.codecap{font-size:14px;color:var(--ink-3);font-family:"IBM Plex Mono",monospace;margin-top:7px}
+
+/* panels */
+.card{background:var(--panel-2);border:1px solid var(--rule);border-radius:9px;padding:18px 20px}
+.card h3{margin-bottom:6px}
+.card p{font-size:18px;margin-bottom:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:19px;align-items:baseline}
+.kv dt{font-family:"IBM Plex Mono",monospace;font-size:16px;color:var(--dusk);font-weight:700}
+.kv dd{margin:0;color:var(--ink-2)}
+
+table.tune{border-collapse:collapse;font-size:18px;width:100%}
+table.tune th,table.tune td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--rule)}
+table.tune th{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+table.tune td.num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+
+/* activity chrome — every activity is colour + an explicit label, never colour alone */
+.act{border-left:5px solid var(--rule);padding-left:20px;display:flex;flex-direction:column;gap:12px;flex:1 1 auto;min-height:0;overflow:hidden}
+.act.predict{border-color:var(--predict)}
+.act.poll{border-color:var(--poll)}
+.act.pair{border-color:var(--pair)}
+.act.debug{border-color:var(--debug)}
+.chip{
+  display:inline-flex;align-items:center;gap:9px;align-self:flex-start;
+  font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
+  padding:5px 11px;border-radius:4px;color:#fff;
+}
+.act.predict .chip{background:var(--predict)}
+.act.poll .chip{background:var(--poll)}
+.act.pair .chip{background:var(--pair)}
+.act.debug .chip{background:var(--debug)}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.85)}
+.ask{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:34px;line-height:1.14;margin:0;text-wrap:balance;flex:0 0 auto}
+.act.poll .ask{font-size:29px}
+.ctrls{flex:0 0 auto}
+
+/* options */
+.opts{display:flex;flex-direction:column;gap:8px;flex:1 1 auto;min-height:0;overflow:auto}
+.opt{
+  display:grid;grid-template-columns:34px 1fr auto;gap:14px;align-items:center;
+  border:1px solid var(--rule);background:var(--panel);border-radius:7px;padding:9px 13px;
+  font-size:18.5px;text-align:left;cursor:pointer;position:relative;overflow:hidden;
+}
+.opt .lt{font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:17px;color:var(--ink-3);
+  border:1px solid var(--rule);border-radius:5px;width:30px;height:30px;display:grid;place-items:center;background:var(--panel-2)}
+.opt .bar{position:absolute;left:0;top:0;bottom:0;background:rgba(31,92,74,.13);border-radius:0 4px 4px 0;transition:width .35s ease;z-index:0}
+.opt > *{position:relative;z-index:1}
+.opt .cnt{font-family:"IBM Plex Mono",monospace;font-size:16px;color:var(--ink-2);font-variant-numeric:tabular-nums;min-width:2.4em;text-align:right}
+.opt:hover{border-color:var(--ink-3)}
+.opt.picked{border-color:var(--bamboo);box-shadow:inset 0 0 0 1px var(--bamboo)}
+.opt.right{border-color:var(--good);box-shadow:inset 0 0 0 1px var(--good)}
+.opt.right .lt{background:var(--good);color:#fff;border-color:var(--good)}
+.opt.right .bar{background:rgba(46,125,91,.16)}
+.opt .verdict{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--good);white-space:nowrap}
+.opt.wrong .verdict{color:var(--ink-3)}
+.why{display:none;font-size:15.5px;color:var(--ink-2);line-height:1.4;margin-top:3px}
+.opt.shown .why{display:block}
+.optwrap{display:flex;flex-direction:column}
+
+/* controls row inside slides */
+.ctrls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.b{border:1px solid var(--rule);background:var(--panel);border-radius:6px;padding:8px 14px;font-size:16px;cursor:pointer;font-weight:600}
+.b:hover{border-color:var(--ink-3)}
+.b.go{background:var(--dusk);border-color:var(--dusk);color:#fff}
+.b.dark{background:var(--bamboo);border-color:var(--bamboo);color:#fff}
+.b.tiny{padding:5px 10px;font-size:14px;font-weight:400}
+.b[aria-pressed="true"]{border-color:var(--dusk);color:var(--dusk)}
+
+/* timer */
+.timer{display:flex;align-items:center;gap:16px}
+.timer .t{font-family:"IBM Plex Mono",monospace;font-size:56px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.timer .t.low{color:var(--dusk)}
+.tbar{height:6px;background:var(--rule);border-radius:3px;overflow:hidden;flex:1 1 auto;min-width:120px}
+.tbar i{display:block;height:100%;background:var(--pair);border-radius:3px;transition:width .25s linear}
+
+/* demo frames */
+.demo{background:var(--panel-2);border:1px solid var(--rule);border-radius:9px;padding:14px;display:flex;flex-direction:column;gap:10px;min-height:0}
+.demo{overflow:hidden}
+.demo .cwrap{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center}
+.demo canvas{display:block;background:#241C12;border-radius:6px;max-width:100%;max-height:100%;width:auto;height:auto}
+.demo .row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:15px;color:var(--ink-2)}
+.demo label{display:flex;align-items:center;gap:8px;font-size:14.5px;font-family:"IBM Plex Mono",monospace}
+.demo input[type=range]{width:118px;accent-color:var(--dusk)}
+.readout{font-family:"IBM Plex Mono",monospace;font-size:15px;color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:8px 11px;font-variant-numeric:tabular-nums;line-height:1.5}
+.readout b{color:var(--dusk)}
+.readout .t{color:var(--good);font-weight:700}
+.readout .f{color:var(--debug);font-weight:700}
+.live{display:inline-flex;align-items:center;gap:7px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--dusk);font-weight:600}
+.live .d{width:8px;height:8px;border-radius:50%;background:var(--dusk);animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@media (prefers-reduced-motion: reduce){.live .d{animation:none}}
+
+/* diagram */
+.flow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.node{border:2px solid var(--bamboo);border-radius:8px;padding:12px 16px;font-weight:600;font-size:19px;background:var(--panel);text-align:center}
+.node.alt{border-color:var(--dusk);color:var(--dusk)}
+.node small{display:block;font-weight:400;font-size:14px;color:var(--ink-3);margin-top:2px;font-family:"IBM Plex Mono",monospace}
+.arrow{color:var(--ink-3);font-size:22px}
+
+/* title slide */
+.title-slide{justify-content:center;background:
+  radial-gradient(120% 130% at 12% 0%, #FFFDF8 0%, #F3EFE5 55%, #E9E3D5 100%)}
+.title-slide .rule{width:88px;height:5px;background:var(--dusk);border-radius:3px;margin:0 0 26px}
+.title-slide .meta{display:flex;gap:34px;margin-top:34px;font-size:17px;color:var(--ink-2);flex-wrap:wrap}
+.title-slide .meta b{display:block;font-size:13px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin-bottom:3px;font-weight:600}
+
+/* footer / chrome */
+.chrome{
+  display:flex;align-items:center;gap:14px;padding:9px 16px;background:var(--panel);
+  border-top:1px solid var(--rule);font-size:13.5px;color:var(--ink-2);flex-wrap:wrap;
+}
+.chrome .grow{flex:1 1 auto}
+.prog{height:4px;background:var(--rule);border-radius:2px;width:190px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--bamboo);transition:width .25s ease}
+.count{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink)}
+.chrome kbd{font-family:"IBM Plex Mono",monospace;font-size:11.5px;border:1px solid var(--rule);border-radius:3px;padding:1px 5px;background:var(--panel-2)}
+.notes{display:none;padding:12px 18px;background:#FFFDF6;border-top:1px solid var(--rule);font-size:15px;color:var(--ink-2);max-height:26vh;overflow:auto}
+.notes.on{display:block}
+.notes b{color:var(--ink)}
+.notes ul{margin:6px 0 0;padding-left:20px}
+
+/* overview */
+.over{position:fixed;inset:0;background:rgba(244,244,241,.97);z-index:40;display:none;overflow:auto;padding:30px}
+.over.on{display:block}
+.over h2{font-size:26px;margin-bottom:16px}
+.over .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px}
+.over button{display:grid;grid-template-columns:34px 1fr;gap:10px;text-align:left;background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:9px 11px;cursor:pointer;font-size:15px;align-items:center}
+.over button:hover{border-color:var(--bamboo)}
+.over button .n{font-family:"IBM Plex Mono",monospace;font-weight:700;color:var(--ink-3);font-size:13px}
+.over button .tag{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.over button.a-predict .n{color:var(--predict)}.over button.a-poll .n{color:var(--poll)}
+.over button.a-pair .n{color:var(--pair)}.over button.a-debug .n{color:var(--debug)}
+
+/* student join panel */
+.join{position:fixed;right:14px;bottom:56px;z-index:45;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.joinpanel{
+  display:none;width:330px;background:var(--panel);border:1px solid var(--rule);border-radius:10px;
+  box-shadow:var(--shadow);padding:16px;
+}
+.joinpanel.on{display:block}
+.joinpanel h3{margin-bottom:4px}
+.joinpanel .st{font-size:14px;color:var(--ink-3);margin-bottom:12px}
+.joinpanel .q{font-size:17px;font-weight:600;margin:0 0 10px;line-height:1.3}
+.joinpanel .opt{font-size:16px;padding:9px 11px}
+.joinpanel .opt .lt{width:26px;height:26px;font-size:15px}
+</style>
+</head><body>
+<div class="deck">
+  <div class="stagewrap" id="stagewrap"><div class="stage" id="stage"></div></div>
+  <div class="notes" id="notes"></div>
+  <div class="chrome">
+    <span class="count"><span id="cur">1</span> / 40</span>
+    <span class="prog"><i id="prog"></i></span>
+    <span id="slideTag" style="font-weight:600"></span>
+    <span class="grow"></span>
+    <span id="liveState" class="small"></span>
+    <span><kbd>←</kbd><kbd>→</kbd> move · <kbd>N</kbd> notes · <kbd>O</kbd> map · <kbd>F</kbd> full screen</span>
+  </div>
+</div>
+
+<div class="over" id="over">
+  <h2>All 40 slides</h2>
+  <div class="list" id="overList"></div>
+</div>
+
+<div class="join">
+  <div class="joinpanel" id="joinPanel">
+    <h3>Student voting</h3>
+    <div class="st" id="joinStatus">Connecting…</div>
+    <div id="joinBody"></div>
+  </div>
+  <button class="b tiny" id="joinBtn">I'm a student — vote here</button>
+</div>
+
+<script>
+/* =======================================================================
+   FIVE STONES — a 40-slide CS1 lecture: a 2-D array, a win detector,
+   and an opponent that learns to look one move ahead.
+   ======================================================================= */
+const SLIDES = [];
+const S = (o) => { SLIDES.push(o); return o; };
+
+/* ---------- 1–5: frame ---------- */
+S({kind:'title', title:'Five Stones',
+  html:`<div class="rule"></div>
+   <h1 class="big">A board, a rule,<br>and an opponent.</h1>
+   <p class="lead" style="margin-top:22px">Today we build Five Stones from an empty file — and then we teach the computer to play it well enough to beat us.</p>
+   <div class="meta">
+     <div><b>Course</b>CS1 · Introduction to Programming</div>
+     <div><b>New today</b>2-D arrays · a first look at how machines choose</div>
+     <div><b>Carried over</b>the game loop and state machine from the flapping-bird lecture</div>
+   </div>`,
+  notes:`Frame the difference from last time: the flap game was about <b>motion</b>; this one is about <b>decisions</b>. The hard part has moved from physics to thinking.<br>No new syntax beyond the 2-D array — everything else is loops and if-statements they already have.`}),
+
+S({kind:'content', eyebrow:'The finished thing', title:'Play a game against it first', demo:'game',
+  html:`<div class="cols wide-right"><div class="stack">
+    <p>Five in a row wins — across, down, or either diagonal. You are black and move first.</p>
+    <p class="small">Play one game against <b>League</b>. While you play, notice the moment it stops feeling random. What did it just do that a random player would not?</p>
+    <ul class="pts"><li>15 × 15 board</li><li>Black opens · five in a row wins</li><li>Three opponent strengths</li></ul>
+  </div><div class="demo" data-slot="demo"></div></div>`,
+  notes:`Play it on the projector against a volunteer, or let the room shout moves. Two minutes maximum.<br>Fish for: "it blocked me". That observation is slide 21.`}),
+
+S({kind:'content', eyebrow:'Where we are going', title:'Four things you will be able to write',
+  html:`<div class="cols"><div class="stack">
+    <ul class="pts num">
+      <li>A board held in a <em class="key">2-D array</em>, and the map from a mouse click to a square</li>
+      <li>A <em class="key">win detector</em> that checks four directions without scanning the board</li>
+      <li>An opponent built from <em class="key">rules</em>: win now, block now, else play near</li>
+    </ul></div><div class="stack">
+    <ul class="pts num" style="counter-reset:n 3">
+      <li>An opponent built from <em class="key">numbers</em> — scoring every empty square, then looking one move ahead</li>
+    </ul>
+    <div class="card" style="margin-top:8px"><h3>The interesting question</h3>
+      <p>Detecting a win is a fact — there is one right answer. Choosing a move is a <b>judgement</b>. Most of today is about turning judgement into arithmetic, and being honest about what gets lost.</p></div>
+  </div></div>`,
+  notes:`"Fact versus judgement" is the spine of the lecture. Say it here, and again at slides 26 and 33.`}),
+
+S({kind:'activity', act:'pair', eyebrow:'Think · pair · share', title:'What must the computer know, and what must it decide?',
+  timer:180,
+  html:`<div class="act pair">
+    <span class="chip"><span class="dot"></span>Think · Pair · Share &nbsp;·&nbsp; 3 minutes</span>
+    <p class="ask">One minute alone, then with a neighbour. Split the game into two lists: what the program must <em class="key">remember</em>, and what it must <em class="key">work out</em>.</p>
+    <div class="cols" style="gap:24px">
+      <div class="card"><h3>Remember — the state</h3><p class="small">If I paused the game and resumed tomorrow, what would I need written down?</p></div>
+      <div class="card"><h3>Work out — the computation</h3><p class="small">What has to be recalculated after every single stone?</p></div>
+    </div>
+    <div data-slot="timer"></div>
+  </div>`,
+  reveal:`<div class="grid2" style="margin-top:4px">
+     <div class="card"><h3>Remembered</h3><p class="small">the 15×15 grid · whose turn it is · the move history · whether the game is over</p></div>
+     <div class="card"><h3>Worked out</h3><p class="small">is that a win? · which squares are legal? · <b>which square should I play?</b> — and that last one is the whole second half of the lecture</p></div></div>`,
+  notes:`Push the class to notice the asymmetry: the "remember" list is tiny and finishes quickly; the "work out" list has one item nobody can finish. That is the honest shape of the problem.`}),
+
+S({kind:'content', eyebrow:'The plan', title:'Six questions, and the game plays itself',
+  html:`<div class="cols"><div class="stack">
+     <dl class="kv">
+       <dt>1</dt><dd>How do we hold a board? <span class="small">(slides 6–12)</span></dd>
+       <dt>2</dt><dd>How do we know somebody won? <span class="small">(13–19)</span></dd>
+       <dt>3</dt><dd>What is the dumbest opponent worth writing? <span class="small">(20–25)</span></dd>
+       <dt>4</dt><dd>How do you put a number on a position? <span class="small">(26–32)</span></dd>
+       <dt>5</dt><dd>What does looking ahead buy you? <span class="small">(33–37)</span></dd>
+       <dt>6</dt><dd>What makes an opponent <i>fun</i> rather than perfect? <span class="small">(38–40)</span></dd>
+     </dl></div>
+     <div class="stack"><div class="card"><h3>How we will work</h3>
+       <p>Every part has a live demo you can break on purpose. Five times you will vote, three times you will talk to a neighbour, three times I will show you code that is wrong and you will find the bug before I do.</p></div>
+     <div class="card"><h3>Rule for the hour</h3><p>Whenever a slide says <code>board[r][c]</code>, be ready to say out loud which one is the row.</p></div>
+     </div></div>`,
+  notes:`Point back here whenever the room looks lost. The <code>[r][c]</code> rule is not a joke — it is the single most common bug in this program.`}),
+
+/* ---------- 6–12: the board ---------- */
+S({kind:'content', eyebrow:'Question 1 · The board', title:'The board is a list of lists',
+  html:`<div class="cols wide-left"><div class="stack">
+    <pre class="code">const N = <span class="s">15</span>;
+const EMPTY = <span class="s">0</span>, BLACK = <span class="s">1</span>, WHITE = <span class="s">2</span>;
+
+<span class="c">// 15 rows, each one a list of 15 zeros</span>
+<span class="k">let</span> board = [];
+<span class="k">for</span> (<span class="k">let</span> r = <span class="s">0</span>; r &lt; N; r++) {
+  board.push(<span class="k">new</span> Array(N).fill(EMPTY));
+}
+
+board[<span class="s">7</span>][<span class="s">7</span>] = BLACK;     <span class="c">// centre stone</span></pre>
+  </div><div class="stack">
+    <div class="card"><h3>Why numbers, not letters</h3><p class="small"><code>0/1/2</code> instead of <code>''/'B'/'W'</code> means <code>3 - player</code> gives you the opponent, and <code>if (board[r][c])</code> already means "occupied". Small choices, made once, pay for the rest of the file.</p></div>
+    <div class="card"><h3>The one trap</h3><p class="small"><code>new Array(15).fill(0)</code> inside the loop makes a <b>fresh</b> row each time. Building one row and pushing it fifteen times gives you the same row fifteen times — and every stone appears in all fifteen.</p></div>
+  </div></div>`,
+  notes:`The aliasing trap is worth demonstrating on the board if anyone looks unconvinced — it is the first time most CS1 students meet reference semantics.`}),
+
+S({kind:'content', eyebrow:'Question 1 · The board', title:'Row first, column second. Always.',
+  html:`<div class="cols"><div class="stack">
+    <pre class="code sm">board[r][c]
+<span class="c">//     │  └── column: how far ACROSS  (x)</span>
+<span class="c">//     └───── row:    how far DOWN    (y)</span>
+
+<span class="c">// on screen it is the other way round:</span>
+x = c * CELL;
+y = r * CELL;</pre>
+    <p class="small" style="margin-top:12px">The array says <b>row, column</b>. The screen says <b>x, y</b>. They are swapped, and they will stay swapped for the rest of your career.</p>
+  </div><div class="stack">
+    <div class="card"><h3>The habit that saves you</h3><p class="small">Name them <code>r</code> and <code>c</code> — never <code>i</code> and <code>j</code>. A swapped <code>i</code> and <code>j</code> looks fine. A swapped <code>r</code> and <code>c</code> looks wrong immediately.</p></div>
+    <div class="card"><h3>Where it bites</h3><p class="small">Drawing, click handling, and the win check each convert between the two. Three chances to get it backwards — and the program still runs.</p></div>
+  </div></div>`,
+  notes:`Make the class say it: "row, column — down, across." This slide exists to make slide 11's bug findable.`}),
+
+S({kind:'content', eyebrow:'Live', title:'From a mouse click to a square', demo:'grid',
+  html:`<div class="cols wide-right"><div class="stack">
+    <pre class="code sm">c = Math.round((mx - PAD) / STEP);
+r = Math.round((my - PAD) / STEP);</pre>
+    <p class="small" style="margin-top:10px">Two lines turn a pixel into an index. <code>round</code>, not <code>floor</code> — stones sit <b>on</b> the intersections, not inside the squares, so the nearest crossing is the one you want.</p>
+    <ul class="pts"><li>Move the mouse over the board</li><li>Watch the pixel and the index change together</li></ul>
+  </div><div class="demo" data-slot="demo"></div></div>`,
+  notes:`Hover near an edge to show why we also test the result is in range — a click outside the grid produces an index like 15 or −1, and <code>board[-1]</code> is <code>undefined</code>, not an error.`}),
+
+S({kind:'activity', act:'poll', title:'A question about indices',
+  poll:{qid:'g1', ask:'A player clicks near the <b>top-right</b> corner of the board. Which pair is right?',
+    opts:[
+      {t:'board[0][14]', why:'Row 0 is the top; column 14 is the far right. Row first, column second.', ok:true},
+      {t:'board[14][0]', why:'That is the bottom-left — the two indices are the right numbers in the wrong order. This is the single most common bug in the file.'},
+      {t:'board[14][14]', why:'That is the bottom-right. Row 14 is the last row, not the first.'},
+      {t:'board[0][0]', why:'That is the top-left. Column 0 is the far left of the board.'}
+    ]},
+  notes:`Expect a real split between A and B. Do not just give the answer — put the grid on the board and count out loud from the top-left.`}),
+
+S({kind:'content', eyebrow:'Question 1 · The board', title:'Drawing it: two loops, not 225 lines',
+  html:`<div class="cols wide-left"><div class="stack">
+    <pre class="code"><span class="c">// the grid: 15 horizontal lines, 15 vertical</span>
+<span class="k">for</span> (<span class="k">let</span> i = <span class="s">0</span>; i &lt; N; i++) {
+  line(PAD, px(i), PAD + STEP*(N-<span class="s">1</span>), px(i));   <span class="c">// across</span>
+  line(px(i), PAD, px(i), PAD + STEP*(N-<span class="s">1</span>));   <span class="c">// down</span>
+}
+
+<span class="c">// the stones: look at every square, draw what is there</span>
+<span class="k">for</span> (<span class="k">let</span> r = <span class="s">0</span>; r &lt; N; r++)
+  <span class="k">for</span> (<span class="k">let</span> c = <span class="s">0</span>; c &lt; N; c++)
+    <span class="k">if</span> (board[r][c]) drawStone(px(c), px(r), board[r][c]);</pre>
+  </div><div class="stack">
+    <div class="card"><h3>Same split as last lecture</h3><p class="small"><b>Draw reads the board and changes nothing.</b> Every stone on screen comes from the array — so if the array is right, the picture is right, and if the picture is wrong, the array is where you look.</p></div>
+    <div class="card"><h3>225 squares, 60 times a second</h3><p class="small">Trivial for a canvas. Do not optimise it. Optimise the thing on slide 14 instead.</p></div>
+  </div></div>`,
+  notes:`Note the nested loop's shape — <code>r</code> outer, <code>c</code> inner — matches <code>board[r][c]</code>. Consistency is what makes the bug on the next slide visible.`}),
+
+S({kind:'activity', act:'debug', title:'Every stone lands in the wrong place',
+  html:`<div class="act debug">
+    <span class="chip"><span class="dot"></span>Debug this · 2 minutes with a neighbour</span>
+    <div class="cols wide-left">
+      <pre class="code">function onClick(mx, my) {
+  const c = Math.round((mx - PAD) / STEP);
+  const r = Math.round((my - PAD) / STEP);
+  board[c][r] = turn;            // ← place the stone
+}</pre>
+      <div class="stack">
+        <p>The click maths is right. The stone still appears somewhere else — and the game plays as if it were a mirror image of itself.</p>
+        <ul class="pts"><li>Where does a stone clicked at row 2, column 9 appear?</li><li>Why does clicking the diagonal look like it works?</li></ul>
+      </div>
+    </div>
+  </div>`,
+  reveal:`<div class="cols wide-left" style="margin-top:6px">
+    <pre class="code sm">board[<mark>c</mark>][<mark>r</mark>] = turn;     <span class="c">// bug — indices swapped</span>
+board[<mark class="ok">r</mark>][<mark class="ok">c</mark>] = turn;     <span class="c">// fix</span></pre>
+    <div class="card"><h3>Why it is nasty</h3><p class="small">The board is <b>square</b>, so nothing crashes and no index goes out of range. Stones appear reflected through the main diagonal — and any stone you place <i>on</i> that diagonal looks perfectly correct, which is exactly how a tester convinces themselves it works.</p></div></div>`,
+  notes:`Ask them to predict the symptom before revealing: "reflected through the diagonal" is a satisfying prediction to get right.<br>The general lesson: a square array hides index bugs. A 15×20 board would have crashed on the first click.`}),
+
+S({kind:'activity', act:'predict', title:'What if we forget to check the square is empty?',
+  demo:'overwrite',
+  html:`<div class="act predict">
+    <span class="chip"><span class="dot"></span>Predict → then we run it</span>
+    <p class="ask">The guard <code>if (board[r][c] !== EMPTY) return;</code> is missing. Predict what a player can do with that.</p>
+    <div class="cols wide-right"><div class="stack">
+      <ul class="pts"><li>Does anything crash?</li><li>What happens to the stone that was there?</li><li>Could you <b>win</b> with this bug?</li></ul>
+      <p class="small">Toggle the guard off in the panel and try to cheat. Commit to a prediction first.</p>
+    </div><div class="demo" data-slot="demo"></div></div></div>`,
+  reveal:`<div class="card" style="margin-top:2px"><h3>What actually happens</h3>
+    <p class="small">Nothing crashes — you simply overwrite your opponent's stone and it vanishes from the board. Five of your stones in a row is now three clicks away. The missing guard is not a cosmetic bug; it is the <b>rules of the game</b>, and the program has no other copy of them. Every rule you do not write down is a rule that does not exist.</p></div>`,
+  notes:`Let a student cheat on the projector — it lands better than any explanation.<br>Tie to validation generally: the guard is input validation, and this is what happens when you skip it.`}),
+
+/* ---------- 13–19: winning ---------- */
+S({kind:'content', eyebrow:'Question 2 · Winning', title:'What exactly is a win?',
+  html:`<div class="cols"><div class="stack">
+    <p>Five stones of the same colour, adjacent, in a straight line — in one of exactly <em class="key">four</em> directions.</p>
+    <pre class="code sm">const DIRS = [
+  [<span class="s">0</span>, <span class="s">1</span>],   <span class="c">// →  across</span>
+  [<span class="s">1</span>, <span class="s">0</span>],   <span class="c">// ↓  down</span>
+  [<span class="s">1</span>, <span class="s">1</span>],   <span class="c">// ↘  down-right</span>
+  [<span class="s">1</span>,<span class="s">-1</span>],   <span class="c">// ↙  down-left</span>
+];</pre>
+  </div><div class="stack">
+    <div class="card"><h3>Why four and not eight</h3>
+      <p class="small">There are eight compass directions, but each line is one direction and its opposite: → and ← are the same line walked two ways. Four directions, each explored <b>both</b> ways, covers everything exactly once.</p></div>
+    <div class="card"><h3>A rule we must choose</h3>
+      <p class="small">Does <b>six</b> in a row count? Free-style Gomoku says yes; the tournament rules say no for black. We will say yes — and the code makes that a <code>&gt;= 5</code> rather than a <code>=== 5</code>.</p></div>
+  </div></div>`,
+  notes:`The "eight directions or four" question is worth asking cold — most rooms say eight. Drawing one line and walking it both ways settles it in ten seconds.`}),
+
+S({kind:'content', eyebrow:'Question 2 · Winning', title:'The obvious way, and the question that replaces it',
+  html:`<div class="cols"><div class="stack">
+    <pre class="code sm"><span class="c">// after every move, check the entire board</span>
+<span class="k">for</span> (<span class="k">let</span> r = <span class="s">0</span>; r &lt; <span class="s">15</span>; r++)
+  <span class="k">for</span> (<span class="k">let</span> c = <span class="s">0</span>; c &lt; <span class="s">15</span>; c++)
+    <span class="k">for</span> (<span class="k">const</span> d <span class="k">of</span> DIRS)
+      <span class="k">if</span> (fiveFrom(r, c, d)) <span class="k">return</span> <span class="k">true</span>;</pre>
+    <p class="codecap">225 squares × 4 directions × 5 cells ≈ 4 500 lookups per move.</p>
+    <p class="small" style="margin-top:12px">It is correct, and on one move per turn it is perfectly fast. But on slide 33 the computer starts imagining <b>thousands</b> of moves per turn, and this runs inside every one. A cost you can ignore once is a cost you cannot ignore ten thousand times.</p>
+  </div><div class="stack">
+    <div class="card"><h3>The better question</h3>
+      <p class="small">A win that exists now and did not exist a moment ago <b>must run through the stone we just placed.</b> Nothing else on the board moved. So do not search the board — stand on the new stone and look outward.</p></div>
+    <div class="kv"><dt>before</dt><dd>≈ 4 500 lookups</dd><dt>after</dt><dd>≈ 32 lookups</dd></div>
+    <div class="card"><h3>This has a name</h3>
+      <p class="small"><b>Incremental computation</b>: work out what the change could possibly have affected, instead of recomputing from scratch. Spreadsheets, compilers and every UI framework you will use are built on it — and the speed-up came from thinking about the problem, not from clever code.</p></div>
+  </div></div>`,
+  notes:`Two slides in one because they are one argument: here is the honest cost, here is the question that removes it.<br>"What could this change have affected?" is the line to slow down on — it travels far beyond this lecture.`}),
+
+S({kind:'content', eyebrow:'Question 2 · Winning', title:'Walk out both ways and count',
+  html:`<div class="cols wide-left"><div class="stack">
+    <pre class="code">function winsAt(r, c) {
+  <span class="k">const</span> me = board[r][c];
+  <span class="k">for</span> (<span class="k">const</span> [dr, dc] <span class="k">of</span> DIRS) {
+    <span class="k">let</span> count = <span class="s">1</span>;                    <span class="c">// the stone itself</span>
+    <span class="k">for</span> (<span class="k">const</span> step <span class="k">of</span> [<span class="s">1</span>, <span class="s">-1</span>]) {       <span class="c">// forwards, then back</span>
+      <span class="k">let</span> rr = r + dr*step, cc = c + dc*step;
+      <span class="k">while</span> (inside(rr, cc) &amp;&amp; board[rr][cc] === me) {
+        count++;
+        rr += dr*step; cc += dc*step;
+      }
+    }
+    <span class="k">if</span> (count &gt;= <span class="s">5</span>) <span class="k">return</span> <span class="k">true</span>;
+  }
+  <span class="k">return</span> <span class="k">false</span>;
+}</pre>
+  </div><div class="stack">
+    <div class="card"><h3>Read the loops</h3><p class="small">Outer: which of the four lines. Middle: which way along it. Inner: keep walking while the stones match.</p></div>
+    <div class="card"><h3>Start at 1, not 0</h3><p class="small"><code>count = 1</code> counts the stone we are standing on. The two walks never visit it, so it is counted exactly once.</p></div>
+    <div class="card"><h3><code>inside()</code> comes first</h3><p class="small">JavaScript will happily hand you <code>undefined</code> for an off-board row instead of throwing. Check the bounds before you read.</p></div>
+  </div></div>`,
+  notes:`Trace one direction by hand on the whiteboard with a real row of stones. The <code>[1, -1]</code> trick for "both ways" is the piece students find clever and reusable.`}),
+
+S({kind:'content', eyebrow:'Live', title:'Watch the four rays count', demo:'win',
+  html:`<div class="cols wide-right"><div class="stack">
+    <p>Click to place stones. The panel runs <code>winsAt</code> on the last stone and draws what it looks at.</p>
+    <ul class="pts"><li>Each ray shows how far it walked</li><li>The count includes the stone you just played</li><li>Build a four and watch it stop at 4</li></ul>
+    <p class="small">Try a line of five with a gap in the middle. Why is that not a win?</p>
+  </div><div class="demo" data-slot="demo"></div></div>`,
+  notes:`The gapped five is the best question here — the <code>while</code> loop stops at the first non-matching cell, so "four, gap, one" counts as four. Some rule sets disagree; ours does not.`}),
+
+S({kind:'activity', act:'poll', title:'A question about cost',
+  poll:{qid:'g2', ask:'Checking only through the stone just played: what is the <b>largest</b> number of board squares <code>winsAt</code> can read in one call?',
+    opts:[
+      {t:'About 8', why:'That is one direction walked both ways — but there are four directions to check.'},
+      {t:'About 32', why:'Four directions, each walked at most 8 steps in total before running off the board. In practice it stops far sooner, because it halts at the first square that does not match.', ok:true},
+      {t:'About 225', why:'That is the whole board — the cost of the naive version, which is exactly what we replaced.'},
+      {t:'About 4 500', why:'That is the naive version including its five-cell inner check. We are now roughly 140 times cheaper.'}
+    ]},
+  notes:`If they answer 8, they forgot the outer loop — a good sign they read the code rather than guessing. Praise the reasoning, correct the count.`}),
+
+S({kind:'activity', act:'debug', title:'It declares a win on four stones',
+  html:`<div class="act debug">
+    <span class="chip"><span class="dot"></span>Debug this · 2 minutes with a neighbour</span>
+    <div class="cols wide-left">
+      <pre class="code">let count = 1;
+for (const step of [1, -1]) {
+  let rr = r, cc = c;                     // ← start here
+  while (inside(rr, cc) && board[rr][cc] === me) {
+    count++;
+    rr += dr*step; cc += dc*step;
+  }
+}
+if (count >= 5) return true;</pre>
+      <div class="stack">
+        <p>Four stones in a row now reports a win. Five reports a win too — so half the tests pass.</p>
+        <ul class="pts"><li>Which square does each walk visit first?</li><li>How many times is the new stone counted?</li></ul>
+      </div>
+    </div>
+  </div>`,
+  reveal:`<div class="cols wide-left" style="margin-top:6px">
+    <pre class="code sm">let rr = <mark>r</mark>, cc = <mark>c</mark>;                       <span class="c">// bug: both walks start ON the stone</span>
+let rr = <mark class="ok">r + dr*step</mark>, cc = <mark class="ok">c + dc*step</mark>;   <span class="c">// fix: start one step out</span></pre>
+    <div class="card"><h3>Off by exactly one, twice</h3><p class="small">Each walk counts the new stone again, so the total is inflated by 2: a genuine four becomes 6, and even a lone stone scores 3. Notice the shape of the failure — the code is not randomly wrong, it is wrong by a <b>constant</b>. When a count is consistently high by the same amount, look for something counted more than once rather than for a broken loop.</p></div></div>`,
+  notes:`Have them work out the count for a single isolated stone (answer: 3). A tiny concrete case finds the bug faster than staring at the general one — that is the transferable technique.`}),
+
+/* ---------- 20–25: the rule-based opponent ---------- */
+S({kind:'activity', act:'pair', eyebrow:'Think · pair · share', title:'Write the opponent in English first',
+  timer:180,
+  html:`<div class="act pair">
+    <span class="chip"><span class="dot"></span>Think · Pair · Share &nbsp;·&nbsp; 3 minutes</span>
+    <p class="ask">No code. In plain English, write the instructions you would give a person who has never played, so they can take a decent turn. Put them in <em class="key">priority order</em>.</p>
+    <div class="cols" style="gap:24px">
+      <div class="card"><h3>Constraint</h3><p class="small">Each instruction must be something you could check by looking at the board — no "play well", no "be clever".</p></div>
+      <div class="card"><h3>Then ask</h3><p class="small">Which of your rules would a beginner actually beat? Keep that one in mind for slide 24.</p></div>
+    </div>
+    <div data-slot="timer"></div>
+  </div>`,
+  reveal:`<div class="card" style="margin-top:4px"><h3>Almost every group produces the same first two</h3>
+    <p class="small"><b>1.</b> If I can make five, do it. &nbsp; <b>2.</b> If they can make five next turn, block it. &nbsp; <b>3.</b> Otherwise… and this is where every list gets vague — "play near the middle", "build on my own stones", "make a shape". That vagueness is not a failure of the exercise; it is precisely the part that needs numbers, which is slide 26.</p></div>`,
+  notes:`Collect rules on the board verbatim, including the vague ones. Do not tidy them up — the vagueness is the pedagogical payload. Circle rule 3 and say "we are coming back for you".`}),
+
+S({kind:'content', eyebrow:'Question 3 · A first opponent', title:'Two rules and a fallback',
+  html:`<div class="cols"><div class="stack">
+    <ul class="pts num">
+      <li><b>Win now.</b> For every empty square, pretend to play there. Does it win? Play it.</li>
+      <li><b>Block now.</b> For every empty square, pretend the <i>opponent</i> played there. Would it win? Take that square.</li>
+      <li><b>Otherwise</b>, play next to an existing stone.</li>
+    </ul>
+    <p class="small" style="margin-top:10px">That is the entire opponent. No search, no evaluation, roughly twenty lines.</p>
+  </div><div class="stack">
+    <div class="card"><h3>The trick worth stealing</h3>
+      <p class="small">"Pretend to play, then <b>undo</b>" lets you reuse <code>winsAt</code> — the code you already trust — instead of writing a second, subtly different threat detector. One source of truth for what a win is.</p></div>
+    <div class="card"><h3>Order is the strategy</h3>
+      <p class="small">Winning before blocking matters: if you can win this turn, their threat never arrives. Swap the two rules and the opponent gets measurably worse.</p></div>
+  </div></div>`,
+  notes:`Ask why we check "win" before "block" — the answer (the game ends first) is a nice example of ordering being a design decision rather than an accident.`}),
+
+S({kind:'content', eyebrow:'Question 3 · A first opponent', title:'Pretend, test, undo',
+  html:`<div class="cols wide-left"><div class="stack">
+    <pre class="code">function ruleMove(me) {
+  <span class="k">const</span> them = <span class="s">3</span> - me;                  <span class="c">// 1↔2</span>
+
+  <span class="k">for</span> (<span class="k">const</span> [r, c] <span class="k">of</span> emptySquares()) {
+    board[r][c] = me;                     <span class="c">// pretend</span>
+    <span class="k">const</span> iWin = winsAt(r, c);
+    board[r][c] = EMPTY;                  <span class="c">// undo — always!</span>
+    <span class="k">if</span> (iWin) <span class="k">return</span> [r, c];
+  }
+  <span class="k">for</span> (<span class="k">const</span> [r, c] <span class="k">of</span> emptySquares()) {
+    board[r][c] = them;                   <span class="c">// pretend it is theirs</span>
+    <span class="k">const</span> theyWin = winsAt(r, c);
+    board[r][c] = EMPTY;
+    <span class="k">if</span> (theyWin) <span class="k">return</span> [r, c];
+  }
+  <span class="k">return</span> nearestToAStone();
+}</pre>
+  </div><div class="stack">
+    <div class="card"><h3>The undo is not optional</h3><p class="small">Forget one <code>board[r][c] = EMPTY</code> and the opponent litters phantom stones across the board while it thinks. The bug appears as "stones I never played" — and it is <b>not</b> in the drawing code.</p></div>
+    <div class="card"><h3><code>3 - me</code></h3><p class="small">Black is 1, white is 2, so <code>3 - me</code> is the other player. This is why the constants were numbers on slide 6.</p></div>
+  </div></div>`,
+  notes:`"Make a change, measure, put it back" is the core of every search algorithm they will meet later. Name it now, cheaply, on twenty lines they can hold in their head.`}),
+
+S({kind:'content', eyebrow:'Live', title:'Play the two-rule opponent', demo:'rules',
+  html:`<div class="cols wide-right"><div class="stack">
+    <p>This is exactly the code on the previous slide. It never misses a win and never misses a block.</p>
+    <ul class="pts"><li>Try to win. It will stop you — every time, right at the end</li><li>Now try to lose on purpose. Can you?</li></ul>
+    <p class="small">Two or three of you will beat it in under a dozen moves. Notice <b>how</b>.</p>
+  </div><div class="demo" data-slot="demo"></div></div>`,
+  notes:`Give it 90 seconds and take a show of hands for who won. The winners nearly always did the same thing — set up two threats at once. That is the next slide.`}),
+
+S({kind:'activity', act:'predict', title:'Find the position it cannot save',
+  demo:'threat',
+  html:`<div class="act predict">
+    <span class="chip"><span class="dot"></span>Predict → then we play it out</span>
+    <p class="ask">Black is about to play the marked square. Predict: can the two-rule opponent survive the next two moves?</p>
+    <div class="cols wide-right"><div class="stack">
+      <ul class="pts"><li>How many separate threats does black have after this move?</li><li>How many squares can white block per turn?</li></ul>
+      <p class="small">Press <b>Play it out</b> and watch white block one threat while losing to the other.</p>
+    </div><div class="demo" data-slot="demo"></div></div></div>`,
+  reveal:`<div class="card" style="margin-top:2px"><h3>The double threat</h3>
+    <p class="small">One move creates <b>two</b> open threes at once. White gets one stone per turn, so it can only answer one of them. The opponent is not making a mistake in any single move — every block it plays is the best available. It loses because it only ever looks at threats that are <i>already</i> complete. A rule that says "block a four" is blind to the move that creates two fours next turn.</p></div>`,
+  notes:`This is the emotional turning point of the lecture: the rules are individually correct and collectively insufficient. That is the argument for everything in the second half.`}),
+
+S({kind:'activity', act:'poll', title:'Which shape is actually dangerous?',
+  poll:{qid:'g3', ask:'Black has three stones in a row. Which arrangement must white block <b>this turn</b>? (<code>_</code> = empty, <code>X</code> = black, <code>W</code> = white)',
+    opts:[
+      {t:'W X X X W', why:'Blocked at both ends — this three is dead. It can never become five, so white can ignore it entirely.'},
+      {t:'W X X X _', why:'Open at one end only. Black can make a four, but white can then block the single remaining end. Urgent soon; not fatal now.'},
+      {t:'_ X X X _', why:'The open three. If black plays either end, the result is a four open at both ends — and white can only block one of them. This must be answered now.', ok:true},
+      {t:'All three are equally dangerous — they are all threes', why:'This is the trap. Counting stones is not the same as counting threats: what matters is how many <b>ends are free</b>, not how many stones are in the line.'}
+    ]},
+  notes:`Draw all four on the board. The insight — the empty squares matter as much as the stones — is what makes the string encoding on slide 28 feel inevitable rather than arbitrary.`}),
+
+/* ---------- 26–32: scoring ---------- */
+S({kind:'content', eyebrow:'Question 4 · Judgement as arithmetic', title:'From rules to numbers',
+  html:`<div class="cols"><div class="stack">
+    <p>The rule-based opponent can only answer yes or no: <i>is</i> this a win, <i>is</i> that a five. Every position is either urgent or invisible.</p>
+    <p>To play the middlegame we need a <em class="key">degree</em> — this square is better than that one, and here is by how much.</p>
+    <div class="card"><h3>The move</h3><p class="small">Give every shape a number. Add them up. Play the biggest.</p></div>
+  </div><div class="stack">
+    <div class="card"><h3>What that buys</h3>
+      <p class="small">An open three and a closed three stop being "both threes". One scores thousands, the other scores hundreds, and the opponent's behaviour follows automatically — you never write a rule about open threes at all.</p></div>
+    <div class="card"><h3>What it costs</h3>
+      <p class="small">The numbers are <b>invented</b>. Nobody derived them; someone chose them and tuned them until the play looked right. Be honest with your students about that — a heuristic is a confession, not a theorem.</p></div>
+  </div></div>`,
+  notes:`"A heuristic is a confession, not a theorem." Worth writing on the board. It inoculates them against treating magic numbers in someone else's code as authoritative.`}),
+
+S({kind:'content', eyebrow:'Question 4 · Judgement as arithmetic', title:'The table that is the whole opponent',
+  html:`<div class="cols wide-left"><div class="stack">
+    <table class="tune">
+      <tr><th>Shape</th><th>Meaning</th><th>Score</th></tr>
+      <tr><td class="num">o o o o o</td><td>five — the game</td><td class="num">1 000 000</td></tr>
+      <tr><td class="num">_ o o o o _</td><td>open four — unstoppable</td><td class="num">100 000</td></tr>
+      <tr><td class="num">x o o o o _</td><td>closed four — must be answered</td><td class="num">9 000</td></tr>
+      <tr><td class="num">_ o o o _</td><td>open three — the real threat</td><td class="num">5 000</td></tr>
+      <tr><td class="num">_ o o _ o _</td><td>broken three</td><td class="num">3 500</td></tr>
+      <tr><td class="num">x o o o _ _</td><td>closed three</td><td class="num">600</td></tr>
+      <tr><td class="num">_ o o _</td><td>open two</td><td class="num">300</td></tr>
+    </table>
+  </div><div class="stack">
+    <div class="card"><h3>Read the gaps</h3><p class="small">The jump from a closed four (9 000) to an open four (100 000) says: <i>one is answerable, the other has already won</i>. The size of a gap encodes a strategic fact.</p></div>
+    <div class="card"><h3>Where the numbers came from</h3><p class="small">Playing the thing and adjusting. If the opponent ignores your threes, raise 5 000. If it panics and never builds, lower it. This is craft, and it is legitimate.</p></div>
+  </div></div>`,
+  notes:`Ask which single number they would change first. There is no right answer — but the reasoning ("it never attacks" → raise the offensive weights) is exactly the debugging loop for a heuristic.`}),
+
+S({kind:'content', eyebrow:'Question 4 · Judgement as arithmetic', title:'A line of stones is a string',
+  html:`<div class="cols wide-left"><div class="stack">
+    <pre class="code"><span class="c">// walk 4 cells either side of (r,c) along one direction</span>
+<span class="k">let</span> s = <span class="s">''</span>;
+<span class="k">for</span> (<span class="k">let</span> i = <span class="s">-4</span>; i &lt;= <span class="s">4</span>; i++) {
+  <span class="k">const</span> rr = r + dr*i, cc = c + dc*i;
+  <span class="k">if</span>      (!inside(rr, cc))        s += <span class="s">'x'</span>;   <span class="c">// wall = blocked</span>
+  <span class="k">else if</span> (i === <span class="s">0</span>)              s += <span class="s">'o'</span>;   <span class="c">// the square we are scoring</span>
+  <span class="k">else if</span> (board[rr][cc] === me)  s += <span class="s">'o'</span>;
+  <span class="k">else if</span> (board[rr][cc] === EMPTY) s += <span class="s">'_'</span>;
+  <span class="k">else</span>                            s += <span class="s">'x'</span>;
+}
+<span class="c">// s is now something like "x_ooo__o_"  →  look up the table</span></pre>
+  </div><div class="stack">
+    <div class="card"><h3>Why a string</h3><p class="small">Because "does this line contain an open three" becomes <code>s.includes('_ooo_')</code> — a pattern-match instead of a page of index arithmetic. The board is 2-D; a <b>line</b> is 1-D, and 1-D problems are much easier.</p></div>
+    <div class="card"><h3>The wall trick</h3><p class="small">Off-board counts as <code>'x'</code>, the same as an enemy stone — because for the purpose of making five, the edge of the board blocks you exactly as an opponent's stone does. One character removes every special case.</p></div>
+  </div></div>`,
+  notes:`The change of representation is the lesson: pick the shape that makes the question easy. Students who see this once start asking "what shape would make this simple?" — the single most valuable habit in the course.`}),
+
+S({kind:'content', eyebrow:'Live', title:'What the opponent sees', demo:'score',
+  html:`<div class="cols wide-right"><div class="stack">
+    <p>Every empty square scored and shaded — brighter means better. Click to play; the shading updates.</p>
+    <ul class="pts"><li>Hover a square for its attack and defence numbers</li><li>Build an open three and watch the block light up</li><li>The brightest square is the move it would play</li></ul>
+  </div><div class="demo" data-slot="demo"></div></div>`,
+  notes:`This visualisation does more work than any explanation. Let a student place stones and predict the next bright square before it updates.`}),
+
+S({kind:'content', eyebrow:'Question 4 · Judgement as arithmetic', title:'Attack, defence, and one number that decides a personality',
+  html:`<div class="cols wide-left"><div class="stack">
+    <pre class="code">function scoreSquare(r, c, me) {
+  <span class="k">const</span> attack  = shapeValue(r, c, me);        <span class="c">// what I build</span>
+  <span class="k">const</span> defence = shapeValue(r, c, <span class="s">3</span> - me);    <span class="c">// what I deny</span>
+  <span class="k">return</span> attack + defence * <mark>DEFENCE_WEIGHT</mark>;
+}</pre>
+    <p class="codecap">Score a square twice — once as mine, once as theirs — and blend.</p>
+    <p style="margin-top:14px">The same square is worth something for what it builds and something for what it prevents. One weight decides which the opponent cares about more.</p>
+  </div><div class="stack">
+    <div class="card"><h3>Weight below 1</h3><p class="small">An aggressive opponent. It races, builds fast, and loses to anyone who calmly makes their own five.</p></div>
+    <div class="card"><h3>Weight above 1</h3><p class="small">A defensive opponent. It answers everything you do and never threatens anything — very hard to beat, deeply boring to play.</p></div>
+    <div class="card"><h3>Ours</h3><p class="small"><code>0.9</code> — slightly attack-leaning, which reads as "confident" rather than "scared".</p></div>
+  </div></div>`,
+  notes:`Personality out of one constant is a genuinely surprising idea for CS1. It also reframes tuning: you are not fixing a bug, you are choosing a character.`}),
+
+S({kind:'activity', act:'predict', title:'Turn one knob and change who you are playing',
+  demo:'weights',
+  html:`<div class="act predict">
+    <span class="chip"><span class="dot"></span>Predict → then we play it</span>
+    <p class="ask">Predict, before touching it: at defence weight <b>0.1</b>, how does the opponent lose? At <b>3.0</b>, how does the <i>game</i> go wrong?</p>
+    <div class="cols wide-right"><div class="stack">
+      <ul class="pts"><li>0.1 — what does it stop doing?</li><li>3.0 — who ends up controlling the board?</li><li>Which one is more <b>fun</b> to play against?</li></ul>
+      <p class="small">Play a few moves at each extreme.</p>
+    </div><div class="demo" data-slot="demo"></div></div></div>`,
+  reveal:`<div class="grid2" style="margin-top:2px">
+    <div class="card"><h3>At 0.1</h3><p class="small">It stops blocking. You build an open three, it builds its own, and you get there first because you moved first. It never notices you.</p></div>
+    <div class="card"><h3>At 3.0</h3><p class="small">It mirrors you — every move answers yours. It rarely loses and never wins; games drift to a full board. Strong, and no fun at all.</p></div></div>`,
+  notes:`End on the "fun" question. Strength and enjoyment are different objectives, and this is the cheapest possible demonstration of that. It sets up slide 38.`}),
+
+S({kind:'activity', act:'debug', title:'The opponent stopped blocking',
+  html:`<div class="act debug">
+    <span class="chip"><span class="dot"></span>Debug this · 2 minutes with a neighbour</span>
+    <div class="cols wide-left">
+      <pre class="code">function bestMove(me) {
+  let best = null, bestScore = -1;
+  for (const [r, c] of emptySquares()) {
+    const s = shapeValue(r, c, me);
+    if (s > bestScore) { bestScore = s; best = [r, c]; }
+  }
+  return best;
+}</pre>
+      <div class="stack">
+        <p>It builds beautiful threes and fours of its own. It walks straight into losing every game.</p>
+        <ul class="pts"><li>Whose stones does <code>shapeValue(r, c, me)</code> look at?</li><li>What question is never asked anywhere in this function?</li></ul>
+      </div>
+    </div>
+  </div>`,
+  reveal:`<div class="cols wide-left" style="margin-top:6px">
+    <pre class="code sm">const s = shapeValue(r, c, me);                              <span class="c">// bug: only my threats</span>
+const s = shapeValue(r, c, me) <mark class="ok">+ shapeValue(r, c, 3 - me) * 0.9</mark>;  <span class="c">// fix</span></pre>
+    <div class="card"><h3>Why it is hard to spot</h3><p class="small">Nothing is wrong with the code that is there — the loop, the comparison and the bookkeeping are all correct. The bug is a <b>missing term</b>, and missing things do not show up in a debugger or a stack trace. You find them by asking what question the code never asks. Get used to that: absence is the hardest class of bug there is.</p></div></div>`,
+  notes:`Contrast with the earlier two bugs, which were both wrong <i>characters</i>. This one is wrong <i>thinking</i> — and it is the kind that survives code review.`}),
+
+/* ---------- 33–37: looking ahead ---------- */
+S({kind:'activity', act:'predict', title:'The move the scorer will get wrong',
+  demo:'blindspot',
+  html:`<div class="act predict">
+    <span class="chip"><span class="dot"></span>Predict → then we ask it</span>
+    <p class="ask">Here is a position where scoring alone plays badly. Predict which square the scorer picks — and which square it <em class="key">should</em> pick.</p>
+    <div class="cols wide-right"><div class="stack">
+      <ul class="pts"><li>The scorer only asks: "what is this square worth <b>now</b>?"</li><li>What question is it still not asking?</li></ul>
+      <p class="small">Press <b>Ask the scorer</b> to see its choice, then <b>Show the reply</b> to see what black does next.</p>
+    </div><div class="demo" data-slot="demo"></div></div></div>`,
+  reveal:`<div class="card" style="margin-top:2px"><h3>Greedy, one square at a time</h3>
+    <p class="small">The scorer takes the highest-scoring square available right now — and misses the quieter move that stops black creating <b>two</b> threats next turn. It has no way to represent "this is fine until they reply". Every position is judged as though the game ended immediately. To see one move further, it has to actually <i>look</i> one move further.</p></div>`,
+  notes:`This is the same failure as slide 24, one level up: correct local judgement, no model of the reply. Say that explicitly — the pattern repeats all the way up to modern game AI.`}),
+
+S({kind:'content', eyebrow:'Question 5 · Looking ahead', title:'One move deeper: assume they answer well',
+  html:`<div class="cols wide-left"><div class="stack">
+    <pre class="code"><span class="k">for</span> (<span class="k">const</span> [r, c] <span class="k">of</span> candidates(me)) {
+  board[r][c] = me;                       <span class="c">// I play here…</span>
+  <span class="k">const</span> reply = bestScore(<span class="s">3</span> - me);         <span class="c">// …they answer at their best</span>
+  board[r][c] = EMPTY;
+
+  <span class="k">const</span> value = scoreSquare(r, c, me) - reply;
+  <span class="k">if</span> (value &gt; bestValue) { bestValue = value; best = [r, c]; }
+}</pre>
+    <p class="codecap">Pretend, let them reply, undo — the same trick as slide 22, one level deeper.</p>
+  </div><div class="stack">
+    <div class="card"><h3>The minus sign is the idea</h3><p class="small">Their best reply is <b>subtracted</b> from my score. A move that helps me and helps them more is now correctly judged as bad. Good for me, bad for you — one number, two players.</p></div>
+    <div class="card"><h3>This has a name</h3><p class="small">You have just written the first two levels of <b>minimax</b>. Do it recursively and you have the algorithm behind every classical game engine — which is a later course, and it starts here.</p></div>
+  </div></div>`,
+  notes:`Do not say "minimax" until after they have read the code. Discovering they already wrote it is a much better moment than being told they are about to.`}),
+
+S({kind:'content', eyebrow:'Question 5 · Looking ahead', title:'Why we cannot just look further',
+  html:`<div class="cols"><div class="stack">
+    <p>Roughly 200 empty squares. For each of my moves, 200 of their replies. For each of those, 200 more.</p>
+    <dl class="kv" style="margin-top:8px">
+      <dt>depth 1</dt><dd>200 positions — instant</dd>
+      <dt>depth 2</dt><dd>40 000 — still instant</dd>
+      <dt>depth 3</dt><dd>8 000 000 — a noticeable pause</dd>
+      <dt>depth 4</dt><dd>1 600 000 000 — minutes per move</dd>
+    </dl>
+  </div><div class="stack">
+    <div class="card"><h3>Multiplying, not adding</h3><p class="small">Every extra move of foresight multiplies the work by 200. This is what exponential means, and it is why "just make it look further ahead" is not an answer.</p></div>
+    <div class="card"><h3>Two honest ways out</h3><p class="small"><b>Look at fewer moves</b> — most of those 200 squares are absurd (slide 36). <b>Stop early</b> — prune branches that cannot change the answer, which is the next course's alpha-beta.</p></div>
+  </div></div>`,
+  notes:`Write 200⁴ on the board and let the number sit there. It is the first time many CS1 students feel exponential growth rather than being told about it.`}),
+
+S({kind:'content', eyebrow:'Question 5 · Looking ahead', title:'Most squares are not worth a thought', demo:'candidates',
+  html:`<div class="cols wide-right"><div class="stack">
+    <p>A stone in the far corner, ten squares from anything, cannot matter this turn. So do not consider it.</p>
+    <pre class="code sm"><span class="c">// only empty squares within 2 of an existing stone</span>
+candidates = empties.filter(near(<span class="s">2</span>));</pre>
+    <p class="small" style="margin-top:10px">The panel shows every square the search would examine — first all of them, then only the plausible ones.</p>
+  </div><div class="demo" data-slot="demo"></div></div>`,
+  notes:`Toggle the filter live: in this position 214 empty squares collapse to 75. Ask what we might lose (a genuinely good far-away move) and whether we care — in Five Stones, we do not.`}),
+
+S({kind:'activity', act:'poll', title:'A question about the cost of thinking',
+  poll:{qid:'g4', ask:'In the position you just saw, the filter cut the squares worth examining from <b>214</b> to <b>75</b> — roughly a third. Searching <b>two</b> moves deep, how much work does that save?',
+    opts:[
+      {t:'About 3× — the same as at one level', why:'That is the saving for a single move. But the filter applies again to every reply, so the saving multiplies rather than staying put.'},
+      {t:'About 8×', why:'75 × 75 ≈ 5 600 positions instead of 214 × 214 ≈ 45 800. The reduction is raised to the depth — cut to a third, search two deep, save a factor of nine. At depth four it is nearer seventy.', ok:true},
+      {t:'No saving — the same positions get examined either way', why:'The filter genuinely removes branches. Those positions are never generated, so they cost nothing at all.'},
+      {t:'It depends on who is winning', why:'Not here. The candidate filter is purely geometric — it looks at where the stones are, never at who is ahead.'}
+    ]},
+  notes:`If they answer A, they applied the reduction once instead of at every level. Draw the two-level tree.<br>The transferable point: narrowing what you look at beats speeding up each look, because narrowing compounds with depth and speed does not.`}),
+
+/* ---------- 38–40: wrap ---------- */
+S({kind:'activity', act:'pair', eyebrow:'Think · pair · share', title:'How do you build an opponent people enjoy losing to?',
+  timer:180,
+  html:`<div class="act pair">
+    <span class="chip"><span class="dot"></span>Think · Pair · Share &nbsp;·&nbsp; 3 minutes</span>
+    <p class="ask">A perfect opponent is easy to describe and miserable to play. What would you actually build for a beginner — and how would you make it weaker <em class="key">honestly</em>?</p>
+    <div class="grid3">
+      <div class="card"><h3>One option</h3><p class="small">Search less deeply. Weaker, and its mistakes are the kind a person makes.</p></div>
+      <div class="card"><h3>Another</h3><p class="small">Pick randomly among the top few moves. Varied games — and occasionally baffling.</p></div>
+      <div class="card"><h3>A third</h3><p class="small">Play well, but miss a threat now and then on purpose. Effective, and arguably dishonest.</p></div>
+    </div>
+    <div data-slot="timer"></div>
+  </div>`,
+  reveal:`<div class="card" style="margin-top:4px"><h3>What our three levels actually do</h3>
+    <p class="small"><b>Club</b> picks at random from the four best-scoring squares — so it is never silly, but it is inconsistent. <b>League</b> takes the best score with two-ply lookahead. <b>Pro</b> searches four ply with a wider candidate list. All three always take a win and always block a five, because an opponent that misses <i>those</i> feels broken rather than beatable. That is the line worth drawing: weaken the judgement, never the rules.</p></div>`,
+  notes:`"Weaken the judgement, never the rules" generalises to difficulty design everywhere — an enemy that ignores walls feels buggy; one that aims poorly feels human.`}),
+
+S({kind:'content', eyebrow:'The whole thing', title:'What we actually wrote',
+  html:`<div class="cols wide-left"><div class="stack">
+    <table class="tune">
+      <tr><th>Part</th><th>Lines</th><th>The idea</th></tr>
+      <tr><td>Board &amp; clicks</td><td class="num">25</td><td>a 2-D array, and row before column</td></tr>
+      <tr><td>Win detection</td><td class="num">18</td><td>only check through the new stone</td></tr>
+      <tr><td>Rule opponent</td><td class="num">22</td><td>pretend, test, undo</td></tr>
+      <tr><td>Pattern scoring</td><td class="num">40</td><td>a line is a string; shapes have prices</td></tr>
+      <tr><td>Lookahead</td><td class="num">30</td><td>subtract their best reply</td></tr>
+      <tr><td>Drawing &amp; interface</td><td class="num">190</td><td>everything the player sees</td></tr>
+    </table>
+  </div><div class="stack">
+    <div class="card"><h3>What we skipped, honestly</h3>
+      <p class="small">Alpha-beta pruning · transposition tables · threat-space search · the Renju rules that forbid black's double-three · anything learned from data rather than chosen by hand.</p></div>
+    <div class="card"><h3>The two ideas to keep</h3>
+      <p class="small"><b>Only recompute what changed.</b> &nbsp;<b>Pick the representation that makes the question easy.</b> Neither is about games.</p></div>
+  </div></div>`,
+  notes:`Compare with the flap deck's table: there, logic was 80 lines and presentation 220. Here, judgement is 90 lines and presentation 190. The interesting half keeps growing.`}),
+
+S({kind:'content', eyebrow:'Your turn', title:'Lab: pick a tier, ship it Friday',
+  html:`<div class="grid3" style="margin-top:6px">
+    <div class="card"><h3>Tier 1 · Tune it</h3>
+      <p class="small">Change only the pattern table and the defence weight. Produce an opponent you would call <b>reckless</b> and one you would call <b>cautious</b>, play three games against each, and write two sentences on what changed and why.</p></div>
+    <div class="card"><h3>Tier 2 · Change a rule</h3>
+      <p class="small">Add a rule to the game itself: forbid black's double-three, allow a swap on move two, or move to a 19 × 19 board and see what breaks. Your win detector should need no changes — if it does, say why.</p></div>
+    <div class="card"><h3>Tier 3 · Search deeper</h3>
+      <p class="small">Take the one-ply lookahead to three, and make it fast enough to be usable: order the candidates best-first, cut off branches that cannot win, and measure the positions examined per move before and after.</p></div>
+  </div>
+  <div class="card" style="margin-top:16px"><h3>What is graded</h3>
+    <p class="small">Whether the board is the single source of truth, whether every "pretend" has an "undo", whether your win detector stayed correct as everything else changed, and whether you can explain one bug you hit and how you found it.</p></div>`,
+  notes:`Tier 3 is a genuine bridge to the AI course — students who take it will arrive already knowing what pruning is for.`}),
+
+S({kind:'activity', act:'poll', eyebrow:'Exit ticket', title:'One question before you go',
+  poll:{qid:'g5', ask:'Which idea from today do you most expect to meet again outside this game?',
+    anon:true,
+    opts:[
+      {t:'Only recompute what the change could have affected', why:'Incremental computation — spreadsheets, compilers, every UI framework.'},
+      {t:'Change the representation to make the question easy', why:'A line became a string, and pattern-matching replaced index arithmetic.'},
+      {t:'Pretend, measure, undo', why:'The skeleton of every search algorithm you will write.'},
+      {t:'Turning judgement into a number, and being honest that you chose it', why:'Every heuristic, every scoring function, every ranking system you will ever read.'}
+    ]},
+  html:`<p class="small" style="margin-top:auto;color:var(--ink-3)">No wrong answers — this one is for me. Then one sentence on paper on the way out: the muddiest point of today.</p>`,
+  notes:`Same exit-ticket shape as the flapping-bird lecture, so you can compare the two distributions and see which ideas travelled.<br>Close with the finished game running behind you.`});
+</script>
+<script>
+/* =======================================================================
+   ENGINE — rendering, navigation, live demos, and the activity machinery.
+   ======================================================================= */
+(() => {
+const stage = document.getElementById('stage');
+const stagewrap = document.getElementById('stagewrap');
+const notesEl = document.getElementById('notes');
+const overEl = document.getElementById('over');
+const ACT_NAME = {predict:'Predict', poll:'Vote', pair:'Pair', debug:'Debug'};
+
+const POLLS = {};
+SLIDES.forEach((s, i) => { if (s.poll) POLLS[s.poll.qid] = { ...s.poll, slide: i }; });
+const LETTERS = ['A', 'B', 'C', 'D', 'E'];
+let db = null, voterId = null, session = null;
+
+try {
+  voterId = localStorage.getItem('flapdeck.voter');
+  if (!voterId) { voterId = (crypto.randomUUID ? crypto.randomUUID() : 'v' + Math.random().toString(36).slice(2)); localStorage.setItem('flapdeck.voter', voterId); }
+} catch (e) { voterId = 'v' + Math.random().toString(36).slice(2); }
+
+
+/* ---------- scale the fixed 1280x720 stage into whatever room we have ---------- */
+function fit() {
+  const pad = 22;
+  const w = stagewrap.clientWidth - pad * 2, h = stagewrap.clientHeight - pad * 2;
+  const k = Math.max(0.2, Math.min(w / 1280, h / 720));
+  stage.style.transform = `translate(${(stagewrap.clientWidth - 1280 * k) / 2}px,${(stagewrap.clientHeight - 720 * k) / 2}px) scale(${k})`;
+}
+addEventListener('resize', fit);
+
+/* ---------- build every slide once ---------- */
+const els = [];
+SLIDES.forEach((s, i) => {
+  const d = document.createElement('section');
+  d.className = 'slide' + (s.kind === 'title' ? ' title-slide' : '') + (s.demo ? ' pad-tight' : '');
+  d.setAttribute('aria-label', `Slide ${i + 1}: ${s.title}`);
+  let inner = '';
+  if (s.eyebrow && !s.act) inner += `<div class="eyebrow"><span class="tick"></span>${s.eyebrow}</div>`;
+  if (s.kind !== 'title' && s.title) inner += `<h2>${s.title}</h2>`;
+  inner += `<div class="body">${s.poll ? pollMarkup(s.poll) : ''}${s.html || ''}${s.reveal ? `<div data-slot="reveal"></div>` : ''}</div>`;
+  d.innerHTML = inner;
+  stage.appendChild(d);
+  els.push(d);
+});
+
+/* ---------- reveal blocks ---------- */
+SLIDES.forEach((s, i) => {
+  if (!s.reveal) return;
+  const slot = els[i].querySelector('[data-slot="reveal"]');
+  slot.innerHTML = `<div class="ctrls" style="margin-top:8px"><button class="b dark" data-rev>Reveal the answer &nbsp;<span style="opacity:.65">R</span></button></div>
+                    <div data-revbody hidden>${s.reveal}</div>`;
+  slot.querySelector('[data-rev]').addEventListener('click', () => toggleReveal(i));
+});
+function toggleReveal(i) {
+  const slot = els[i].querySelector('[data-slot="reveal"]');
+  if (!slot) return;
+  const body = slot.querySelector('[data-revbody]'), btn = slot.querySelector('[data-rev]');
+  body.hidden = !body.hidden;
+  btn.innerHTML = body.hidden ? 'Reveal the answer &nbsp;<span style="opacity:.65">R</span>' : 'Hide';
+}
+
+/* ---------- countdown timers for think-pair-share ---------- */
+const timers = {};
+SLIDES.forEach((s, i) => {
+  if (!s.timer) return;
+  const slot = els[i].querySelector('[data-slot="timer"]');
+  slot.innerHTML = `<div class="timer" style="margin-top:auto">
+      <span class="t" data-t>${fmt(s.timer)}</span>
+      <span class="tbar"><i data-tb style="width:100%"></i></span>
+      <button class="b go" data-start>Start &nbsp;<span style="opacity:.7">T</span></button>
+      <button class="b" data-reset>Reset</button></div>`;
+  const T = { left: s.timer, total: s.timer, id: null, el: slot };
+  timers[i] = T;
+  slot.querySelector('[data-start]').addEventListener('click', () => toggleTimer(i));
+  slot.querySelector('[data-reset]').addEventListener('click', () => { stopTimer(i); T.left = T.total; paintTimer(i); });
+});
+function fmt(s) { const m = Math.floor(s / 60); return m + ':' + String(Math.floor(s % 60)).padStart(2, '0'); }
+function paintTimer(i) {
+  const T = timers[i]; if (!T) return;
+  const t = T.el.querySelector('[data-t]');
+  t.textContent = fmt(Math.max(0, T.left));
+  t.classList.toggle('low', T.left <= 30);
+  T.el.querySelector('[data-tb]').style.width = Math.max(0, T.left / T.total * 100) + '%';
+  T.el.querySelector('[data-start]').innerHTML = T.id ? 'Pause' : 'Start &nbsp;<span style="opacity:.7">T</span>';
+}
+function toggleTimer(i) {
+  const T = timers[i]; if (!T) return;
+  if (T.id) return stopTimer(i);
+  T.id = setInterval(() => {
+    T.left -= 1; paintTimer(i);
+    if (T.left <= 0) { stopTimer(i); beep(); }
+  }, 1000);
+  paintTimer(i);
+}
+function stopTimer(i) { const T = timers[i]; if (T && T.id) { clearInterval(T.id); T.id = null; } paintTimer(i); }
+function beep() { try { const a = new (window.AudioContext || window.webkitAudioContext)(); [660, 880].forEach((f, k) => { const o = a.createOscillator(), g = a.createGain(); o.frequency.value = f; g.gain.value = .05; o.connect(g).connect(a.destination); o.start(a.currentTime + k * .18); o.stop(a.currentTime + k * .18 + .16); }); } catch (e) {} }
+
+/* =======================================================================
+   POLLS — three ways to run, so a poll always works
+   1. show of hands: tap + on any option (no network at all)
+   2. live device voting: students open this page and tap "I'm a student"
+   3. reveal + reasoning: always available
+   ======================================================================= */
+function pollMarkup(p) {
+  return `<div class="act poll" data-poll="${p.qid}">
+    <span class="chip"><span class="dot"></span>${p.anon ? 'Exit ticket · everyone votes' : 'Everybody votes'}</span>
+    <p class="ask">${p.ask}</p>
+    <div class="opts">${p.opts.map((o, k) => `
+      <div class="optwrap"><button class="opt" data-opt="${k}">
+        <span class="bar" style="width:0%"></span>
+        <span class="lt">${LETTERS[k]}</span>
+        <span><span>${o.t}</span><span class="why">${o.why}</span></span>
+        <span style="display:flex;align-items:center;gap:9px">
+          <span class="verdict" hidden>${o.ok ? '✓ correct' : ''}</span>
+          <span class="cnt">0</span>
+          <span class="b tiny" data-hand="${k}" title="record a show of hands">+</span>
+        </span>
+      </button></div>`).join('')}</div>
+    <div class="ctrls" style="margin-top:4px">
+      <button class="b dark" data-reveal>Reveal &nbsp;<span style="opacity:.65">R</span></button>
+      <button class="b" data-clear>Clear votes</button>
+      <span class="small" data-total>no votes yet</span>
+    </div></div>`;
+}
+
+const manual = {};       // qid -> [counts] recorded by hand
+const liveVotes = {};    // qid -> {voterId: choice}
+const revealed = {};
+let unsubVotes = null;
+
+SLIDES.forEach((s, i) => {
+  if (!s.poll) return;
+  const root = els[i].querySelector('[data-poll]');
+  const qid = s.poll.qid;
+  manual[qid] = s.poll.opts.map(() => 0);
+  liveVotes[qid] = {};
+  root.querySelectorAll('[data-hand]').forEach(b => b.addEventListener('click', ev => {
+    ev.stopPropagation(); ev.preventDefault();
+    manual[qid][+b.dataset.hand]++; paintPoll(qid);
+  }));
+  root.querySelectorAll('[data-opt]').forEach(b => b.addEventListener('click', () => {
+    // the presenter clicking an option marks it for discussion; it does not vote
+    b.classList.toggle('picked');
+  }));
+  root.querySelector('[data-reveal]').addEventListener('click', () => setRevealed(qid, !revealed[qid]));
+  root.querySelector('[data-clear]').addEventListener('click', () => clearVotes(qid));
+});
+
+function counts(qid) {
+  const p = POLLS[qid], out = p.opts.map((_, k) => manual[qid][k]);
+  Object.values(liveVotes[qid] || {}).forEach(c => { if (out[c] !== undefined) out[c]++; });
+  return out;
+}
+function paintPoll(qid) {
+  const p = POLLS[qid], root = els[p.slide].querySelector('[data-poll]');
+  const c = counts(qid), total = c.reduce((a, b) => a + b, 0);
+  root.querySelectorAll('[data-opt]').forEach((btn, k) => {
+    btn.querySelector('.bar').style.width = (total ? c[k] / Math.max(1, Math.max(...c)) * 100 : 0) + '%';
+    btn.querySelector('.cnt').textContent = c[k];
+    btn.classList.toggle('shown', !!revealed[qid]);
+    btn.classList.toggle('right', !!revealed[qid] && !!p.opts[k].ok);
+    btn.classList.toggle('wrong', !!revealed[qid] && !p.opts[k].ok);
+    const v = btn.querySelector('.verdict');
+    v.hidden = !(revealed[qid] && p.opts[k].ok);
+  });
+  root.querySelector('[data-total]').textContent = total ? `${total} vote${total === 1 ? '' : 's'}` : 'no votes yet';
+  root.querySelector('[data-reveal]').innerHTML = revealed[qid] ? 'Hide answers' : 'Reveal &nbsp;<span style="opacity:.65">R</span>';
+  renderStudent();
+}
+function setRevealed(qid, on) {
+  revealed[qid] = on; paintPoll(qid);
+  writeSession({ qid, open: true, revealed: on });
+}
+async function clearVotes(qid) {
+  manual[qid] = POLLS[qid].opts.map(() => 0);
+  liveVotes[qid] = {}; paintPoll(qid);
+  if (!db) return;
+  try {
+    const snap = await db.collection(`votes/${qid}/choices`).get();
+    await Promise.all(snap.docs.map(d => db.doc(`votes/${qid}/choices/${d.id}`).delete().catch(() => {})));
+  } catch (e) {}
+}
+function writeSession(patch) {
+  if (!db) return;
+  db.doc('session/state').set({ ...patch, ts: Date.now() }).catch(() => {});
+}
+function watchVotes(qid) {
+  if (unsubVotes) { unsubVotes(); unsubVotes = null; }
+  if (!db || !qid) return;
+  try {
+    unsubVotes = db.collection(`votes/${qid}/choices`).onSnapshot(snap => {
+      const m = {};
+      snap.docs.forEach(d => { const v = d.data(); if (v && typeof v.choice === 'number') m[d.id] = v.choice; });
+      liveVotes[qid] = m; paintPoll(qid);
+    }, () => {});
+  } catch (e) {}
+}
+
+/* ---------- student view ---------- */
+const joinBtn = document.getElementById('joinBtn');
+const joinPanel = document.getElementById('joinPanel');
+const joinBody = document.getElementById('joinBody');
+const joinStatus = document.getElementById('joinStatus');
+let studentMode = false, myVote = {};
+joinBtn.addEventListener('click', () => {
+  studentMode = !studentMode;
+  joinPanel.classList.toggle('on', studentMode);
+  joinBtn.textContent = studentMode ? 'Close voting panel' : "I'm a student — vote here";
+  renderStudent();
+});
+function renderStudent() {
+  if (!studentMode) return;
+  if (!db) { joinStatus.textContent = 'Live voting is not available on this copy — your instructor will take a show of hands.'; joinBody.innerHTML = ''; return; }
+  const qid = session && session.open ? session.qid : null;
+  if (!qid || !POLLS[qid]) { joinStatus.textContent = 'Connected. Waiting for the next question…'; joinBody.innerHTML = ''; return; }
+  const p = POLLS[qid];
+  joinStatus.textContent = revealed[qid] ? 'Answers are up.' : (myVote[qid] !== undefined ? 'Vote recorded — you can change it.' : 'Tap your answer.');
+  joinBody.innerHTML = `<p class="q">${p.ask}</p><div class="opts">${p.opts.map((o, k) => `
+    <button class="opt ${myVote[qid] === k ? 'picked' : ''} ${revealed[qid] && o.ok ? 'right' : ''}" data-svote="${k}">
+      <span class="lt">${LETTERS[k]}</span><span>${o.t}</span><span></span></button>`).join('')}</div>`;
+  joinBody.querySelectorAll('[data-svote]').forEach(b => b.addEventListener('click', async () => {
+    const k = +b.dataset.svote; myVote[qid] = k; renderStudent();
+    try { await db.doc(`votes/${qid}/choices/${voterId}`).set({ choice: k, ts: Date.now() }); }
+    catch (e) { joinStatus.textContent = 'Your vote could not be sent — tell your instructor to take hands.'; }
+  }));
+}
+
+/* ---------- capability wiring (everything above works without it) ---------- */
+const liveState = document.getElementById('liveState');
+liveState.textContent = 'Live voting: connecting…';
+(async () => {
+  try { db = window.claude && claude.use ? await claude.use('db') : null; } catch (e) { db = null; }
+  if (!db) { liveState.innerHTML = 'Live voting off · use <b>+</b> for a show of hands'; renderStudent(); return; }
+  liveState.innerHTML = '<span class="live"><span class="d"></span>Live voting on</span>';
+  try {
+    db.doc('session/state').onSnapshot(snap => {
+      session = snap.exists ? snap.data() : null;
+      if (session && session.qid && revealed[session.qid] !== session.revealed) {
+        revealed[session.qid] = !!session.revealed;
+        if (POLLS[session.qid]) paintPoll(session.qid);
+      }
+      renderStudent();
+    }, () => {});
+  } catch (e) {}
+  const s = SLIDES[idx];
+  if (s && s.poll) { writeSession({ qid: s.poll.qid, open: true, revealed: !!revealed[s.poll.qid] }); watchVotes(s.poll.qid); }
+  renderStudent();
+})();
+
+/* =======================================================================
+   LIVE DEMOS — all built on one small Five Stones core
+   ======================================================================= */
+const N = 15, EMPTY = 0, BLACK = 1, WHITE = 2;
+const DIRS = [[0,1],[1,0],[1,1],[1,-1]];
+const inside = (r,c) => r>=0 && r<N && c>=0 && c<N;
+const newBoard = () => Array.from({length:N},()=>new Array(N).fill(EMPTY));
+function winsAt(b,r,c){
+  const me=b[r][c]; if(!me) return null;
+  const rays=[];
+  for(const [dr,dc] of DIRS){
+    let count=1, arms=[];
+    for(const step of [1,-1]){
+      let n=0, rr=r+dr*step, cc=c+dc*step;
+      while(inside(rr,cc)&&b[rr][cc]===me){n++;rr+=dr*step;cc+=dc*step;}
+      count+=n; arms.push(n);
+    }
+    rays.push({dr,dc,count,arms});
+  }
+  return {rays, win: rays.find(x=>x.count>=5)||null};
+}
+const isWin=(b,r,c)=>{const w=winsAt(b,r,c);return !!(w&&w.win);};
+const PATTERNS=[
+  [/(?=ooooo)/g,1000000],[/(?=_oooo_)/g,100000],
+  [/(?=xoooo_|_oooox|o_ooo|oo_oo|ooo_o)/g,9000],[/(?=_ooo_)/g,5000],
+  [/(?=_oo_o_|_o_oo_)/g,3500],[/(?=xooo__|__ooox|xoo_o_|_o_oox)/g,600],
+  [/(?=_oo_)/g,300],[/(?=_o_o_)/g,200],[/(?=xoo__|__oox)/g,40],
+];
+function scoreLine(s){let t=0;for(const [re,w] of PATTERNS){const m=s.match(re); if(m) t+=m.length*w;}return t;}
+function shapeValue(b,r,c,me){
+  let t=0;
+  for(const [dr,dc] of DIRS){
+    let s='';
+    for(let i=-4;i<=4;i++){
+      const rr=r+dr*i, cc=c+dc*i;
+      if(!inside(rr,cc)) s+='x';
+      else if(i===0) s+='o';
+      else if(b[rr][cc]===me) s+='o';
+      else if(b[rr][cc]===EMPTY) s+='_';
+      else s+='x';
+    }
+    t+=scoreLine(s);
+  }
+  return t;
+}
+const scoreSquare=(b,r,c,me,dw=0.9)=>shapeValue(b,r,c,me)+shapeValue(b,r,c,3-me)*dw;
+function candidates(b,rad=2){
+  const out=[],seen=new Set(); let any=false;
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){
+    if(!b[r][c])continue; any=true;
+    for(let dr=-rad;dr<=rad;dr++)for(let dc=-rad;dc<=rad;dc++){
+      const rr=r+dr,cc=c+dc;
+      if(!inside(rr,cc)||b[rr][cc])continue;
+      const k=rr*N+cc; if(seen.has(k))continue;
+      seen.add(k); out.push([rr,cc]);
+    }
+  }
+  return any?out:[[7,7]];
+}
+function ruleMove(b,me){
+  const them=3-me, cand=candidates(b);
+  for(const [r,c] of cand){b[r][c]=me;const w=isWin(b,r,c);b[r][c]=EMPTY;if(w)return[r,c];}
+  for(const [r,c] of cand){b[r][c]=them;const w=isWin(b,r,c);b[r][c]=EMPTY;if(w)return[r,c];}
+  let best=cand[0],bd=1e9;
+  for(const [r,c] of cand){const d=(r-7)**2+(c-7)**2; if(d<bd){bd=d;best=[r,c];}}
+  return best;
+}
+function scoreMove(b,me,dw=0.9){
+  const cand=candidates(b); let best=cand[0],bv=-1;
+  for(const [r,c] of cand){const v=scoreSquare(b,r,c,me,dw); if(v>bv){bv=v;best=[r,c];}}
+  return best;
+}
+function lookMove(b,me,dw=0.9){
+  const them=3-me, cand=candidates(b);
+  for(const [r,c] of cand){b[r][c]=me;const w=isWin(b,r,c);b[r][c]=EMPTY;if(w)return[r,c];}
+  for(const [r,c] of cand){b[r][c]=them;const w=isWin(b,r,c);b[r][c]=EMPTY;if(w)return[r,c];}
+  let best=cand[0],bv=-Infinity;
+  const short=cand.map(([r,c])=>[r,c,scoreSquare(b,r,c,me,dw)]).sort((a,z)=>z[2]-a[2]).slice(0,14);
+  for(const [r,c] of short){
+    b[r][c]=me;
+    let reply=0;
+    for(const [rr,cc] of candidates(b)) reply=Math.max(reply,scoreSquare(b,rr,cc,them,dw));
+    b[r][c]=EMPTY;
+    const v=scoreSquare(b,r,c,me,dw)-reply;
+    if(v>bv){bv=v;best=[r,c];}
+  }
+  return best;
+}
+function clubMove(b,me){
+  const cand=candidates(b);
+  for(const [r,c] of cand){b[r][c]=me;const w=isWin(b,r,c);b[r][c]=EMPTY;if(w)return[r,c];}
+  for(const [r,c] of cand){b[r][c]=3-me;const w=isWin(b,r,c);b[r][c]=EMPTY;if(w)return[r,c];}
+  const top=cand.map(([r,c])=>[r,c,scoreSquare(b,r,c,me)]).sort((a,z)=>z[2]-a[2]).slice(0,4);
+  const p=top[Math.floor(Math.random()*top.length)];
+  return [p[0],p[1]];
+}
+
+/* ---------- one board renderer, used by every demo ---------- */
+const DEMOS = {};
+let running = null;
+function cv(host, w, h) {
+  const wrap=document.createElement('div'); wrap.className='cwrap';
+  const c=document.createElement('canvas'); c.width=w; c.height=h;
+  wrap.appendChild(c); host.appendChild(wrap);
+  return c.getContext('2d');
+}
+function row(host, html){const d=document.createElement('div');d.className='row';d.innerHTML=html;host.appendChild(d);return d;}
+function out(host){const d=document.createElement('div');d.className='readout';host.appendChild(d);return d;}
+const STARS=[[3,3],[3,11],[7,7],[11,3],[11,11]];
+
+function boardPanel(host, size=300){
+  const PAD=16, STEP=(size-PAD*2)/(N-1);
+  const ctx=cv(host,size,size);
+  const canvas=ctx.canvas;
+  const px=i=>PAD+i*STEP;
+  function stone(x,y,who,alpha){
+    const R=STEP*0.44;
+    ctx.save(); ctx.globalAlpha=alpha===undefined?1:alpha;
+    ctx.beginPath(); ctx.arc(x+1,y+1.5,R,0,6.283); ctx.fillStyle='rgba(40,20,0,.32)'; ctx.fill();
+    const g=ctx.createRadialGradient(x-R*.35,y-R*.4,R*.1,x,y,R);
+    if(who===BLACK){g.addColorStop(0,'#6a6d73');g.addColorStop(.45,'#2a2b2e');g.addColorStop(1,'#0f1012');}
+    else {g.addColorStop(0,'#ffffff');g.addColorStop(.6,'#efeadf');g.addColorStop(1,'#cbc3b1');}
+    ctx.beginPath(); ctx.arc(x,y,R,0,6.283); ctx.fillStyle=g; ctx.fill(); ctx.restore();
+  }
+  function draw(b, overlay){
+    const g=ctx.createLinearGradient(0,0,size,size);
+    g.addColorStop(0,'#DFAF63'); g.addColorStop(1,'#C48F44');
+    ctx.fillStyle=g; ctx.fillRect(0,0,size,size);
+    ctx.strokeStyle='#4A2E12'; ctx.lineWidth=1;
+    for(let i=0;i<N;i++){
+      ctx.beginPath(); ctx.moveTo(px(0),px(i)); ctx.lineTo(px(N-1),px(i)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px(i),px(0)); ctx.lineTo(px(i),px(N-1)); ctx.stroke();
+    }
+    ctx.fillStyle='#4A2E12';
+    for(const [r,c] of STARS){ctx.beginPath();ctx.arc(px(c),px(r),2.4,0,6.283);ctx.fill();}
+    if(overlay) overlay({ctx,px,STEP,stone,size});
+    if(b) for(let r=0;r<N;r++)for(let c=0;c<N;c++) if(b[r][c]) stone(px(c),px(r),b[r][c]);
+    if(overlay && overlay.after) overlay.after({ctx,px,STEP,stone,size});
+  }
+  function cellFrom(ev){
+    const b=canvas.getBoundingClientRect();
+    const x=(ev.clientX-b.left)*(size/b.width), y=(ev.clientY-b.top)*(size/b.height);
+    const c=Math.round((x-PAD)/STEP), r=Math.round((y-PAD)/STEP);
+    if(!inside(r,c)) return null;
+    if(Math.abs(x-px(c))>STEP*.6||Math.abs(y-px(r))>STEP*.6) return null;
+    return [r,c,x,y];
+  }
+  function mark(r,c,color,w){ctx.strokeStyle=color;ctx.lineWidth=w||2;ctx.strokeRect(px(c)-STEP*.45,px(r)-STEP*.45,STEP*.9,STEP*.9);ctx.lineWidth=1;}
+  return {ctx,canvas,draw,px,STEP,cellFrom,stone,mark,size};
+}
+const COLS='ABCDEFGHIJKLMNO';
+const name=(r,c)=>COLS[c]+(N-r);
+
+/* ---------- 1. the finished game ---------- */
+DEMOS.game = host => {
+  const P=boardPanel(host,384);
+  const ctl=row(host,`<button class="b tiny" data-lv="club">Club</button><button class="b tiny" data-lv="league" aria-pressed="true">League</button><button class="b tiny" data-lv="pro">Pro</button><button class="b tiny" data-new>new game</button>`);
+  const o=out(host);
+  let b=newBoard(), over=false, last=null, winLine=null, level='league', thinking=false, msg='Your move — you are black.';
+  ctl.querySelectorAll('[data-lv]').forEach(x=>x.addEventListener('click',()=>{level=x.dataset.lv;ctl.querySelectorAll('[data-lv]').forEach(y=>y.setAttribute('aria-pressed',String(y===x)));}));
+  ctl.querySelector('[data-new]').addEventListener('click',()=>{b=newBoard();over=false;last=null;winLine=null;msg='Your move — you are black.';paint();});
+  function paint(){
+    P.draw(b,Object.assign(({ctx,px,STEP})=>{
+      if(winLine){ctx.save();ctx.strokeStyle='rgba(179,55,43,.55)';ctx.lineWidth=STEP*.9;ctx.lineCap='round';
+        ctx.beginPath();ctx.moveTo(px(winLine[0][1]),px(winLine[0][0]));ctx.lineTo(px(winLine[1][1]),px(winLine[1][0]));ctx.stroke();ctx.restore();}
+    },{after:({ctx,px,STEP})=>{ if(last){ctx.fillStyle='#B3372B';ctx.beginPath();ctx.arc(px(last[1]),px(last[0]),STEP*.13,0,6.283);ctx.fill();} }}));
+    o.innerHTML=msg;
+  }
+  function endLine(r,c){
+    const w=winsAt(b,r,c); if(!w||!w.win) return null;
+    const {dr,dc,arms}=w.win;
+    return [[r-dr*arms[1],c-dc*arms[1]],[r+dr*arms[0],c+dc*arms[0]]];
+  }
+  function place(r,c,who){
+    b[r][c]=who; last=[r,c];
+    const L=endLine(r,c);
+    if(L){over=true;winLine=L;msg=who===BLACK?'<b>You win.</b> New game?':'<b>The computer wins.</b> New game?';}
+    paint();
+    return over;
+  }
+  const onDown=ev=>{
+    if(over||thinking)return;
+    const cell=P.cellFrom(ev); if(!cell)return;
+    const [r,c]=cell; if(b[r][c])return;
+    if(place(r,c,BLACK))return;
+    thinking=true; msg='Thinking…'; paint();
+    setTimeout(()=>{
+      const mv=level==='club'?clubMove(b,WHITE):level==='pro'?lookMove(b,WHITE,1.0):lookMove(b,WHITE);
+      thinking=false; msg='Your move.';
+      place(mv[0],mv[1],WHITE);
+    },40);
+  };
+  P.canvas.addEventListener('pointerdown',onDown);
+  paint();
+  return ()=>P.canvas.removeEventListener('pointerdown',onDown);
+};
+
+/* ---------- 2. click -> (row, col) ---------- */
+DEMOS.grid = host => {
+  const P=boardPanel(host,384);
+  const o=out(host);
+  let hov=null, b=newBoard(); b[7][7]=BLACK; b[6][8]=WHITE;
+  function paint(){
+    P.draw(b,({ctx,px,STEP})=>{
+      if(!hov)return;
+      const [r,c,x,y]=hov;
+      ctx.strokeStyle='rgba(179,55,43,.75)'; ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(P.size,y);ctx.moveTo(x,0);ctx.lineTo(x,P.size);ctx.stroke();ctx.setLineDash([]);
+      ctx.strokeStyle='#B3372B';ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(px(c),px(r),STEP*.5,0,6.283);ctx.stroke();ctx.lineWidth=1;
+    });
+    o.innerHTML=hov
+      ? `pixel <b>${hov[3].toFixed(0)}</b>, <b>${hov[2].toFixed(0)}</b> &nbsp;(y, x)<br>square <b>board[${hov[0]}][${hov[1]}]</b> &nbsp; = <b>${name(hov[0],hov[1])}</b><br><span style="color:#8B8275">row ${hov[0]} down · column ${hov[1]} across</span>`
+      : 'move the mouse over the board';
+  }
+  const mv=ev=>{const cell=P.cellFrom(ev);hov=cell?[cell[0],cell[1],cell[2],cell[3]]:null;paint();};
+  const lv=()=>{hov=null;paint();};
+  P.canvas.addEventListener('pointermove',mv); P.canvas.addEventListener('pointerleave',lv);
+  paint();
+  return ()=>{P.canvas.removeEventListener('pointermove',mv);P.canvas.removeEventListener('pointerleave',lv);};
+};
+
+/* ---------- 3. the missing empty-square guard ---------- */
+DEMOS.overwrite = host => {
+  const P=boardPanel(host,364);
+  const ctl=row(host,`<button class="b tiny" data-g aria-pressed="true">guard: on</button><button class="b tiny" data-r>reset</button><span>click to place</span>`);
+  const o=out(host);
+  let b=newBoard(), turn=BLACK, guard=true, eaten=0, msg='Black to play.';
+  b[7][7]=WHITE; b[7][8]=WHITE; b[8][7]=WHITE;
+  const gb=ctl.querySelector('[data-g]');
+  gb.addEventListener('click',()=>{guard=!guard;gb.setAttribute('aria-pressed',String(guard));gb.textContent='guard: '+(guard?'on':'off');});
+  ctl.querySelector('[data-r]').addEventListener('click',()=>{b=newBoard();b[7][7]=WHITE;b[7][8]=WHITE;b[8][7]=WHITE;turn=BLACK;eaten=0;msg='Black to play.';paint();});
+  function paint(){P.draw(b);o.innerHTML=`${msg}<br>stones overwritten: <b>${eaten}</b>${eaten?' <span style="color:#B3372B">— those stones no longer exist</span>':''}`;}
+  const dn=ev=>{
+    const cell=P.cellFrom(ev); if(!cell)return;
+    const [r,c]=cell;
+    if(b[r][c]){ if(guard){msg='Occupied — the guard refused the move.';paint();return;} eaten++; }
+    b[r][c]=turn; turn=3-turn;
+    msg=(turn===BLACK?'Black':'White')+' to play.';
+    if(isWin(b,r,c)) msg='<b>Five in a row.</b>';
+    paint();
+  };
+  P.canvas.addEventListener('pointerdown',dn); paint();
+  return ()=>P.canvas.removeEventListener('pointerdown',dn);
+};
+
+/* ---------- 4. the win detector, visualised ---------- */
+DEMOS.win = host => {
+  const P=boardPanel(host,364);
+  const ctl=row(host,`<button class="b tiny" data-col aria-pressed="true">placing: black</button><button class="b tiny" data-r>clear</button>`);
+  const o=out(host);
+  let b=newBoard(), who=BLACK, last=null;
+  const cb=ctl.querySelector('[data-col]');
+  cb.addEventListener('click',()=>{who=3-who;cb.textContent='placing: '+(who===BLACK?'black':'white');});
+  ctl.querySelector('[data-r]').addEventListener('click',()=>{b=newBoard();last=null;paint();});
+  const NAMES=['across →','down ↓','down-right ↘','down-left ↙'];
+  function paint(){
+    P.draw(b,({ctx,px,STEP})=>{
+      if(!last)return;
+      const w=winsAt(b,last[0],last[1]); if(!w)return;
+      w.rays.forEach((ray,i)=>{
+        ctx.strokeStyle=ray.count>=5?'rgba(179,55,43,.85)':'rgba(46,74,125,.55)';
+        ctx.lineWidth=ray.count>=5?STEP*.55:3; ctx.lineCap='round';
+        const a=[last[0]-ray.dr*ray.arms[1],last[1]-ray.dc*ray.arms[1]];
+        const z=[last[0]+ray.dr*ray.arms[0],last[1]+ray.dc*ray.arms[0]];
+        ctx.beginPath();ctx.moveTo(px(a[1]),px(a[0]));ctx.lineTo(px(z[1]),px(z[0]));ctx.stroke();
+      });
+      ctx.lineWidth=1;
+    });
+    if(!last){o.innerHTML='click to place a stone';return;}
+    const w=winsAt(b,last[0],last[1]);
+    o.innerHTML=`winsAt(${last[0]}, ${last[1]}) &nbsp; last stone <b>${name(last[0],last[1])}</b><br>`+
+      w.rays.map((ray,i)=>`${NAMES[i].padEnd(14)} count <b>${ray.count}</b> &nbsp;<span style="color:#8B8275">(${ray.arms[0]} forward + ${ray.arms[1]} back + 1)</span>`).join('<br>')+
+      (w.win?'<br><b style="color:#B3372B">five or more — this is a win</b>':'');
+  }
+  const dn=ev=>{const cell=P.cellFrom(ev);if(!cell)return;const [r,c]=cell;if(b[r][c])return;b[r][c]=who;last=[r,c];paint();};
+  P.canvas.addEventListener('pointerdown',dn); paint();
+  return ()=>P.canvas.removeEventListener('pointerdown',dn);
+};
+
+/* ---------- 5. play the two-rule opponent ---------- */
+DEMOS.rules = host => {
+  const P=boardPanel(host,364);
+  const ctl=row(host,`<button class="b tiny" data-r>new game</button><span>you are black</span>`);
+  const o=out(host);
+  let b=newBoard(), over=false, last=null, msg='Your move.', why='';
+  ctl.querySelector('[data-r]').addEventListener('click',()=>{b=newBoard();over=false;last=null;msg='Your move.';why='';paint();});
+  function paint(){
+    P.draw(b,Object.assign(()=>{},{after:({ctx,px,STEP})=>{if(last){ctx.fillStyle='#B3372B';ctx.beginPath();ctx.arc(px(last[1]),px(last[0]),STEP*.13,0,6.283);ctx.fill();}}}));
+    o.innerHTML=msg+(why?`<br><span style="color:#8B8275">rule used: ${why}</span>`:'');
+  }
+  function whyMove(mv){
+    b[mv[0]][mv[1]]=WHITE; const win=isWin(b,mv[0],mv[1]); b[mv[0]][mv[1]]=EMPTY;
+    if(win) return 'win now';
+    b[mv[0]][mv[1]]=BLACK; const blk=isWin(b,mv[0],mv[1]); b[mv[0]][mv[1]]=EMPTY;
+    return blk?'block now':'play near the centre';
+  }
+  const dn=ev=>{
+    if(over)return; const cell=P.cellFrom(ev); if(!cell)return;
+    const [r,c]=cell; if(b[r][c])return;
+    b[r][c]=BLACK; last=[r,c];
+    if(isWin(b,r,c)){over=true;msg='<b>You beat the two-rule opponent.</b>';why='';paint();return;}
+    const mv=ruleMove(b,WHITE); why=whyMove(mv);
+    b[mv[0]][mv[1]]=WHITE; last=mv;
+    if(isWin(b,mv[0],mv[1])){over=true;msg='<b>The rule opponent wins.</b>';}
+    else msg='Your move.';
+    paint();
+  };
+  P.canvas.addEventListener('pointerdown',dn); paint();
+  return ()=>P.canvas.removeEventListener('pointerdown',dn);
+};
+
+/* ---------- 6. the double threat, played out ---------- */
+function forkBoard(){
+  const b=newBoard();
+  b[7][6]=BLACK;b[7][8]=BLACK;b[6][7]=BLACK;b[8][7]=BLACK;
+  b[3][3]=WHITE;b[11][11]=WHITE;b[4][10]=WHITE;
+  return b;
+}
+DEMOS.threat = host => {
+  const P=boardPanel(host,364);
+  const ctl=row(host,`<button class="b tiny" data-s>play it out</button><button class="b tiny" data-r>reset</button>`);
+  const o=out(host);
+  let b=forkBoard(), step=0, last=null, done=false;
+  const log=[];
+  function blackMove(){
+    if(step===0) return [7,7];
+    if(step===1) return [5,7];
+    for(const cand of [[9,7],[4,7],[3,7],[10,7]]) if(!b[cand[0]][cand[1]]) return cand;
+    return lookMove(b,BLACK);
+  }
+  function advance(){
+    if(done)return;
+    const mv=blackMove(); b[mv[0]][mv[1]]=BLACK; last=mv;
+    log.push('black '+name(mv[0],mv[1])+(step===0?' — two open threes at once':''));
+    if(isWin(b,mv[0],mv[1])){done=true;log.push('<b style="color:#B3372B">black makes five — white could only block one end</b>');paint();return;}
+    const wm=ruleMove(b,WHITE); b[wm[0]][wm[1]]=WHITE; last=wm;
+    log.push('white '+name(wm[0],wm[1])+' — its only rule that fires is "block a five"');
+    step++; paint();
+  }
+  ctl.querySelector('[data-s]').addEventListener('click',advance);
+  ctl.querySelector('[data-r]').addEventListener('click',()=>{b=forkBoard();step=0;last=null;done=false;log.length=0;paint();});
+  function paint(){
+    P.draw(b,Object.assign(({ctx,px,STEP})=>{
+      if(step===0&&!last){ctx.strokeStyle='#B3372B';ctx.lineWidth=2;ctx.setLineDash([4,3]);
+        ctx.beginPath();ctx.arc(px(7),px(7),STEP*.5,0,6.283);ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1;}
+    },{after:({ctx,px,STEP})=>{if(last){ctx.fillStyle='#B3372B';ctx.beginPath();ctx.arc(px(last[1]),px(last[0]),STEP*.13,0,6.283);ctx.fill();}}}));
+    o.innerHTML = log.length?log.join('<br>'):'black plays the circled square next';
+  }
+  paint();
+  return ()=>{};
+};
+
+/* ---------- 7. what the opponent sees ---------- */
+DEMOS.score = host => {
+  const P=boardPanel(host,384);
+  const o=out(host);
+  let b=newBoard(); b[7][7]=BLACK;b[7][8]=BLACK;b[8][6]=WHITE;b[6][9]=WHITE;
+  let turn=WHITE, hov=null;
+  function paint(){
+    const cand=candidates(b);
+    let mx=1, vals=new Map();
+    for(const [r,c] of cand){const v=scoreSquare(b,r,c,turn);vals.set(r*N+c,v);mx=Math.max(mx,v);}
+    let bestK=null,bestV=-1; vals.forEach((v,k)=>{if(v>bestV){bestV=v;bestK=k;}});
+    P.draw(b,({ctx,px,STEP})=>{
+      vals.forEach((v,k)=>{
+        const r=Math.floor(k/N), c=k%N;
+        const a=Math.pow(v/mx,0.55)*0.72;
+        ctx.fillStyle=`rgba(179,55,43,${a.toFixed(3)})`;
+        ctx.fillRect(px(c)-STEP*.46,px(r)-STEP*.46,STEP*.92,STEP*.92);
+      });
+      if(bestK!==null){const r=Math.floor(bestK/N),c=bestK%N;
+        ctx.strokeStyle='#1A1613';ctx.lineWidth=2;
+        ctx.strokeRect(px(c)-STEP*.46,px(r)-STEP*.46,STEP*.92,STEP*.92);ctx.lineWidth=1;}
+    });
+    const who=turn===WHITE?'white':'black';
+    let txt=`shading = value of that square to <b>${who}</b> · outlined = the move it would play`;
+    if(hov&&!b[hov[0]][hov[1]]){
+      const at=shapeValue(b,hov[0],hov[1],turn), df=shapeValue(b,hov[0],hov[1],3-turn);
+      txt=`<b>${name(hov[0],hov[1])}</b> &nbsp; attack <b>${at}</b> &nbsp; defence <b>${df}</b> × 0.9<br>total <b>${(at+df*0.9).toFixed(0)}</b>`;
+    }
+    o.innerHTML=txt;
+  }
+  const mv=ev=>{const cell=P.cellFrom(ev);hov=cell?[cell[0],cell[1]]:null;paint();};
+  const dn=ev=>{const cell=P.cellFrom(ev);if(!cell)return;const [r,c]=cell;if(b[r][c])return;b[r][c]=turn;turn=3-turn;paint();};
+  P.canvas.addEventListener('pointermove',mv); P.canvas.addEventListener('pointerdown',dn);
+  paint();
+  return ()=>{P.canvas.removeEventListener('pointermove',mv);P.canvas.removeEventListener('pointerdown',dn);};
+};
+
+/* ---------- 8. the defence weight ---------- */
+DEMOS.weights = host => {
+  const P=boardPanel(host,364);
+  const r=row(host,`<label>defence <input type="range" id="dw" min="0" max="30" value="9"><span id="dwv">0.9</span></label><button class="b tiny" data-r>new game</button>`);
+  const o=out(host);
+  let b=newBoard(), over=false, last=null, msg='You are black — play a move.';
+  const sl=r.querySelector('#dw'), lab=r.querySelector('#dwv');
+  const W=()=>+sl.value/10;
+  sl.addEventListener('input',()=>{lab.textContent=W().toFixed(1);paint();});
+  r.querySelector('[data-r]').addEventListener('click',()=>{b=newBoard();over=false;last=null;msg='You are black — play a move.';paint();});
+  function paint(){
+    P.draw(b,Object.assign(()=>{},{after:({ctx,px,STEP})=>{if(last){ctx.fillStyle='#B3372B';ctx.beginPath();ctx.arc(px(last[1]),px(last[0]),STEP*.13,0,6.283);ctx.fill();}}}));
+    const w=W();
+    o.innerHTML=`${msg}<br>defence weight <b>${w.toFixed(1)}</b> — ${w<0.5?'reckless: it barely notices you':w>1.6?'timid: it only answers you':'balanced'}`;
+  }
+  const dn=ev=>{
+    if(over)return; const cell=P.cellFrom(ev); if(!cell)return;
+    const [rr,cc]=cell; if(b[rr][cc])return;
+    b[rr][cc]=BLACK; last=[rr,cc];
+    if(isWin(b,rr,cc)){over=true;msg='<b>You win.</b>';paint();return;}
+    const mv=scoreMove(b,WHITE,W()); b[mv[0]][mv[1]]=WHITE; last=mv;
+    msg=isWin(b,mv[0],mv[1])?'<b>White wins.</b>':'Your move.';
+    if(isWin(b,mv[0],mv[1]))over=true;
+    paint();
+  };
+  P.canvas.addEventListener('pointerdown',dn); paint();
+  return ()=>P.canvas.removeEventListener('pointerdown',dn);
+};
+
+/* ---------- 9. the greedy blind spot (a position found by playing the two opponents) ---------- */
+function blindBoard(){
+  const b=newBoard();
+  [[5,4],[6,7],[7,7],[7,8],[8,9],[9,8]].forEach(([r,c])=>b[r][c]=BLACK);
+  [[5,5],[5,6],[7,6],[8,7],[10,11]].forEach(([r,c])=>b[r][c]=WHITE);
+  return b;
+}
+DEMOS.blindspot = host => {
+  const P=boardPanel(host,364);
+  const ctl=row(host,`<button class="b tiny" data-a>ask the scorer</button><button class="b tiny" data-l>ask the lookahead</button><button class="b tiny" data-p>show black's reply</button><button class="b tiny" data-r>reset</button>`);
+  const o=out(host);
+  let b=blindBoard(), greedy=null, look=null, reply=null;
+  const G=scoreMove(blindBoard(),WHITE), L=lookMove(blindBoard(),WHITE);
+  ctl.querySelector('[data-a]').addEventListener('click',()=>{greedy=G;paint();});
+  ctl.querySelector('[data-l]').addEventListener('click',()=>{look=L;paint();});
+  ctl.querySelector('[data-p]').addEventListener('click',()=>{
+    if(!greedy){greedy=G;}
+    const t=blindBoard(); t[G[0]][G[1]]=WHITE;
+    let best=null,bv=-1;
+    for(const [r,c] of candidates(t)){const v=scoreSquare(t,r,c,BLACK);if(v>bv){bv=v;best=[r,c];}}
+    reply=best; b=t; b[best[0]][best[1]]=BLACK; paint();
+  });
+  ctl.querySelector('[data-r]').addEventListener('click',()=>{b=blindBoard();greedy=look=reply=null;paint();});
+  function paint(){
+    P.draw(b,({ctx,px,STEP})=>{
+      const box=(m,col)=>{if(!m)return;ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.strokeRect(px(m[1])-STEP*.5,px(m[0])-STEP*.5,STEP,STEP);ctx.lineWidth=1;};
+      box(greedy,'#B3372B'); box(look,'#1F6B5A'); box(reply,'#9A6410');
+    });
+    const parts=['white to move'];
+    if(greedy)parts.push(`<span style="color:#B3372B">red</span> — the greedy scorer plays <b>${name(G[0],G[1])}</b> (its highest-scoring square)`);
+    if(look)parts.push(`<span style="color:#1F6B5A">green</span> — one-ply lookahead plays <b>${name(L[0],L[1])}</b> instead`);
+    if(reply)parts.push(`<span style="color:#9A6410">amber</span> — black answers <b>${name(reply[0],reply[1])}</b>, and now has a four that cannot be stopped`);
+    o.innerHTML=parts.join('<br>');
+  }
+  paint();
+  return ()=>{};
+};
+
+/* ---------- 10. how many squares are worth thinking about ---------- */
+DEMOS.candidates = host => {
+  const P=boardPanel(host,364);
+  const ctl=row(host,`<button class="b tiny" data-f aria-pressed="true">filter: within 2</button><button class="b tiny" data-c>add a stone</button>`);
+  const o=out(host);
+  let b=blindBoard(), filtered=true;
+  const fb=ctl.querySelector('[data-f]');
+  fb.addEventListener('click',()=>{filtered=!filtered;fb.textContent='filter: '+(filtered?'within 2':'off — all empties');fb.setAttribute('aria-pressed',String(filtered));paint();});
+  ctl.querySelector('[data-c]').addEventListener('click',()=>{const mv=lookMove(b,WHITE);b[mv[0]][mv[1]]=WHITE;paint();});
+  function paint(){
+    const all=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(!b[r][c])all.push([r,c]);
+    const set=filtered?candidates(b):all;
+    P.draw(b,({ctx,px,STEP})=>{
+      ctx.fillStyle='rgba(46,74,125,.30)';
+      for(const [r,c] of set) ctx.fillRect(px(c)-STEP*.44,px(r)-STEP*.44,STEP*.88,STEP*.88);
+    });
+    const n=set.length;
+    o.innerHTML=`squares the search would examine: <b>${n}</b> of ${all.length} empty<br>`+
+      `two moves deep that is <b>${(n*n).toLocaleString()}</b> positions${filtered?` — instead of ${(all.length*all.length).toLocaleString()}`:''}`;
+  }
+  paint();
+  return ()=>{};
+};
+/* =======================================================================
+   NAVIGATION
+   ======================================================================= */
+let idx = 0;
+function show(n) {
+  n = Math.max(0, Math.min(SLIDES.length - 1, n));
+  if (running) { running(); running = null; }
+  els[idx].classList.remove('on');
+  idx = n;
+  const s = SLIDES[idx], el = els[idx];
+  el.classList.add('on');
+  document.getElementById('cur').textContent = idx + 1;
+  document.getElementById('prog').style.width = ((idx + 1) / SLIDES.length * 100) + '%';
+  const tag = document.getElementById('slideTag');
+  tag.textContent = s.act ? ACT_NAME[s.act] : '';
+  tag.style.color = s.act ? `var(--${s.act})` : 'var(--ink-3)';
+  notesEl.innerHTML = `<b>Slide ${idx + 1} · ${s.title}</b><br>${s.notes || ''}`;
+  if (s.demo && DEMOS[s.demo]) {
+    const host = el.querySelector('[data-slot="demo"]') || el.querySelector('.demo');
+    if (host) { host.innerHTML = ''; running = DEMOS[s.demo](host); }
+  }
+  if (s.poll) { watchVotes(s.poll.qid); writeSession({ qid: s.poll.qid, open: true, revealed: !!revealed[s.poll.qid] }); paintPoll(s.poll.qid); }
+  else { if (unsubVotes) { unsubVotes(); unsubVotes = null; } writeSession({ qid: null, open: false, revealed: false }); }
+  renderStudent();
+  fit();
+}
+const next = () => show(idx + 1), prev = () => show(idx - 1);
+
+document.addEventListener('keydown', ev => {
+  if (ev.target.tagName === 'INPUT') return;
+  const k = ev.key;
+  if (k === 'ArrowRight' || k === 'PageDown') { ev.preventDefault(); next(); }
+  else if (k === 'ArrowLeft' || k === 'PageUp') { ev.preventDefault(); prev(); }
+  else if (k === 'Home') show(0);
+  else if (k === 'End') show(SLIDES.length - 1);
+  else if (k === 'n' || k === 'N') notesEl.classList.toggle('on'), fit();
+  else if (k === 'o' || k === 'O') overEl.classList.toggle('on');
+  else if (k === 'Escape') overEl.classList.remove('on');
+  else if (k === 'f' || k === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {}); }
+  else if (k === 'r' || k === 'R') { const s = SLIDES[idx]; if (s.poll) setRevealed(s.poll.qid, !revealed[s.poll.qid]); else if (s.reveal) toggleReveal(idx); }
+  else if (k === 't' || k === 'T') { if (timers[idx]) toggleTimer(idx); }
+});
+
+/* overview map */
+const overList = document.getElementById('overList');
+SLIDES.forEach((s, i) => {
+  const b = document.createElement('button');
+  b.className = s.act ? 'a-' + s.act : '';
+  b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span><span>${s.title}${s.act ? ` <span class="tag" style="color:var(--${s.act})">· ${ACT_NAME[s.act]}</span>` : ''}</span>`;
+  b.addEventListener('click', () => { overEl.classList.remove('on'); show(i); });
+  overList.appendChild(b);
+});
+
+fit();
+show(0);
+})();
+</script>
+</body></html>

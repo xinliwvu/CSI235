@@ -1,0 +1,545 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Swift Through Bamboo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  /* Single visual world — a dusk sky — painted explicitly for every host theme. */
+  :root {
+    --night: #1B1522;
+    --night-2: #261D30;
+    --paper: #F6EEE4;
+    --paper-2: #C9BBB0;
+    --paper-3: #8A7C86;
+    --amber: #E8A85C;
+    --amber-ink: #2A1B0E;
+    --rule: #3A2F45;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--night);
+    color: var(--paper);
+    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+
+  .app {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 22px 20px 40px;
+    display: grid;
+    grid-template-columns: minmax(0, 480px) minmax(220px, 1fr);
+    gap: 32px;
+    align-items: start;
+    justify-content: center;
+  }
+  @media (max-width: 760px) {
+    .app { grid-template-columns: 1fr; gap: 18px; padding: 12px 12px 32px; }
+  }
+
+  .stage {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  canvas#game {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 40px 70px -30px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.06);
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .side { display: flex; flex-direction: column; gap: 20px; padding-top: 6px; }
+  h1 {
+    font-family: "Yuji Syuku", "Shippori Mincho", Georgia, serif;
+    font-weight: 400;
+    font-size: 34px;
+    line-height: 1.05;
+    margin: 0;
+    letter-spacing: .01em;
+    text-wrap: balance;
+  }
+  h1 small {
+    display: block;
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 13px;
+    color: var(--paper-2);
+    margin-top: 8px;
+    letter-spacing: .02em;
+  }
+  .scores {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .scores div { padding: 12px 0; border-right: 1px solid var(--rule); }
+  .scores div:last-child { border-right: 0; padding-left: 16px; }
+  .scores .n {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .scores .k {
+    font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--paper-3); margin-top: 6px; font-weight: 600;
+  }
+  .scores .n.best { color: var(--amber); }
+
+  .how { margin: 0; color: var(--paper-2); font-size: 14px; max-width: 30em; }
+  .how kbd {
+    font-family: "IBM Plex Mono", monospace; font-size: 12px;
+    border: 1px solid var(--rule); border-radius: 3px; padding: 0 5px;
+    background: var(--night-2); color: var(--paper);
+  }
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    border: 1px solid var(--rule);
+    background: var(--night-2);
+    border-radius: 4px;
+    padding: 9px 14px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .btn:hover { border-color: var(--paper-3); }
+  .btn.primary { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
+  .btn.primary:hover { filter: brightness(1.06); }
+  .btn[aria-pressed="true"] { border-color: var(--amber); color: var(--amber); }
+
+  .note { font-size: 12px; color: var(--paper-3); margin: 0; }
+</style>
+</head><body>
+
+<div class="app">
+  <div class="stage">
+    <canvas id="game" width="480" height="640" role="img" aria-label="A swift flying through bamboo. Tap or press space to fly."></canvas>
+  </div>
+
+  <aside class="side">
+    <h1>Swift Through Bamboo<small>Tap to beat your wings. Thread the gaps. Don’t touch the stalks.</small></h1>
+
+    <div class="scores" aria-live="polite">
+      <div><div class="n" id="scoreNow">0</div><div class="k">This flight</div></div>
+      <div><div class="n best" id="scoreBest">0</div><div class="k">Best</div></div>
+    </div>
+
+    <p class="how">Click, tap, or press <kbd>Space</kbd> to fly. Each stalk you pass scores one. One tap gives one wingbeat; tap steadily to hover, pause tapping to sink. Gentle mode has wider gaps and lighter gravity. <kbd>P</kbd> pauses.</p>
+
+    <div class="controls">
+      <button type="button" class="btn primary" id="startBtn">Fly</button>
+      <button type="button" class="btn" id="pauseBtn">Pause</button>
+      <button type="button" class="btn" id="soundBtn" aria-pressed="true">Sound on</button>
+    </div>
+
+    <div class="controls" role="group" aria-label="Difficulty">
+      <button type="button" class="btn" data-mode="gentle" aria-pressed="true">Gentle</button>
+      <button type="button" class="btn" data-mode="classic" aria-pressed="false">Classic</button>
+    </div>
+
+    <p class="note">Your best score is kept in this browser.</p>
+  </aside>
+</div>
+
+<script>
+(() => {
+  const W = 480, H = 640;
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+
+  /* ---------- tuning ---------- */
+  const MODES = {
+    gentle:  { gravity: 1050, flap: -360, maxFall: 430, spacing: 260, gap: 215, gapMin: 165, gapDrop: 1.2, speed: 130, speedMax: 40 },
+    classic: { gravity: 1500, flap: -430, maxFall: 620, spacing: 215, gap: 172, gapMin: 128, gapDrop: 1.6, speed: 165, speedMax: 70 },
+  };
+  let mode = 'gentle';
+  try { if (localStorage.getItem('swift.mode') === 'classic') mode = 'classic'; } catch (e) {}
+  let T = MODES[mode];
+  const GROUND_H = 78;
+  const BIRD_X = 130;
+  const BIRD_R = 12;           // collision radius (a touch forgiving)
+  const STALK_W = 58;
+  function gapFor(score) { return Math.max(T.gapMin, T.gap - score * T.gapDrop); }
+  function speedFor(score) { return T.speed + Math.min(T.speedMax, score * 2); }
+
+  /* ---------- state ---------- */
+  const S = { READY: 0, PLAY: 1, DEAD: 2 };
+  let state = S.READY;
+  let paused = false;
+  let bird = { y: H / 2, vy: 0, wing: 0, tilt: 0 };
+  let stalks = [];
+  let score = 0, best = 0;
+  let scroll = 0, t = 0;
+  let deadAt = 0, shake = 0;
+  let sound = true;
+
+  try { best = +localStorage.getItem('swift.best') || 0; } catch (e) {}
+  try { sound = localStorage.getItem('swift.sound') !== 'off'; } catch (e) {}
+
+  const scoreNow = document.getElementById('scoreNow');
+  const scoreBest = document.getElementById('scoreBest');
+  const soundBtn = document.getElementById('soundBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  scoreBest.textContent = best;
+  soundBtn.setAttribute('aria-pressed', String(sound));
+  soundBtn.textContent = sound ? 'Sound on' : 'Sound off';
+
+  /* ---------- audio (tiny synthesized cues) ---------- */
+  let ac = null;
+  function tone(freq, dur, type, gain, slide) {
+    if (!sound) return;
+    try {
+      if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === 'suspended') ac.resume();
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = type; o.frequency.setValueAtTime(freq, ac.currentTime);
+      if (slide) o.frequency.exponentialRampToValueAtTime(slide, ac.currentTime + dur);
+      g.gain.setValueAtTime(gain, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur);
+      o.connect(g).connect(ac.destination);
+      o.start(); o.stop(ac.currentTime + dur);
+    } catch (e) {}
+  }
+  const sfx = {
+    flap: () => tone(620, 0.09, 'triangle', 0.08, 900),
+    score: () => { tone(880, 0.12, 'sine', 0.07); setTimeout(() => tone(1320, 0.16, 'sine', 0.06), 70); },
+    hit: () => tone(140, 0.28, 'sawtooth', 0.12, 60),
+  };
+
+  /* ---------- world setup ---------- */
+  function reset() {
+    bird = { y: H / 2 - 20, vy: 0, wing: 0, tilt: 0 };
+    stalks = [];
+    score = 0; scroll = 0; shake = 0;
+    scoreNow.textContent = '0';
+    let x = W + 240;
+    for (let i = 0; i < 4; i++) { stalks.push(makeStalk(x)); x += T.spacing; }
+  }
+  function makeStalk(x) {
+    const gap = gapFor(score);
+    const margin = 70;
+    const gy = margin + Math.random() * (H - GROUND_H - margin * 2 - gap);
+    return { x, gapY: gy, gapH: gap, passed: false, seed: Math.random() };
+  }
+
+  function start() {
+    reset();
+    state = S.PLAY; paused = false;
+    pauseBtn.textContent = 'Pause';
+    flap();
+  }
+  function flap() {
+    if (paused) return;
+    if (state === S.READY) { start(); return; }
+    if (state === S.DEAD) { if (performance.now() - deadAt > 500) { state = S.READY; reset(); } return; }
+    bird.vy = T.flap; bird.wing = 1; sfx.flap();
+  }
+  function die() {
+    state = S.DEAD; deadAt = performance.now(); shake = 1; sfx.hit();
+    if (score > best) { best = score; scoreBest.textContent = best; try { localStorage.setItem('swift.best', String(best)); } catch (e) {} }
+  }
+
+  /* ---------- update ---------- */
+  function update(dt) {
+    t += dt;
+    if (state === S.READY) {
+      bird.y = H / 2 - 20 + Math.sin(t * 3) * 8;
+      bird.wing = (Math.sin(t * 12) + 1) / 2;
+      bird.tilt = Math.sin(t * 3) * 0.08;
+      scroll += 60 * dt;
+      return;
+    }
+    if (state === S.DEAD) {
+      bird.vy = Math.min(T.maxFall, bird.vy + T.gravity * dt);
+      bird.y = Math.min(H - GROUND_H - BIRD_R, bird.y + bird.vy * dt);
+      bird.tilt = Math.min(1.4, bird.tilt + 4 * dt);
+      shake = Math.max(0, shake - dt * 3);
+      return;
+    }
+    const speed = speedFor(score);
+    scroll += speed * dt;
+    bird.vy = Math.min(T.maxFall, bird.vy + T.gravity * dt);
+    bird.y += bird.vy * dt;
+    bird.wing = Math.max(0, bird.wing - dt * 6);
+    const targetTilt = Math.max(-0.5, Math.min(1.2, bird.vy / 520));
+    bird.tilt += (targetTilt - bird.tilt) * Math.min(1, dt * 10);
+
+    for (const s of stalks) s.x -= speed * dt;
+    if (stalks[0].x < -STALK_W - 40) { stalks.shift(); stalks.push(makeStalk(stalks[stalks.length - 1].x + T.spacing)); }
+
+    // scoring
+    for (const s of stalks) {
+      if (!s.passed && s.x + STALK_W / 2 < BIRD_X) { s.passed = true; score++; scoreNow.textContent = score; sfx.score(); }
+    }
+    // collisions
+    if (bird.y + BIRD_R >= H - GROUND_H || bird.y - BIRD_R <= 0) { bird.y = Math.max(BIRD_R, Math.min(H - GROUND_H - BIRD_R, bird.y)); die(); return; }
+    for (const s of stalks) {
+      if (BIRD_X + BIRD_R > s.x && BIRD_X - BIRD_R < s.x + STALK_W) {
+        if (bird.y - BIRD_R < s.gapY || bird.y + BIRD_R > s.gapY + s.gapH) { die(); return; }
+      }
+    }
+  }
+
+  /* ---------- drawing ---------- */
+  function drawSky() {
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#5B4478');
+    g.addColorStop(0.35, '#B4708A');
+    g.addColorStop(0.7, '#E89A72');
+    g.addColorStop(1, '#F3C99B');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // sun
+    const sg = ctx.createRadialGradient(360, 330, 10, 360, 330, 90);
+    sg.addColorStop(0, 'rgba(255, 233, 190, 0.95)');
+    sg.addColorStop(0.35, 'rgba(255, 210, 150, 0.55)');
+    sg.addColorStop(1, 'rgba(255, 200, 140, 0)');
+    ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(360, 330, 90, 0, Math.PI * 2); ctx.fill();
+  }
+  function drawMountains(layerScroll, color, base, amp, seed) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, H);
+    for (let x = 0; x <= W; x += 8) {
+      const u = (x + layerScroll) * 0.012;
+      const y = base - (Math.sin(u + seed) * 0.6 + Math.sin(u * 2.3 + seed * 1.7) * 0.25 + Math.sin(u * 0.4 + seed) * 0.5) * amp;
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+  }
+  function drawFarGrove(layerScroll) {
+    // silhouette bamboo, far
+    const spacing = 26;
+    const off = -(layerScroll % spacing);
+    for (let x = off; x < W + spacing; x += spacing) {
+      const k = Math.round((x + layerScroll) / spacing);
+      const hash = (k * 2654435761 >>> 0) % 1000 / 1000;
+      const h = 90 + hash * 220;
+      ctx.fillStyle = `rgba(70, 60, 90, ${0.18 + hash * 0.2})`;
+      ctx.fillRect(x + (hash * 10 - 5), H - GROUND_H - h, 3 + hash * 3, h);
+    }
+  }
+  function bambooSegment(x, y, w, h, seed) {
+    // one stalk piece (top-down or bottom-up), with nodes
+    const body = ctx.createLinearGradient(x, 0, x + w, 0);
+    body.addColorStop(0, '#3F6A2F');
+    body.addColorStop(0.35, '#7BAA52');
+    body.addColorStop(0.75, '#5E8E3E');
+    body.addColorStop(1, '#2E5122');
+    ctx.fillStyle = body;
+    ctx.fillRect(x, y, w, h);
+    // node rings
+    const step = 72, phase = seed * step;
+    ctx.fillStyle = 'rgba(30, 50, 20, 0.55)';
+    for (let yy = y + ((phase - y) % step + step) % step; yy < y + h; yy += step) {
+      ctx.fillRect(x - 2, yy - 3, w + 4, 6);
+      ctx.fillStyle = 'rgba(200, 230, 160, 0.35)';
+      ctx.fillRect(x - 2, yy - 3, w + 4, 2);
+      ctx.fillStyle = 'rgba(30, 50, 20, 0.55)';
+    }
+  }
+  function leafCluster(x, y, dir) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = '#4C7C36';
+    for (let i = 0; i < 3; i++) {
+      ctx.save();
+      ctx.rotate(dir * (0.5 + i * 0.5) + (i === 1 ? -0.1 : 0));
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(22, -8, 46, 0);
+      ctx.quadraticCurveTo(22, 8, 0, 0);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+  function drawStalks() {
+    for (const s of stalks) {
+      bambooSegment(s.x, -10, STALK_W, s.gapY + 10, s.seed);
+      bambooSegment(s.x, s.gapY + s.gapH, STALK_W, H - GROUND_H - (s.gapY + s.gapH), s.seed);
+      // gap ends: a node cap and leaves
+      ctx.fillStyle = '#2E5122';
+      ctx.fillRect(s.x - 3, s.gapY - 7, STALK_W + 6, 7);
+      ctx.fillRect(s.x - 3, s.gapY + s.gapH, STALK_W + 6, 7);
+      leafCluster(s.x + STALK_W, s.gapY - 8, 0.15);
+      leafCluster(s.x, s.gapY + s.gapH + 10, Math.PI - 0.15);
+    }
+  }
+  function drawGround() {
+    const y = H - GROUND_H;
+    const g = ctx.createLinearGradient(0, y, 0, H);
+    g.addColorStop(0, '#5B3E4B');
+    g.addColorStop(0.08, '#3E2C3A');
+    g.addColorStop(1, '#241A26');
+    ctx.fillStyle = g; ctx.fillRect(0, y, W, GROUND_H);
+    // grass tufts
+    ctx.strokeStyle = 'rgba(130, 170, 90, 0.7)';
+    ctx.lineWidth = 2;
+    const sp = 18, off = -(scroll % sp);
+    for (let x = off; x < W + sp; x += sp) {
+      const k = Math.floor((x + scroll) / sp);
+      const h = 6 + (k * 37 % 9);
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 3, y - h); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + 6, y); ctx.lineTo(x + 4, y - h * 0.7); ctx.stroke();
+    }
+  }
+  function drawBird() {
+    ctx.save();
+    ctx.translate(BIRD_X, bird.y);
+    ctx.rotate(bird.tilt);
+    // tail (forked)
+    ctx.fillStyle = '#2A2622';
+    ctx.beginPath();
+    ctx.moveTo(-10, 0); ctx.lineTo(-30, -9); ctx.lineTo(-22, 0); ctx.lineTo(-30, 9); ctx.closePath(); ctx.fill();
+    // body
+    ctx.beginPath(); ctx.ellipse(0, 0, 18, 11, 0, 0, Math.PI * 2); ctx.fill();
+    // belly
+    ctx.fillStyle = '#E8A85C';
+    ctx.beginPath(); ctx.ellipse(2, 4, 12, 6, 0, 0, Math.PI * 2); ctx.fill();
+    // throat patch
+    ctx.fillStyle = '#F6EEE4';
+    ctx.beginPath(); ctx.ellipse(11, 1, 5, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+    // wing — sweeps with flap
+    const w = bird.wing;
+    ctx.fillStyle = '#1C1916';
+    ctx.save();
+    ctx.translate(-2, -2);
+    ctx.rotate(-0.9 * w + 0.35 * (1 - w));
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(-8, -18, -34, -14);
+    ctx.quadraticCurveTo(-16, -4, -6, 6);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+    // eye
+    ctx.fillStyle = '#F6EEE4'; ctx.beginPath(); ctx.arc(9, -4, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#1C1916'; ctx.beginPath(); ctx.arc(10, -4, 1.6, 0, Math.PI * 2); ctx.fill();
+    // beak
+    ctx.fillStyle = '#3A3330';
+    ctx.beginPath(); ctx.moveTo(16, -2); ctx.lineTo(24, 0); ctx.lineTo(16, 2); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+  function drawOverlay() {
+    const dark = 'rgba(27, 21, 34, 0.82)';
+    const paper = '#F6EEE4';
+    ctx.textAlign = 'center';
+    if (state === S.PLAY) {
+      ctx.font = '500 44px "IBM Plex Mono", monospace';
+      ctx.fillStyle = 'rgba(27, 21, 34, 0.35)';
+      ctx.fillText(score, W / 2 + 2, 66);
+      ctx.fillStyle = paper;
+      ctx.fillText(score, W / 2, 64);
+      if (paused) {
+        ctx.fillStyle = dark; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = paper;
+        ctx.font = '400 40px "Yuji Syuku", serif'; ctx.fillText('Paused', W / 2, H / 2 - 6);
+        ctx.font = '400 15px "IBM Plex Sans", sans-serif'; ctx.fillStyle = '#C9BBB0';
+        ctx.fillText('Press P to continue', W / 2, H / 2 + 26);
+      }
+      return;
+    }
+    if (state === S.READY) {
+      ctx.fillStyle = paper;
+      ctx.font = '400 46px "Yuji Syuku", serif';
+      ctx.fillText('Swift', W / 2, 150);
+      ctx.font = '400 15px "IBM Plex Sans", sans-serif';
+      ctx.fillStyle = 'rgba(246, 238, 228, 0.9)';
+      ctx.fillText('Tap, click, or press space to fly', W / 2, H / 2 + 80);
+      // pulsing prompt ring around the bird
+      const r = 30 + Math.sin(t * 4) * 4;
+      ctx.strokeStyle = 'rgba(246, 238, 228, 0.55)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(BIRD_X, bird.y, r, 0, Math.PI * 2); ctx.stroke();
+      return;
+    }
+    if (state === S.DEAD && performance.now() - deadAt > 350) {
+      ctx.fillStyle = dark;
+      const bw = 300, bh = 190, bx = (W - bw) / 2, by = H / 2 - bh / 2 - 30;
+      ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 8); ctx.fill();
+      ctx.fillStyle = paper;
+      ctx.font = '400 34px "Yuji Syuku", serif';
+      ctx.fillText(score > 0 && score >= best ? 'New best' : 'Down', W / 2, by + 50);
+      ctx.font = '500 48px "IBM Plex Mono", monospace';
+      ctx.fillText(score, W / 2, by + 108);
+      ctx.font = '400 13px "IBM Plex Sans", sans-serif';
+      ctx.fillStyle = '#C9BBB0';
+      ctx.fillText('BEST ' + best, W / 2, by + 134);
+      ctx.fillStyle = performance.now() - deadAt > 500 ? paper : '#8A7C86';
+      ctx.font = '500 14px "IBM Plex Sans", sans-serif';
+      ctx.fillText('Tap to fly again', W / 2, by + 168);
+    }
+  }
+  function render() {
+    ctx.save();
+    if (shake > 0) ctx.translate((Math.random() - 0.5) * 10 * shake, (Math.random() - 0.5) * 10 * shake);
+    drawSky();
+    drawMountains(scroll * 0.15, 'rgba(120, 85, 130, 0.55)', 400, 60, 1.2);
+    drawMountains(scroll * 0.3, 'rgba(90, 65, 100, 0.7)', 450, 45, 4.1);
+    drawFarGrove(scroll * 0.5);
+    drawStalks();
+    drawGround();
+    drawBird();
+    drawOverlay();
+    ctx.restore();
+  }
+
+  /* ---------- loop ---------- */
+  let last = performance.now();
+  function frame(now) {
+    let dt = (now - last) / 1000; last = now;
+    if (dt > 0.05) dt = 0.05;
+    if (!paused) update(dt);
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- input ---------- */
+  function togglePause() {
+    if (state !== S.PLAY) return;
+    paused = !paused;
+    pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+    last = performance.now();
+  }
+  canvas.addEventListener('pointerdown', ev => { ev.preventDefault(); flap(); });
+  document.addEventListener('keydown', ev => {
+    if (ev.code === 'Space' || ev.code === 'ArrowUp') { ev.preventDefault(); if (!ev.repeat) flap(); }
+    if (ev.key === 'p' || ev.key === 'P') togglePause();
+  });
+  document.getElementById('startBtn').addEventListener('click', () => {
+    if (state === S.PLAY && !paused) return;
+    if (paused) { togglePause(); return; }
+    start();
+  });
+  pauseBtn.addEventListener('click', togglePause);
+  soundBtn.addEventListener('click', () => {
+    sound = !sound;
+    soundBtn.setAttribute('aria-pressed', String(sound));
+    soundBtn.textContent = sound ? 'Sound on' : 'Sound off';
+    try { localStorage.setItem('swift.sound', sound ? 'on' : 'off'); } catch (e) {}
+  });
+  document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => {
+    mode = b.dataset.mode; T = MODES[mode];
+    document.querySelectorAll('[data-mode]').forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+    try { localStorage.setItem('swift.mode', mode); } catch (e) {}
+    state = S.READY; paused = false; pauseBtn.textContent = 'Pause'; reset();
+  }));
+  document.querySelectorAll('[data-mode]').forEach(o => o.setAttribute('aria-pressed', String(o.dataset.mode === mode)));
+  document.addEventListener('visibilitychange', () => { if (document.hidden && state === S.PLAY && !paused) togglePause(); });
+
+  reset();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body></html>

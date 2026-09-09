@@ -1,0 +1,750 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moth Garden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Karla:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  /* One committed visual world: a clipped hedge garden at dusk, lit by a lantern. */
+  :root {
+    --night: #0E1613;
+    --night-2: #16211C;
+    --leaf: #2F6247;
+    --dew: #D5E5DA;
+    --dew-2: #94A99C;
+    --dew-3: #6A7D73;
+    --rule: #24352C;
+    --lantern: #F5B942;
+    --lantern-ink: #241704;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(120% 90% at 50% 0%, #16241E 0%, var(--night) 60%);
+    color: var(--dew);
+    font-family: Karla, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--lantern); outline-offset: 3px; }
+
+  .app {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 22px 20px 44px;
+    display: grid;
+    grid-template-columns: minmax(0, 546px) minmax(230px, 1fr);
+    gap: 34px;
+    align-items: start;
+    justify-content: center;
+  }
+  @media (max-width: 820px) {
+    .app { grid-template-columns: minmax(0, 546px); justify-content: center; gap: 20px; padding: 14px 12px 34px; }
+  }
+
+  canvas#garden {
+    display: block; width: 100%; max-width: 546px; aspect-ratio: 1 / 1; height: auto;
+    border-radius: 10px;
+    background: #0B120F;
+    box-shadow: 0 40px 70px -34px rgba(0,0,0,.95), 0 0 0 1px rgba(213,229,218,.07);
+    touch-action: none; user-select: none; -webkit-user-select: none;
+  }
+
+  .side { display: flex; flex-direction: column; gap: 20px; }
+  h1 {
+    font-family: Fraunces, Georgia, serif;
+    font-weight: 700; font-size: 34px; line-height: 1.05; margin: 0;
+    letter-spacing: -.01em; text-wrap: balance;
+  }
+  h1 span { color: var(--lantern); }
+  .tagline { margin: 8px 0 0; color: var(--dew-2); font-size: 13.5px; max-width: 26em; }
+
+  .readout {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  }
+  .readout div { padding: 11px 0; border-right: 1px solid var(--rule); }
+  .readout div:last-child { border-right: 0; padding-left: 14px; }
+  .readout .n {
+    font-family: "IBM Plex Mono", monospace; font-size: 25px; font-weight: 500;
+    line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .readout .n.best { color: var(--lantern); }
+  .readout .k { font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--dew-3); margin-top: 7px; font-weight: 600; }
+
+  .lives { display: flex; align-items: center; gap: 9px; min-height: 22px; }
+  .lives .k { font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--dew-3); font-weight: 600; }
+  .lives .pips { display: flex; gap: 6px; }
+  .pip { width: 13px; height: 16px; border-radius: 3px 3px 5px 5px; background: var(--lantern); box-shadow: 0 0 9px rgba(245,185,66,.6); }
+
+  /* key diagram — also the touch controls */
+  .keys { display: grid; gap: 8px; }
+  .keypad { display: grid; grid-template-columns: repeat(3, 46px); grid-template-rows: repeat(2, 42px); gap: 6px; }
+  .key {
+    border: 1px solid var(--rule); background: var(--night-2); border-radius: 6px;
+    display: grid; place-items: center; gap: 1px; cursor: pointer;
+    font-family: "IBM Plex Mono", monospace; font-size: 15px; font-weight: 500;
+    padding: 0; line-height: 1;
+  }
+  .key small { font-family: Karla, sans-serif; font-size: 9.5px; color: var(--dew-3); letter-spacing: .06em; }
+  .key:hover { border-color: var(--dew-3); }
+  .key:active, .key.down { background: var(--lantern); color: var(--lantern-ink); border-color: var(--lantern); }
+  .key:active small, .key.down small { color: rgba(36,23,4,.7); }
+  .key.blank { visibility: hidden; cursor: default; }
+
+  .legend { display: grid; gap: 7px; font-size: 13px; color: var(--dew-2); }
+  .legend .row { display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: center; }
+  .swatch { width: 13px; height: 13px; border-radius: 50%; justify-self: center; }
+  .swatch.dew { width: 6px; height: 6px; background: var(--dew); box-shadow: 0 0 7px rgba(213,229,218,.7); }
+  .swatch.bloom { width: 12px; height: 12px; background: #C9E4F2; box-shadow: 0 0 11px rgba(201,228,242,.85); }
+  .swatch.moth { background: #DE8C99; }
+
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    border: 1px solid var(--rule); background: var(--night-2); border-radius: 4px;
+    padding: 9px 15px; cursor: pointer; font-size: 14px; font-weight: 500;
+  }
+  .btn:hover { border-color: var(--dew-3); }
+  .btn.primary { background: var(--lantern); color: var(--lantern-ink); border-color: var(--lantern); }
+  .btn.primary:hover { filter: brightness(1.07); }
+  .btn[aria-pressed="true"] { border-color: var(--lantern); color: var(--lantern); }
+  .note { font-size: 12px; color: var(--dew-3); margin: 0; }
+</style>
+</head><body>
+
+<div class="app">
+  <canvas id="garden" width="546" height="546" role="img" aria-label="A hedge maze seen from above. Guide the lantern with I, J, K and L to gather dewdrops while four moths chase you."></canvas>
+
+  <aside class="side">
+    <div>
+      <h1>Moth <span>Garden</span></h1>
+      <p class="tagline">Carry the lantern through the hedges, gather every dewdrop, and keep ahead of the four moths drawn to your light.</p>
+    </div>
+
+    <div class="readout" aria-live="polite">
+      <div><div class="n" id="score">0</div><div class="k">Score</div></div>
+      <div><div class="n best" id="best">0</div><div class="k">Best</div></div>
+      <div><div class="n" id="level">1</div><div class="k">Night</div></div>
+    </div>
+
+    <div class="lives"><span class="k">Lanterns</span><span class="pips" id="pips"></span></div>
+
+    <div class="keys">
+      <div class="keypad">
+        <button type="button" class="key blank" tabindex="-1" aria-hidden="true"></button>
+        <button type="button" class="key" data-key="I">I<small>UP</small></button>
+        <button type="button" class="key blank" tabindex="-1" aria-hidden="true"></button>
+        <button type="button" class="key" data-key="J">J<small>LEFT</small></button>
+        <button type="button" class="key" data-key="K">K<small>DOWN</small></button>
+        <button type="button" class="key" data-key="L">L<small>RIGHT</small></button>
+      </div>
+      <p class="note">Arrow keys and swipes work too. <strong>P</strong> pauses, <strong>Space</strong> starts.</p>
+    </div>
+
+    <div class="legend">
+      <div class="row"><span class="swatch dew"></span><span>Dewdrop — 10 points</span></div>
+      <div class="row"><span class="swatch bloom"></span><span>Nightbloom — 50, and the moths flee for a while</span></div>
+      <div class="row"><span class="swatch moth"></span><span>A fleeing moth — 200, doubling with each one caught</span></div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn" id="soundBtn" aria-pressed="true">Sound on</button>
+      <button type="button" class="btn primary" id="newBtn">New game</button>
+    </div>
+  </aside>
+</div>
+
+<script>
+(() => {
+  /* ============ maze ============ */
+  const MAZE = [
+    "#####################",
+    "#.........#.........#",
+    "#.###.###.#.###.###.#",
+    "#o###.###.#.###.###o#",
+    "#...................#",
+    "#.###.#.#####.#.###.#",
+    "#.....#...#...#.....#",
+    "#####.###.#.###.#####",
+    "    .............    ",
+    "#####.####-####.#####",
+    "#####.#       #.#####",
+    "#####.#       #.#####",
+    "#####.#########.#####",
+    "#.........#.........#",
+    "#.###.###.#.###.###.#",
+    "#...#.....#.....#...#",
+    "###.#.#...#...#.#.###",
+    "#.....#...#...#.....#",
+    "#o##.###########.##o#",
+    "#...................#",
+    "#####################",
+  ];
+  const COLS = MAZE[0].length, ROWS = MAZE.length;
+  const T = 26;                                   // tile size in px
+  const canvas = document.getElementById('garden');
+  const ctx = canvas.getContext('2d');
+
+  const wallAt = (r, c) => (r < 0 || r >= ROWS) ? true : MAZE[r][wrap(c)] === '#';
+  const chAt = (r, c) => (r < 0 || r >= ROWS) ? '#' : MAZE[r][wrap(c)];
+  function wrap(c) { return (c % COLS + COLS) % COLS; }
+  function walkable(r, c, ghost) {
+    const ch = chAt(r, c);
+    if (ch === '#') return false;
+    if (ch === '-' || ch === ' ') return !!ghost;   // door and nest are moths-only
+    return true;
+  }
+  const cxOf = c => (c + 0.5) * T, cyOf = r => (r + 0.5) * T;
+
+  /* ============ tuning ============ */
+  const DIRS = { up: [-1, 0], down: [1, 0], left: [0, -1], right: [0, 1] };
+  const DIR_LIST = ['up', 'left', 'down', 'right'];
+  const OPP = { up: 'down', down: 'up', left: 'right', right: 'left' };
+  const BASE_SPEED = 5.3;              // tiles per second
+  const DOOR = { r: 9, c: 10 };
+  const NEST = { r: 10, c: 10 };
+  const START = { r: 19, c: 10 };
+  const CORNERS = [{ r: -2, c: COLS - 2 }, { r: -2, c: 1 }, { r: ROWS + 1, c: COLS - 1 }, { r: ROWS + 1, c: 0 }];
+  const MOTHS = [
+    { name: 'Ash',   color: '#DE8C99', wing: '#F0B6BE', release: 0.0 },
+    { name: 'Taper', color: '#E8C45F', wing: '#F6DE9C', release: 2.6 },
+    { name: 'Fen',   color: '#8FBC94', wing: '#BBD8BE', release: 5.4 },
+    { name: 'Vesper',color: '#AC9DD4', wing: '#CEC4E8', release: 8.4 },
+  ];
+  const FRIGHT_BLUE = '#6B8FB5', FRIGHT_PALE = '#D5E5DA';
+  const PHASES = [7, 20, 7, 20, 5, 20, 5, Infinity];   // scatter / chase / scatter / chase ...
+
+  /* ============ state ============ */
+  const G = { READY: 0, PLAY: 1, DYING: 2, CLEAR: 3, OVER: 4, TITLE: 5 };
+  let state = G.TITLE, paused = false;
+  let pellets = [], pelletsLeft = 0, score = 0, best = 0, level = 1, lives = 3;
+  let frightT = 0, chainScore = 0, phaseIdx = 0, phaseT = 0, stateT = 0, clock = 0;
+  let pops = [], sound = true, flashT = 0;
+  const player = { r: 0, c: 0, dir: 'left', want: null, p: 0, flame: 0 };
+  let moths = [];
+
+  try { best = +localStorage.getItem('mothgarden.best') || 0; } catch (e) {}
+  try { sound = localStorage.getItem('mothgarden.sound') !== 'off'; } catch (e) {}
+
+  const el = {
+    score: document.getElementById('score'), best: document.getElementById('best'),
+    level: document.getElementById('level'), pips: document.getElementById('pips'),
+    soundBtn: document.getElementById('soundBtn'),
+  };
+  el.best.textContent = best;
+
+  function setScore(v) {
+    score = v;
+    el.score.textContent = score;
+    if (score > best) { best = score; el.best.textContent = best; try { localStorage.setItem('mothgarden.best', String(best)); } catch (e) {} }
+  }
+  function refreshPips() {
+    el.pips.innerHTML = '';
+    for (let i = 0; i < Math.max(0, lives); i++) { const s = document.createElement('span'); s.className = 'pip'; el.pips.appendChild(s); }
+  }
+
+  /* ============ audio ============ */
+  let ac = null;
+  function tone(freq, dur, type, gain, slide) {
+    if (!sound) return;
+    try {
+      if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === 'suspended') ac.resume();
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = type; o.frequency.setValueAtTime(freq, ac.currentTime);
+      if (slide) o.frequency.exponentialRampToValueAtTime(slide, ac.currentTime + dur);
+      g.gain.setValueAtTime(gain, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur);
+      o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime + dur);
+    } catch (e) {}
+  }
+  let dewFlip = 0;
+  const sfx = {
+    dew: () => { dewFlip ^= 1; tone(dewFlip ? 660 : 560, 0.045, 'square', 0.028); },
+    bloom: () => { tone(300, 0.22, 'triangle', 0.06, 720); },
+    caught: () => { tone(880, 0.1, 'sine', 0.07); setTimeout(() => tone(1320, 0.16, 'sine', 0.06), 90); },
+    die: () => { tone(500, 0.7, 'sawtooth', 0.07, 70); },
+    clear: () => { [0, 130, 260, 400].forEach((d, i) => setTimeout(() => tone(520 + i * 180, 0.16, 'sine', 0.06), d)); },
+  };
+
+  /* ============ setup ============ */
+  function loadPellets() {
+    pellets = []; pelletsLeft = 0;
+    for (let r = 0; r < ROWS; r++) {
+      const row = [];
+      for (let c = 0; c < COLS; c++) {
+        const ch = MAZE[r][c];
+        const v = ch === '.' ? 1 : ch === 'o' ? 2 : 0;
+        row.push(v);
+        if (v) pelletsLeft++;
+      }
+      pellets.push(row);
+    }
+  }
+  function placeActors() {
+    player.r = START.r; player.c = START.c; player.dir = 'left'; player.want = null; player.p = 0; player.flame = 0;
+    const seats = [{ r: 8, c: 10 }, { r: 10, c: 9 }, { r: 10, c: 11 }, { r: 11, c: 10 }];
+    moths = MOTHS.map((m, i) => ({
+      ...m, r: seats[i].r, c: seats[i].c, dir: i === 0 ? 'left' : 'up', p: 0,
+      mode: i === 0 ? 'out' : 'nest', timer: m.release, fright: false, eyes: false, bob: Math.random() * 6.28,
+    }));
+    phaseIdx = 0; phaseT = 0; frightT = 0; chainScore = 0; pops = [];
+  }
+  function newGame() {
+    level = 1; lives = 3; setScore(0); el.level.textContent = level;
+    loadPellets(); placeActors(); refreshPips();
+    state = G.READY; stateT = 0; paused = false;
+  }
+  function nextLevel() {
+    level++; el.level.textContent = level;
+    loadPellets(); placeActors();
+    state = G.READY; stateT = 0;
+  }
+  function loseLife() {
+    lives--; refreshPips();
+    if (lives < 0) { state = G.OVER; stateT = 0; }
+    else { placeActors(); state = G.READY; stateT = 0; }
+  }
+
+  /* ============ speeds ============ */
+  const playerSpeed = () => BASE_SPEED + Math.min(1.1, (level - 1) * 0.12);
+  const mothSpeed = m => {
+    if (m.eyes) return BASE_SPEED * 2.3;
+    if (m.fright) return BASE_SPEED * 0.55;
+    const inTunnel = m.r === 8 && (m.c < 5 || m.c > 15);
+    return (BASE_SPEED - 0.45 + Math.min(1.2, (level - 1) * 0.13)) * (inTunnel ? 0.6 : 1);
+  };
+  const frightTime = () => Math.max(1.5, 7.5 - (level - 1) * 0.7);
+
+  /* ============ movement on the tile lattice ============ */
+  function advance(a, dist, ghost) {
+    // dist is measured in tiles; actors always sit on a lattice edge, p in [0,1)
+    let guard = 0;
+    while (dist > 0 && guard++ < 40) {
+      if (!a.dir) return;
+      const [dr, dc] = DIRS[a.dir];
+      const room = 1 - a.p;
+      if (dist < room) { a.p += dist; return; }
+      // arrive at the next tile
+      dist -= room;
+      a.r += dr; a.c = wrap(a.c + dc); a.p = 0;
+      decide(a, ghost);
+      if (!a.dir) return;
+    }
+  }
+  function decide(a, ghost) {
+    if (ghost) { a.dir = chooseMothDir(a); return; }
+    if (a.want && canGo(a, a.want)) { a.dir = a.want; a.want = null; return; }
+    if (!canGo(a, a.dir)) a.dir = null;        // nose against a hedge: stop
+  }
+  function canGo(a, dir) {
+    const [dr, dc] = DIRS[dir];
+    return walkable(a.r + dr, a.c + dc, false);
+  }
+  function reverse(a) {
+    const [dr, dc] = DIRS[a.dir];
+    a.r += dr; a.c = wrap(a.c + dc);
+    a.dir = OPP[a.dir]; a.p = 1 - a.p;
+  }
+  function tileDist(ar, ac, br, bc) {
+    let dc = ac - bc;
+    if (Math.abs(dc) > COLS / 2) dc = dc > 0 ? dc - COLS : dc + COLS;   // shortest way round the tunnel
+    return (ar - br) * (ar - br) + dc * dc;
+  }
+
+  /* ============ moth intent ============ */
+  function targetFor(m, i) {
+    if (m.eyes) return DOOR;
+    if (m.mode === 'leave') return { r: 8, c: 10 };
+    const scatter = phaseIdx % 2 === 0;
+    if (scatter && !m.fright) return CORNERS[i];
+    const [pdr, pdc] = DIRS[player.dir || 'left'];
+    if (i === 0) return { r: player.r, c: player.c };                                  // Ash follows the light directly
+    if (i === 1) return { r: player.r + pdr * 4, c: player.c + pdc * 4 };              // Taper cuts to where you are heading
+    if (i === 2) {                                                                      // Fen swings wide, using Ash as a pivot
+      const ax = moths[0] ? moths[0].c : player.c, ay = moths[0] ? moths[0].r : player.r;
+      const hr = player.r + pdr * 2, hc = player.c + pdc * 2;
+      return { r: hr + (hr - ay), c: hc + (hc - ax) };
+    }
+    // Vesper closes in only when far off, otherwise drifts to its corner
+    return tileDist(m.r, m.c, player.r, player.c) > 64 ? { r: player.r, c: player.c } : CORNERS[3];
+  }
+  function chooseMothDir(m) {
+    const i = moths.indexOf(m);
+    // inside the nest: rise straight out through the door
+    if (m.mode === 'nest') return 'up';
+    const opts = DIR_LIST.filter(d => {
+      if (d === OPP[m.dir] ) return false;
+      const [dr, dc] = DIRS[d];
+      const nr = m.r + dr, nc = m.c + dc;
+      if (!walkable(nr, nc, true)) return false;
+      // once out, moths never drop back through the door unless they are just eyes
+      if (chAt(nr, nc) === '-' && !m.eyes && m.mode !== 'leave') return false;
+      if (chAt(nr, nc) === ' ' && !m.eyes) return false;
+      return true;
+    });
+    if (!opts.length) return OPP[m.dir];
+    if (m.fright && !m.eyes) return opts[Math.floor(Math.random() * opts.length)];
+    const t = targetFor(m, i);
+    let bestD = Infinity, bestDir = opts[0];
+    for (const d of opts) {
+      const [dr, dc] = DIRS[d];
+      const v = tileDist(m.r + dr, m.c + dc, t.r, t.c);
+      if (v < bestD) { bestD = v; bestDir = d; }
+    }
+    return bestDir;
+  }
+
+  /* ============ update ============ */
+  function update(dt) {
+    clock += dt; stateT += dt;
+    flashT = Math.max(0, flashT - dt);
+    pops = pops.filter(p => (p.t -= dt) > 0);
+    player.flame += dt * (state === G.PLAY ? 9 : 4);
+
+    if (state === G.TITLE || state === G.OVER) return;
+    if (state === G.READY) { if (stateT > 1.6) { state = G.PLAY; stateT = 0; } return; }
+    if (state === G.CLEAR) { if (stateT > 1.8) nextLevel(); return; }
+    if (state === G.DYING) { if (stateT > 1.7) loseLife(); return; }
+
+    // phases
+    if (frightT > 0) {
+      frightT -= dt;
+      if (frightT <= 0) { frightT = 0; moths.forEach(m => m.fright = false); chainScore = 0; }
+    } else {
+      phaseT += dt;
+      if (phaseT >= PHASES[Math.min(phaseIdx, PHASES.length - 1)]) {
+        phaseT = 0; phaseIdx++;
+        moths.forEach(m => { if (m.mode === 'out' && !m.eyes) reverse(m); });   // a turn of the phase turns the moths
+      }
+    }
+
+    // player
+    if (player.want && player.dir && player.want === OPP[player.dir]) { reverse(player); player.want = null; }
+    if (!player.dir && player.want && canGo(player, player.want)) { player.dir = player.want; player.want = null; }
+    advance(player, playerSpeed() * dt, false);
+    eatHere();
+
+    // moths
+    for (const m of moths) {
+      if (m.mode === 'nest') {
+        m.bob += dt * 3;
+        m.timer -= dt;
+        if (m.timer <= 0) { m.r = NEST.r; m.c = NEST.c; m.p = 0; m.dir = 'up'; m.mode = 'leave'; }
+        continue;
+      }
+      advance(m, mothSpeed(m) * dt, true);
+      if (m.mode === 'leave' && m.r <= 8) m.mode = 'out';
+      if (m.eyes && m.r === NEST.r && m.c === NEST.c) { m.eyes = false; m.fright = false; m.mode = 'leave'; m.dir = 'up'; }
+    }
+    collide();
+  }
+
+  function eatHere() {
+    const v = pellets[player.r] && pellets[player.r][player.c];
+    if (!v) return;
+    pellets[player.r][player.c] = 0; pelletsLeft--;
+    if (v === 1) { setScore(score + 10); sfx.dew(); }
+    else {
+      setScore(score + 50); sfx.bloom(); flashT = 0.35;
+      frightT = frightTime(); chainScore = 0;
+      moths.forEach(m => { if (!m.eyes && m.mode !== 'nest') { m.fright = true; if (m.mode === 'out') reverse(m); } });
+    }
+    if (pelletsLeft === 0) { state = G.CLEAR; stateT = 0; sfx.clear(); }
+  }
+  function collide() {
+    for (const m of moths) {
+      if (m.mode === 'nest' || m.eyes) continue;
+      const dx = (m.c + DIRS[m.dir][1] * m.p) - (player.c + (player.dir ? DIRS[player.dir][1] * player.p : 0));
+      const dy = (m.r + DIRS[m.dir][0] * m.p) - (player.r + (player.dir ? DIRS[player.dir][0] * player.p : 0));
+      if (dx * dx + dy * dy > 0.55 * 0.55) continue;
+      if (m.fright) {
+        chainScore = chainScore ? chainScore * 2 : 200;
+        setScore(score + chainScore);
+        pops.push({ r: m.r, c: m.c, text: chainScore, t: 1.1 });
+        m.eyes = true; m.fright = false; sfx.caught();
+      } else {
+        state = G.DYING; stateT = 0; sfx.die();
+        return;
+      }
+    }
+  }
+
+  /* ============ drawing ============ */
+  const hedge = document.createElement('canvas');
+  hedge.width = COLS * T; hedge.height = ROWS * T;
+  (function paintHedges() {
+    const g = hedge.getContext('2d');
+    let seed = 11;
+    const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      const ch = MAZE[r][c];
+      if (ch !== '#') {
+        if (ch === '-') {   // the nest door: a low gate in the hedge
+          g.fillStyle = 'rgba(213,229,218,0.30)';
+          g.fillRect(c * T + 3, r * T + T / 2 - 2, T - 6, 4);
+        }
+        continue;
+      }
+      const x = c * T, y = r * T;
+      // neighbouring hedge tiles grow together; only the outer corners are clipped round
+      const oU = !wallAt(r - 1, c), oD = !wallAt(r + 1, c), oL = !wallAt(r, c - 1), oR = !wallAt(r, c + 1);
+      const rad = [(oU && oL) ? 8 : 0, (oU && oR) ? 8 : 0, (oD && oR) ? 8 : 0, (oD && oL) ? 8 : 0];
+      const grad = g.createLinearGradient(0, y, 0, y + T);
+      grad.addColorStop(0, '#356B4E'); grad.addColorStop(1, '#1A3A2B');
+      g.fillStyle = grad;
+      g.beginPath(); g.roundRect(x, y, T, T, rad); g.fill();
+      // clipped top edge catches the light where the hedge meets a path
+      if (oU) {
+        g.fillStyle = 'rgba(150, 205, 160, 0.22)';
+        g.beginPath(); g.roundRect(x + (oL ? 3 : 0), y + 1, T - (oL ? 3 : 0) - (oR ? 3 : 0), 4, 2); g.fill();
+      }
+      // leaf texture
+      for (let i = 0; i < 7; i++) {
+        const lx = x + 3 + rnd() * (T - 6), ly = y + 3 + rnd() * (T - 6);
+        g.fillStyle = `rgba(${90 + rnd() * 50 | 0}, ${150 + rnd() * 50 | 0}, ${105 + rnd() * 40 | 0}, ${0.10 + rnd() * 0.16})`;
+        g.beginPath(); g.ellipse(lx, ly, 2.4 + rnd() * 1.8, 1.5 + rnd(), rnd() * 3.14, 0, 6.283); g.fill();
+      }
+    }
+  })();
+
+  function px(a) { return a.dir ? (a.c + 0.5 + DIRS[a.dir][1] * a.p) * T : (a.c + 0.5) * T; }
+  function py(a) { return a.dir ? (a.r + 0.5 + DIRS[a.dir][0] * a.p) * T : (a.r + 0.5) * T; }
+
+  function drawPellets() {
+    const pulse = 0.75 + 0.25 * Math.sin(clock * 4);
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      const v = pellets[r][c];
+      if (!v) continue;
+      const x = cxOf(c), y = cyOf(r);
+      if (v === 1) {
+        ctx.fillStyle = 'rgba(213, 229, 218, 0.92)';
+        ctx.beginPath(); ctx.arc(x, y, 2.6, 0, 6.283); ctx.fill();
+      } else {
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        ctx.shadowColor = '#C9E4F2'; ctx.shadowBlur = 14;
+        ctx.fillStyle = '#EAF6FF';
+        ctx.beginPath(); ctx.arc(x, y, 5.4, 0, 6.283); ctx.fill();
+        ctx.restore();
+      }
+    }
+  }
+  function drawLantern() {
+    const x = px(player), y = py(player);
+    const dying = state === G.DYING;
+    const life = dying ? Math.max(0, 1 - stateT / 1.4) : 1;
+    const flicker = 1 + Math.sin(player.flame) * 0.06 + Math.sin(player.flame * 2.3) * 0.03;
+    ctx.save();
+    ctx.translate(x, y);
+    if (dying) ctx.rotate(stateT * 3);
+    // the pool of light the moths are chasing
+    const R = 9.5 * life * flicker;
+    const glow = ctx.createRadialGradient(0, 0, 1, 0, 0, R * 5.5);
+    glow.addColorStop(0, `rgba(255, 214, 130, ${0.55 * life})`);
+    glow.addColorStop(0.4, `rgba(245, 185, 66, ${0.16 * life})`);
+    glow.addColorStop(1, 'rgba(245,185,66,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(0, 0, R * 5.5, 0, 6.283); ctx.fill();
+    // lantern body: a small glass case with a cap and a ring
+    ctx.fillStyle = '#3A2C18';
+    ctx.beginPath(); ctx.roundRect(-R * 0.75, -R * 1.5, R * 1.5, R * 0.42, 2); ctx.fill();
+    ctx.strokeStyle = '#8A6C39'; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(0, -R * 1.55, R * 0.42, Math.PI, 0); ctx.stroke();
+    const body = ctx.createRadialGradient(-R * 0.3, -R * 0.3, 1, 0, 0, R);
+    body.addColorStop(0, '#FFF3CE'); body.addColorStop(0.55, '#F5B942'); body.addColorStop(1, '#C77E1B');
+    ctx.fillStyle = body;
+    ctx.beginPath(); ctx.roundRect(-R * 0.82, -R * 1.05, R * 1.64, R * 2.1, R * 0.5); ctx.fill();
+    ctx.fillStyle = '#3A2C18';
+    ctx.beginPath(); ctx.roundRect(-R * 0.85, R * 0.85, R * 1.7, R * 0.4, 2); ctx.fill();
+    // flame
+    ctx.fillStyle = '#FFF6DE';
+    ctx.beginPath(); ctx.ellipse(0, -R * 0.1, R * 0.3, R * 0.55 * flicker, 0, 0, 6.283); ctx.fill();
+    ctx.restore();
+  }
+  function drawMoth(m) {
+    const x = px(m), y = py(m);
+    const flap = Math.sin(clock * 16 + m.bob);
+    const wingSpread = 0.55 + 0.45 * Math.abs(flap);
+    const ending = frightT > 0 && frightT < 2 && Math.floor(frightT * 6) % 2 === 0;
+    const bodyCol = m.eyes ? 'rgba(213,229,218,0.0)' : m.fright ? (ending ? FRIGHT_PALE : FRIGHT_BLUE) : m.color;
+    const wingCol = m.eyes ? 'rgba(213,229,218,0.0)' : m.fright ? (ending ? '#FFFFFF' : '#9DBBD8') : m.wing;
+    ctx.save();
+    ctx.translate(x, y);
+    if (!m.eyes) {
+      // wings
+      ctx.fillStyle = wingCol; ctx.globalAlpha = 0.85;
+      for (const s of [-1, 1]) {
+        ctx.save(); ctx.scale(s, 1);
+        ctx.beginPath();
+        ctx.moveTo(0, -1);
+        ctx.quadraticCurveTo(9 * wingSpread, -10 * wingSpread, 11 * wingSpread, -1);
+        ctx.quadraticCurveTo(10 * wingSpread, 7 * wingSpread, 0, 5);
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+      ctx.globalAlpha = 1;
+      // body
+      ctx.fillStyle = bodyCol;
+      ctx.beginPath(); ctx.ellipse(0, 0, 3.6, 7.4, 0, 0, 6.283); ctx.fill();
+      // antennae
+      ctx.strokeStyle = bodyCol; ctx.lineWidth = 1.1;
+      for (const s of [-1, 1]) {
+        ctx.beginPath(); ctx.moveTo(s * 1.2, -6);
+        ctx.quadraticCurveTo(s * 5, -11, s * 7.5, -12.5); ctx.stroke();
+      }
+    }
+    // eyes — the only thing left when a moth is carried home
+    const [edr, edc] = DIRS[m.dir] || [0, 0];
+    ctx.fillStyle = m.fright && !ending ? '#DCEAF6' : '#FBFDFA';
+    for (const s of [-1, 1]) {
+      ctx.beginPath(); ctx.ellipse(s * 2.6, -2.4, 2.1, 2.5, 0, 0, 6.283); ctx.fill();
+    }
+    ctx.fillStyle = m.fright && !ending ? '#2E4A63' : '#1B2A22';
+    for (const s of [-1, 1]) {
+      ctx.beginPath(); ctx.arc(s * 2.6 + edc * 0.9, -2.4 + edr * 0.9, 1.1, 0, 6.283); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function drawNestGlow() {
+    ctx.save();
+    const g = ctx.createRadialGradient(cxOf(10), cyOf(10.5), 4, cxOf(10), cyOf(10.5), T * 4);
+    g.addColorStop(0, 'rgba(120, 150, 190, 0.18)'); g.addColorStop(1, 'rgba(120,150,190,0)');
+    ctx.fillStyle = g; ctx.fillRect(cxOf(6), cyOf(8), T * 9, T * 5);
+    ctx.restore();
+  }
+  function drawPops() {
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (const p of pops) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, p.t / 0.4);
+      ctx.font = '500 15px "IBM Plex Mono", monospace';
+      ctx.fillStyle = '#EAF6FF';
+      ctx.fillText(p.text, cxOf(p.c), cyOf(p.r) - (1.1 - p.t) * 16);
+      ctx.restore();
+    }
+  }
+  function drawOverlay() {
+    const W = COLS * T, H = ROWS * T;
+    const banner = (head, sub, headCol) => {
+      ctx.fillStyle = 'rgba(10, 18, 15, 0.74)'; ctx.fillRect(0, 0, W, H);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = headCol || '#F5B942';
+      ctx.font = '700 46px Fraunces, Georgia, serif';
+      ctx.fillText(head, W / 2, H / 2 - 6);
+      ctx.fillStyle = '#B7C9BE';
+      ctx.font = '400 15px Karla, sans-serif';
+      ctx.fillText(sub, W / 2, H / 2 + 26);
+    };
+    if (paused) return banner('Paused', 'Press P to carry on');
+    if (state === G.TITLE) return banner('Moth Garden', 'Press space, or tap a key, to light the lantern');
+    if (state === G.OVER) return banner('The light goes out', `${score} points on night ${level} · space for a new game`, '#D5E5DA');
+    if (state === G.READY) {
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#F5B942';
+      ctx.font = '700 26px Fraunces, Georgia, serif';
+      ctx.fillText(level === 1 && lives === 3 ? 'Ready' : 'Night ' + level, W / 2, cyOf(13) + 8);
+    }
+    if (state === G.CLEAR && Math.floor(stateT * 6) % 2 === 0) {
+      ctx.fillStyle = 'rgba(213, 229, 218, 0.10)'; ctx.fillRect(0, 0, W, H);
+    }
+  }
+  function render() {
+    const W = COLS * T, H = ROWS * T;
+    ctx.fillStyle = '#0B120F'; ctx.fillRect(0, 0, W, H);
+    drawNestGlow();
+    ctx.drawImage(hedge, 0, 0);
+    if (flashT > 0) {
+      ctx.save(); ctx.globalAlpha = flashT * 0.5;
+      ctx.fillStyle = '#9FD4EC'; ctx.fillRect(0, 0, W, H); ctx.restore();
+    }
+    drawPellets();
+    if (state !== G.CLEAR) for (const m of moths) drawMoth(m);
+    if (state !== G.OVER) drawLantern();
+    drawPops();
+    // a soft dusk vignette over the whole garden
+    const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.34, W / 2, H / 2, H * 0.78);
+    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(4, 10, 8, 0.55)');
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+    drawOverlay();
+  }
+
+  /* ============ loop ============ */
+  let last = performance.now();
+  function frame(now) {
+    let dt = (now - last) / 1000; last = now;
+    if (dt > 0.05) dt = 0.05;
+    if (!paused) update(dt);
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  /* ============ input ============ */
+  const KEYMAP = {
+    KeyI: 'up', KeyJ: 'left', KeyK: 'down', KeyL: 'right',
+    ArrowUp: 'up', ArrowLeft: 'left', ArrowDown: 'down', ArrowRight: 'right',
+  };
+  function steer(dir) {
+    if (state === G.TITLE || state === G.OVER) { newGame(); }
+    player.want = dir;
+  }
+  function togglePause() {
+    if (state === G.TITLE || state === G.OVER) return;
+    paused = !paused; last = performance.now();
+  }
+  document.addEventListener('keydown', ev => {
+    const dir = KEYMAP[ev.code];
+    if (dir) {
+      ev.preventDefault();
+      steer(dir);
+      const k = { up: 'I', left: 'J', down: 'K', right: 'L' }[dir];
+      const btn = document.querySelector(`[data-key="${k}"]`);
+      if (btn) btn.classList.add('down');
+      return;
+    }
+    if (ev.code === 'Space') { ev.preventDefault(); if (state === G.TITLE || state === G.OVER) newGame(); else togglePause(); }
+    if (ev.code === 'KeyP' && !ev.repeat) togglePause();
+  });
+  document.addEventListener('keyup', ev => {
+    const dir = KEYMAP[ev.code];
+    if (!dir) return;
+    const k = { up: 'I', left: 'J', down: 'K', right: 'L' }[dir];
+    const btn = document.querySelector(`[data-key="${k}"]`);
+    if (btn) btn.classList.remove('down');
+  });
+  document.querySelectorAll('[data-key]').forEach(b => {
+    const dir = { I: 'up', J: 'left', K: 'down', L: 'right' }[b.dataset.key];
+    b.addEventListener('pointerdown', ev => { ev.preventDefault(); steer(dir); });
+  });
+  // swipes on the garden itself
+  let touch = null;
+  canvas.addEventListener('pointerdown', ev => { touch = { x: ev.clientX, y: ev.clientY }; if (state === G.TITLE || state === G.OVER) newGame(); });
+  canvas.addEventListener('pointermove', ev => {
+    if (!touch) return;
+    const dx = ev.clientX - touch.x, dy = ev.clientY - touch.y;
+    if (Math.hypot(dx, dy) < 22) return;
+    steer(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
+    touch = { x: ev.clientX, y: ev.clientY };
+  });
+  canvas.addEventListener('pointerup', () => { touch = null; });
+  canvas.addEventListener('pointercancel', () => { touch = null; });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && state === G.PLAY && !paused) togglePause(); });
+
+  el.soundBtn.setAttribute('aria-pressed', String(sound));
+  el.soundBtn.textContent = sound ? 'Sound on' : 'Sound off';
+  el.soundBtn.addEventListener('click', () => {
+    sound = !sound;
+    el.soundBtn.setAttribute('aria-pressed', String(sound));
+    el.soundBtn.textContent = sound ? 'Sound on' : 'Sound off';
+    try { localStorage.setItem('mothgarden.sound', sound ? 'on' : 'off'); } catch (e) {}
+  });
+  document.getElementById('newBtn').addEventListener('click', newGame);
+
+  /* ============ boot ============ */
+  loadPellets(); placeActors(); refreshPips();
+  state = G.TITLE;
+  requestAnimationFrame(frame);
+})();
+</script>
+</body></html>

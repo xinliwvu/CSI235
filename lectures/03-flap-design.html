@@ -1,0 +1,1506 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flap: A Game in 40 Steps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* A lecture deck, committed to one light "studio wall" look so it survives a bright classroom projector. */
+:root{
+  --paper:#F4F4F1; --panel:#FFFFFF; --panel-2:#FBFAF7;
+  --ink:#16181B; --ink-2:#535A61; --ink-3:#8A9198; --rule:#DEDCD5;
+  --bamboo:#1F5C4A;      /* structure, headings, primary marks */
+  --dusk:#C4562F;        /* the live / runnable things */
+  --code-bg:#1A2026; --code-ink:#E4E8EA; --code-dim:#7E8A93;
+  --predict:#A96A08; --poll:#1F5C4A; --pair:#2B5896; --debug:#A3302A;
+  --good:#2E7D5B;
+  --shadow:0 24px 50px -30px rgba(20,24,20,.5), 0 2px 6px -2px rgba(20,24,20,.14);
+  --sw:1280px; --sh:720px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Source Sans 3","Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.5;
+  overflow:hidden;
+}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--dusk);outline-offset:2px}
+
+/* ---------- shell ---------- */
+.deck{position:fixed;inset:0;display:grid;grid-template-rows:1fr auto;}
+.stagewrap{position:relative;overflow:hidden}
+.stage{
+  position:absolute;top:0;left:0;width:var(--sw);height:var(--sh);
+  transform-origin:top left;background:var(--panel);
+  box-shadow:var(--shadow);border-radius:4px;overflow:hidden;
+}
+.slide{position:absolute;inset:0;padding:52px 64px 62px;display:none;flex-direction:column;background:var(--panel)}
+.slide.on{display:flex}
+.slide.pad-tight{padding:40px 52px 56px}
+
+/* ---------- slide furniture ---------- */
+.eyebrow{
+  font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;
+  color:var(--ink-3);display:flex;align-items:center;gap:12px;margin-bottom:14px;flex:0 0 auto;
+}
+.eyebrow .tick{width:26px;height:2px;background:var(--bamboo);border-radius:1px}
+h1.big{font-family:"Bricolage Grotesque",Impact,sans-serif;font-weight:800;font-size:76px;line-height:.98;letter-spacing:-.02em;margin:0;text-wrap:balance}
+h2{font-family:"Bricolage Grotesque",Impact,sans-serif;font-weight:700;font-size:42px;line-height:1.06;letter-spacing:-.015em;margin:0 0 18px;text-wrap:balance;flex:0 0 auto}
+h3{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:19px;margin:0 0 8px;letter-spacing:-.005em}
+p{margin:0 0 14px;font-size:21px;line-height:1.44;max-width:34em}
+p.lead{font-size:25px;color:var(--ink-2);max-width:30em}
+.small{font-size:17px;color:var(--ink-2)}
+.body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:18px;overflow:hidden}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:34px;flex:1 1 auto;min-height:0;overflow:hidden}
+.cols.wide-left{grid-template-columns:1.25fr 1fr}
+.cols.wide-right{grid-template-columns:1fr 1.35fr}
+.stack{display:flex;flex-direction:column;gap:14px;min-height:0}
+em.key{font-style:normal;font-weight:600;color:var(--bamboo)}
+strong{font-weight:600}
+ul.pts{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px}
+ul.pts li{position:relative;padding-left:26px;font-size:20px;line-height:1.36}
+ul.pts li::before{content:"";position:absolute;left:2px;top:.55em;width:9px;height:9px;border-radius:2px;background:var(--bamboo)}
+ul.pts.num{counter-reset:n}
+ul.pts.num li{counter-increment:n;padding-left:38px}
+ul.pts.num li::before{content:counter(n);all:unset;position:absolute;left:0;top:.06em;width:24px;height:24px;border-radius:5px;background:var(--bamboo);color:#fff;font:700 13px/24px "JetBrains Mono",monospace;text-align:center;counter-increment:none}
+.note-line{font-size:17px;color:var(--ink-3);border-top:1px solid var(--rule);padding-top:12px;margin-top:auto}
+
+/* code */
+pre.code{
+  margin:0;background:var(--code-bg);color:var(--code-ink);border-radius:8px;
+  padding:18px 20px;font-family:"JetBrains Mono",monospace;font-size:16.5px;line-height:1.62;
+  overflow:auto;max-height:100%;tab-size:2;
+}
+pre.code.sm{font-size:14.5px;line-height:1.55;padding:14px 16px}
+pre.code .c{color:var(--code-dim)}
+pre.code .k{color:#8FD3B6}
+pre.code .n{color:#F0B27A}
+pre.code .s{color:#9DC7E8}
+pre.code mark{background:rgba(196,86,47,.28);color:#FFD9C7;border-radius:3px;padding:0 2px}
+pre.code mark.ok{background:rgba(46,125,91,.3);color:#B6E9CE}
+.codecap{font-size:14px;color:var(--ink-3);font-family:"JetBrains Mono",monospace;margin-top:7px}
+
+/* panels */
+.card{background:var(--panel-2);border:1px solid var(--rule);border-radius:9px;padding:18px 20px}
+.card h3{margin-bottom:6px}
+.card p{font-size:18px;margin-bottom:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:19px;align-items:baseline}
+.kv dt{font-family:"JetBrains Mono",monospace;font-size:16px;color:var(--dusk);font-weight:700}
+.kv dd{margin:0;color:var(--ink-2)}
+
+table.tune{border-collapse:collapse;font-size:18px;width:100%}
+table.tune th,table.tune td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--rule)}
+table.tune th{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+table.tune td.num{font-family:"JetBrains Mono",monospace;font-variant-numeric:tabular-nums}
+
+/* activity chrome — every activity is colour + an explicit label, never colour alone */
+.act{border-left:5px solid var(--rule);padding-left:20px;display:flex;flex-direction:column;gap:12px;flex:1 1 auto;min-height:0;overflow:hidden}
+.act.predict{border-color:var(--predict)}
+.act.poll{border-color:var(--poll)}
+.act.pair{border-color:var(--pair)}
+.act.debug{border-color:var(--debug)}
+.chip{
+  display:inline-flex;align-items:center;gap:9px;align-self:flex-start;
+  font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
+  padding:5px 11px;border-radius:4px;color:#fff;
+}
+.act.predict .chip{background:var(--predict)}
+.act.poll .chip{background:var(--poll)}
+.act.pair .chip{background:var(--pair)}
+.act.debug .chip{background:var(--debug)}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.85)}
+.ask{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:33px;line-height:1.14;margin:0;text-wrap:balance;flex:0 0 auto}
+.act.poll .ask{font-size:29px}
+.ctrls{flex:0 0 auto}
+
+/* options */
+.opts{display:flex;flex-direction:column;gap:8px;flex:1 1 auto;min-height:0;overflow:auto}
+.opt{
+  display:grid;grid-template-columns:34px 1fr auto;gap:14px;align-items:center;
+  border:1px solid var(--rule);background:var(--panel);border-radius:7px;padding:9px 13px;
+  font-size:18.5px;text-align:left;cursor:pointer;position:relative;overflow:hidden;
+}
+.opt .lt{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:17px;color:var(--ink-3);
+  border:1px solid var(--rule);border-radius:5px;width:30px;height:30px;display:grid;place-items:center;background:var(--panel-2)}
+.opt .bar{position:absolute;left:0;top:0;bottom:0;background:rgba(31,92,74,.13);border-radius:0 4px 4px 0;transition:width .35s ease;z-index:0}
+.opt > *{position:relative;z-index:1}
+.opt .cnt{font-family:"JetBrains Mono",monospace;font-size:16px;color:var(--ink-2);font-variant-numeric:tabular-nums;min-width:2.4em;text-align:right}
+.opt:hover{border-color:var(--ink-3)}
+.opt.picked{border-color:var(--bamboo);box-shadow:inset 0 0 0 1px var(--bamboo)}
+.opt.right{border-color:var(--good);box-shadow:inset 0 0 0 1px var(--good)}
+.opt.right .lt{background:var(--good);color:#fff;border-color:var(--good)}
+.opt.right .bar{background:rgba(46,125,91,.16)}
+.opt .verdict{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--good);white-space:nowrap}
+.opt.wrong .verdict{color:var(--ink-3)}
+.why{display:none;font-size:15.5px;color:var(--ink-2);line-height:1.4;margin-top:3px}
+.opt.shown .why{display:block}
+.optwrap{display:flex;flex-direction:column}
+
+/* controls row inside slides */
+.ctrls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.b{border:1px solid var(--rule);background:var(--panel);border-radius:6px;padding:8px 14px;font-size:16px;cursor:pointer;font-weight:600}
+.b:hover{border-color:var(--ink-3)}
+.b.go{background:var(--dusk);border-color:var(--dusk);color:#fff}
+.b.dark{background:var(--bamboo);border-color:var(--bamboo);color:#fff}
+.b.tiny{padding:5px 10px;font-size:14px;font-weight:400}
+.b[aria-pressed="true"]{border-color:var(--dusk);color:var(--dusk)}
+
+/* timer */
+.timer{display:flex;align-items:center;gap:16px}
+.timer .t{font-family:"JetBrains Mono",monospace;font-size:56px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.timer .t.low{color:var(--dusk)}
+.tbar{height:6px;background:var(--rule);border-radius:3px;overflow:hidden;flex:1 1 auto;min-width:120px}
+.tbar i{display:block;height:100%;background:var(--pair);border-radius:3px;transition:width .25s linear}
+
+/* demo frames */
+.demo{background:var(--panel-2);border:1px solid var(--rule);border-radius:9px;padding:14px;display:flex;flex-direction:column;gap:10px;min-height:0}
+.demo{overflow:hidden}
+.demo .cwrap{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center}
+.demo canvas{display:block;background:#101418;border-radius:6px;max-width:100%;max-height:100%;width:auto;height:auto}
+.demo .row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:15px;color:var(--ink-2)}
+.demo label{display:flex;align-items:center;gap:8px;font-size:14.5px;font-family:"JetBrains Mono",monospace}
+.demo input[type=range]{width:118px;accent-color:var(--dusk)}
+.readout{font-family:"JetBrains Mono",monospace;font-size:15px;color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:8px 11px;font-variant-numeric:tabular-nums;line-height:1.5}
+.readout b{color:var(--dusk)}
+.readout .t{color:var(--good);font-weight:700}
+.readout .f{color:var(--debug);font-weight:700}
+.live{display:inline-flex;align-items:center;gap:7px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--dusk);font-weight:600}
+.live .d{width:8px;height:8px;border-radius:50%;background:var(--dusk);animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@media (prefers-reduced-motion: reduce){.live .d{animation:none}}
+
+/* diagram */
+.flow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.node{border:2px solid var(--bamboo);border-radius:8px;padding:12px 16px;font-weight:600;font-size:19px;background:var(--panel);text-align:center}
+.node.alt{border-color:var(--dusk);color:var(--dusk)}
+.node small{display:block;font-weight:400;font-size:14px;color:var(--ink-3);margin-top:2px;font-family:"JetBrains Mono",monospace}
+.arrow{color:var(--ink-3);font-size:22px}
+
+/* title slide */
+.title-slide{justify-content:center;background:
+  radial-gradient(120% 130% at 12% 0%, #FFFFFF 0%, #F0F1EC 55%, #E8EAE3 100%)}
+.title-slide .rule{width:88px;height:5px;background:var(--dusk);border-radius:3px;margin:0 0 26px}
+.title-slide .meta{display:flex;gap:34px;margin-top:34px;font-size:17px;color:var(--ink-2);flex-wrap:wrap}
+.title-slide .meta b{display:block;font-size:13px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin-bottom:3px;font-weight:600}
+
+/* footer / chrome */
+.chrome{
+  display:flex;align-items:center;gap:14px;padding:9px 16px;background:var(--panel);
+  border-top:1px solid var(--rule);font-size:13.5px;color:var(--ink-2);flex-wrap:wrap;
+}
+.chrome .grow{flex:1 1 auto}
+.prog{height:4px;background:var(--rule);border-radius:2px;width:190px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--bamboo);transition:width .25s ease}
+.count{font-family:"JetBrains Mono",monospace;font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink)}
+.chrome kbd{font-family:"JetBrains Mono",monospace;font-size:11.5px;border:1px solid var(--rule);border-radius:3px;padding:1px 5px;background:var(--panel-2)}
+.notes{display:none;padding:12px 18px;background:#FFFDF6;border-top:1px solid var(--rule);font-size:15px;color:var(--ink-2);max-height:26vh;overflow:auto}
+.notes.on{display:block}
+.notes b{color:var(--ink)}
+.notes ul{margin:6px 0 0;padding-left:20px}
+
+/* overview */
+.over{position:fixed;inset:0;background:rgba(244,244,241,.97);z-index:40;display:none;overflow:auto;padding:30px}
+.over.on{display:block}
+.over h2{font-size:26px;margin-bottom:16px}
+.over .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px}
+.over button{display:grid;grid-template-columns:34px 1fr;gap:10px;text-align:left;background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:9px 11px;cursor:pointer;font-size:15px;align-items:center}
+.over button:hover{border-color:var(--bamboo)}
+.over button .n{font-family:"JetBrains Mono",monospace;font-weight:700;color:var(--ink-3);font-size:13px}
+.over button .tag{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.over button.a-predict .n{color:var(--predict)}.over button.a-poll .n{color:var(--poll)}
+.over button.a-pair .n{color:var(--pair)}.over button.a-debug .n{color:var(--debug)}
+
+/* student join panel */
+.join{position:fixed;right:14px;bottom:56px;z-index:45;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.joinpanel{
+  display:none;width:330px;background:var(--panel);border:1px solid var(--rule);border-radius:10px;
+  box-shadow:var(--shadow);padding:16px;
+}
+.joinpanel.on{display:block}
+.joinpanel h3{margin-bottom:4px}
+.joinpanel .st{font-size:14px;color:var(--ink-3);margin-bottom:12px}
+.joinpanel .q{font-size:17px;font-weight:600;margin:0 0 10px;line-height:1.3}
+.joinpanel .opt{font-size:16px;padding:9px 11px}
+.joinpanel .opt .lt{width:26px;height:26px;font-size:15px}
+</style>
+</head><body>
+<div class="deck">
+  <div class="stagewrap" id="stagewrap"><div class="stage" id="stage"></div></div>
+  <div class="notes" id="notes"></div>
+  <div class="chrome">
+    <span class="count"><span id="cur">1</span> / 40</span>
+    <span class="prog"><i id="prog"></i></span>
+    <span id="slideTag" style="font-weight:600"></span>
+    <span class="grow"></span>
+    <span id="liveState" class="small"></span>
+    <span><kbd>←</kbd><kbd>→</kbd> move · <kbd>N</kbd> notes · <kbd>O</kbd> map · <kbd>F</kbd> full screen</span>
+  </div>
+</div>
+
+<div class="over" id="over">
+  <h2>All 40 slides</h2>
+  <div class="list" id="overList"></div>
+</div>
+
+<div class="join">
+  <div class="joinpanel" id="joinPanel">
+    <h3>Student voting</h3>
+    <div class="st" id="joinStatus">Connecting…</div>
+    <div id="joinBody"></div>
+  </div>
+  <button class="b tiny" id="joinBtn">I'm a student — vote here</button>
+</div>
+
+<script>
+/* =======================================================================
+   FLAP — a 40-slide CS1 lecture that builds a one-button game.
+   Content, demos and the active-learning engine live in this one file.
+   ======================================================================= */
+const SLIDES = [];
+const S = (o) => { SLIDES.push(o); return o; };
+
+/* ---------- 1–5: frame the problem ---------- */
+S({kind:'title', title:'Flap',
+  html:`<div class="rule"></div>
+   <h1 class="big">One button.<br>Forty steps.</h1>
+   <p class="lead" style="margin-top:22px">We are going to build the whole game you just played — physics, obstacles, collisions, scoring — from an empty file.</p>
+   <div class="meta">
+     <div><b>Course</b>CS1 · Introduction to Programming</div>
+     <div><b>Language</b>JavaScript + HTML canvas</div>
+     <div><b>You will need</b>a text editor and a browser. Nothing else.</div>
+   </div>`,
+  notes:`Open cold: "Everything on screen today is about 300 lines. You have written 300 lines before."<br>Housekeeping: the deck is interactive — arrow keys move, live demos run in the slides.`}),
+
+S({kind:'content', eyebrow:'The finished thing', title:'Play it first, explain it after',
+  demo:'game',
+  html:`<div class="cols wide-right"><div class="stack">
+    <p>Sixty seconds. Everyone plays.</p>
+    <p class="small">While you play, watch yourself play. What are you actually controlling? What is the computer deciding? What number is going up, and what makes it stop?</p>
+    <ul class="pts"><li>Tap to fly · thread the gaps</li><li>One button, no steering</li><li>The gaps narrow as your score rises</li></ul>
+    <p class="small" style="margin-top:auto;color:var(--ink-3)">Click the game, then press <b>Space</b>.</p>
+  </div><div class="demo" data-slot="demo"></div></div>`,
+  notes:`Let it run the full minute. Resist explaining. The next slide harvests what they noticed.<br><b>Tip:</b> click the canvas first so it takes the keyboard.`}),
+
+S({kind:'content', eyebrow:'Where we are going', title:'By the end of today you can write each of these',
+  html:`<div class="cols"><div class="stack">
+    <ul class="pts num">
+      <li>A <em class="key">game loop</em> that runs 60 times a second</li>
+      <li>Motion from <em class="key">velocity and gravity</em>, in two lines</li>
+      <li>Obstacles that <em class="key">scroll and recycle</em></li>
+      <li>A <em class="key">collision test</em> that is one boolean</li>
+    </ul></div><div class="stack">
+    <ul class="pts num" style="counter-reset:n 4">
+      <li>A <em class="key">state machine</em> for ready / playing / dead</li>
+      <li>Scoring and a <em class="key">difficulty curve</em></li>
+    </ul>
+    <div class="card" style="margin-top:8px">
+      <h3>The honest line count</h3>
+      <p>Physics: 4 lines. Collisions: 6. Obstacles: 20. The other 250 are drawing and polish — which is exactly the ratio you should expect in real software.</p>
+    </div></div></div>`,
+  notes:`Name the ratio out loud. Students consistently expect the "hard" part to be the physics; it is the smallest part of the file.`}),
+
+S({kind:'activity', act:'pair', eyebrow:'Think · pair · share', title:'Turn the game into nouns and verbs',
+  timer:180,
+  html:`<div class="act pair">
+    <span class="chip"><span class="dot"></span>Think · Pair · Share &nbsp;·&nbsp; 3 minutes</span>
+    <p class="ask">Alone for 1 minute, then with a neighbour: write down every <em class="key">noun</em> the game has to remember, and every <em class="key">verb</em> it does 60 times a second.</p>
+    <div class="cols" style="gap:24px">
+      <div class="card"><h3>Nouns — things with state</h3><p class="small">What would you have to write down to pause the game and resume it tomorrow?</p></div>
+      <div class="card"><h3>Verbs — things that change state</h3><p class="small">What happens between one frame and the next?</p></div>
+    </div>
+    <div data-slot="timer"></div>
+  </div>`,
+  reveal:`<div class="grid2" style="margin-top:4px">
+     <div class="card"><h3>Nouns we will actually declare</h3><p class="small"><code>bird.y</code>, <code>bird.vy</code>, <code>stalks[]</code> (each with <code>x, gapY, gapH, passed</code>), <code>score</code>, <code>state</code></p></div>
+     <div class="card"><h3>Verbs we will actually write</h3><p class="small">fall · flap · scroll · recycle · test collision · score · change state</p></div></div>`,
+  notes:`Collect 3–4 answers on the board before revealing. Push on "the bird moves" → "moves how? by how much? decided by what?"<br>The payoff: their list <i>is</i> the program's variable declarations. Say that explicitly.`}),
+
+S({kind:'content', eyebrow:'The plan', title:'Six questions, and the game is done',
+  html:`<div class="cols"><div class="stack">
+     <dl class="kv">
+       <dt>1</dt><dd>How does anything move at all? <span class="small">(slides 6–13)</span></dd>
+       <dt>2</dt><dd>How does the bird fall and flap? <span class="small">(14–20)</span></dd>
+       <dt>3</dt><dd>Where do the stalks come from? <span class="small">(21–26)</span></dd>
+       <dt>4</dt><dd>How do we know we hit one? <span class="small">(27–31)</span></dd>
+       <dt>5</dt><dd>Who decides the game is over? <span class="small">(32–35)</span></dd>
+       <dt>6</dt><dd>What makes it feel good? <span class="small">(36–40)</span></dd>
+     </dl></div>
+     <div class="stack"><div class="card"><h3>How we will work</h3>
+     <p>Each part gets a live demo you can break on purpose. Four times today you will vote; three times you will talk to a neighbour; three times I will show you code that is wrong and you will find the bug before I do.</p></div>
+     <div class="card"><h3>Rule for the hour</h3><p>If a slide has a number on it and you cannot say what the units are, stop me.</p></div>
+     </div></div>`,
+  notes:`This is the roadmap slide. Point at it again whenever the class looks lost — "we are on question 3".`}),
+
+/* ---------- 6–13: the loop and dt ---------- */
+S({kind:'content', eyebrow:'Question 1 · Motion', title:'Every game is one loop',
+  html:`<div class="stack">
+    <div class="flow" style="margin:10px 0 4px">
+      <div class="node">Read input<small>did they tap?</small></div><span class="arrow">→</span>
+      <div class="node">Update<small>move everything</small></div><span class="arrow">→</span>
+      <div class="node">Draw<small>paint one frame</small></div><span class="arrow">→</span>
+      <div class="node alt">Repeat<small>~60× per second</small></div>
+    </div>
+    <p>Nothing in a game moves continuously. The bird is a <em class="key">number</em> that jumps sixty times a second, and your eye does the rest.</p>
+    <div class="grid2">
+      <div class="card"><h3>Update</h3><p class="small">Pure arithmetic on the nouns. No drawing here — ever.</p></div>
+      <div class="card"><h3>Draw</h3><p class="small">Reads the nouns and paints. Changes nothing.</p></div>
+    </div>
+    <p class="note-line">Keeping those two apart is the single most useful habit in this file. It is why we can pause, rewind, or test the game without a screen.</p></div>`,
+  notes:`The update/draw split is the one architectural idea in the whole lecture. Repeat it at slides 21, 27, 32.`}),
+
+S({kind:'content', eyebrow:'Question 1 · Motion', title:'The loop, in twelve lines',
+  html:`<div class="cols wide-left"><pre class="code"><span class="c">// the only clock we get: the browser calls us before each repaint</span>
+<span class="k">let</span> last = performance.now();
+
+<span class="k">function</span> <span class="n">frame</span>(now) {
+  <span class="k">let</span> dt = (now - last) / <span class="s">1000</span>;   <span class="c">// seconds since last frame</span>
+  last = now;
+
+  update(dt);                       <span class="c">// move the nouns</span>
+  render();                         <span class="c">// paint them</span>
+
+  requestAnimationFrame(frame);     <span class="c">// do it again</span>
+}
+requestAnimationFrame(frame);</pre>
+   <div class="stack">
+     <div class="card"><h3><code>requestAnimationFrame</code></h3><p class="small">Asks the browser for the next frame. It fires when the screen is ready to repaint — and pauses when the tab is hidden, which <code>setInterval</code> will not do.</p></div>
+     <div class="card"><h3>Why divide by 1000</h3><p class="small"><code>now</code> is milliseconds. Working in seconds means every speed we write is in <b>pixels per second</b> — a number we can reason about.</p></div>
+   </div></div>`,
+  notes:`Ask: "what is <code>dt</code> on a good frame?" → about 0.0167 s. Write it on the board; it comes back on slide 9.`}),
+
+S({kind:'content', eyebrow:'Live', title:'That loop, actually running', demo:'loop',
+  html:`<div class="cols wide-right"><div class="stack">
+    <p>The square below is moved by exactly the loop on the previous slide. Nothing else is happening.</p>
+    <ul class="pts"><li><b>frames</b> counts calls to <code>frame()</code></li><li><b>dt</b> is the gap the browser handed us</li><li><b>x</b> is the only noun</li></ul>
+    <p class="small">Drag the speed. Notice that dt wobbles frame to frame — it is never exactly 1/60.</p>
+  </div><div class="demo" data-slot="demo"></div></div>`,
+  notes:`Point at the wobbling dt. That wobble is the whole reason for the next four slides.`}),
+
+S({kind:'activity', act:'poll', eyebrow:'Everybody votes', title:'A question about that loop',
+  poll:{qid:'q1', ask:'The loop runs 60 times a second. Each pass moves the square 2&nbsp;px. How far does it travel in 3 seconds?',
+    opts:[
+      {t:'6 px', why:'That is 2 px × 3 — one move per second, not per frame.'},
+      {t:'120 px', why:'That is 2 × 60. Close, but that is one second, not three.'},
+      {t:'360 px', why:'2 px × 60 frames × 3 s. Correct arithmetic for a 60&nbsp;Hz screen.', ok:true},
+      {t:'It depends on the computer', why:'Also true — and this is the answer that matters. On a 144&nbsp;Hz laptop the same code travels 864 px. Hold on to this.'}
+    ]},
+  notes:`Deliberate trap: C is arithmetically right, D is <i>engineering</i> right. Reveal C as correct, then argue for D and let the room object. That argument is slide 10.`}),
+
+S({kind:'content', eyebrow:'Question 1 · Motion', title:'Frames are not a clock',
+  html:`<p class="lead" style="margin-bottom:16px">Your phone runs at 60 frames a second, a gaming laptop at 144, an old lab machine under load at 30. Speed written <em class="key">per frame</em> is a different game on every one of them.</p>
+   <div class="cols"><div class="stack">
+    <pre class="code sm"><span class="c">// per frame — wrong</span>
+x = x + <span class="s">2</span>;              <span class="c">// 2 px per <b>frame</b></span>
+
+<span class="c">// per second — right</span>
+x = x + <span class="s">120</span> * dt;      <span class="c">// 120 px per <b>second</b></span></pre>
+    <div class="kv" style="margin-top:12px">
+      <dt>60 Hz</dt><dd>120 × 0.0167 = 2 px each frame</dd>
+      <dt>144 Hz</dt><dd>120 × 0.0069 = 0.83 px each frame</dd>
+      <dt>both</dt><dd>120 px after one second</dd>
+    </div>
+    <p class="small" style="margin-top:10px">Different arithmetic, same distance. That is the whole job of <code>dt</code>.</p>
+  </div><div class="stack">
+    <div class="card"><h3>And now the units check for free</h3>
+      <p class="small">Once speeds are per second, a line can be checked without running it.</p></div>
+    <pre class="code sm">x  = x  + vx * dt;   <span class="c">// px + (px/s)(s) ✓</span>
+vy = vy +  g * dt;   <span class="c">// px/s + (px/s²)(s) ✓</span>
+x  = x  + vx;        <span class="c">// px + px/s   ✗ nonsense</span></pre>
+    <p class="small">If the units do not cancel, the line is wrong — the same habit that catches errors on a physics problem set. Our constants: <code>gravity 1050 px/s²</code>, <code>flap −360 px/s</code>, <code>scroll 130 px/s</code>.</p>
+  </div></div>`,
+  notes:`Two ideas on one slide because they are one idea: per-second units make both the physics portable <i>and</i> checkable.<br>This slide sets up both the predict demo next and the units poll on slide 15.`}),
+
+S({kind:'activity', act:'predict', eyebrow:'Predict, then run', title:'What happens on a slow computer?',
+  demo:'dt',
+  html:`<div class="act predict">
+    <span class="chip"><span class="dot"></span>Predict → then we run it</span>
+    <p class="ask">Two birds fall. The left one uses <code>y += v</code>. The right one uses <code>y += v*dt</code>. I am about to throttle the loop to 20&nbsp;frames per second. Predict: what do you see?</p>
+    <div class="cols wide-right">
+      <div class="stack">
+        <ul class="pts"><li>Hands up: the left bird falls <b>slower</b></li><li>Hands up: the left bird falls <b>faster</b></li><li>Hands up: <b>no difference</b></li></ul>
+        <p class="small">Commit out loud before I press the button. A prediction you did not say is not a prediction.</p>
+      </div>
+      <div class="demo" data-slot="demo"></div>
+    </div></div>`,
+  notes:`Take the vote by hands <b>before</b> clicking Throttle. Most rooms split evenly.<br>Answer: the per-frame bird slows to a third of its speed; the dt bird lands at the same time as always.`}),
+
+S({kind:'content', eyebrow:'Question 1 · Motion', title:'What we just proved',
+  html:`<div class="cols"><div class="stack">
+    <ul class="pts">
+      <li>Frame rate is <b>not</b> under your control</li>
+      <li>Anything written per-frame silently changes speed on every machine</li>
+      <li>Multiplying by <code>dt</code> makes the simulation agree with a wall clock</li>
+    </ul>
+    <div class="card"><h3>One more guard</h3>
+      <p class="small">Switch tabs for a minute and the next <code>dt</code> is enormous — the bird teleports through a stalk. So we clamp it:</p></div>
+  </div>
+  <div class="stack">
+    <pre class="code sm"><span class="k">let</span> dt = (now - last) / <span class="s">1000</span>;
+last = now;
+<mark class="ok"><span class="k">if</span> (dt > <span class="s">0.05</span>) dt = <span class="s">0.05</span>;</mark>  <span class="c">// never simulate
+                     // more than 50 ms at once</span></pre>
+    <p class="small">Three lines of arithmetic, and the game behaves identically on a phone, a projector and a ten-year-old lab machine. This is what "correct" buys you.</p>
+  </div></div>`,
+  notes:`The clamp is a real bug fix, not a nicety — demo it by tab-switching during the live game if there is time.`}),
+
+/* ---------- 14–20: gravity and the flap ---------- */
+S({kind:'content', eyebrow:'Question 2 · The bird', title:'A falling bird is three numbers',
+  html:`<div class="cols"><div class="stack">
+    <dl class="kv">
+      <dt>y</dt><dd><b>Position.</b> Where it is, in pixels from the top.</dd>
+      <dt>vy</dt><dd><b>Velocity.</b> How fast it is moving, px per second. Positive = downward.</dd>
+      <dt>g</dt><dd><b>Acceleration.</b> How fast the velocity changes, px per second per second.</dd>
+    </dl>
+    <p class="small" style="margin-top:10px">Only <code>y</code> and <code>vy</code> are variables. <code>g</code> is a constant we choose — this is a game, not the Earth.</p>
+  </div><div class="stack">
+    <div class="card"><h3>Why canvas <code>y</code> grows downward</h3>
+      <p class="small">Screens are drawn top to bottom, so <code>y = 0</code> is the top edge and gravity is a <b>positive</b> number. Every sign error in this section comes from forgetting that.</p></div>
+    <div class="card"><h3>The bird has no <code>x</code></h3>
+      <p class="small">It never moves sideways. The world scrolls past it. That decision alone removes half the code you would otherwise write.</p></div>
+  </div></div>`,
+  notes:`The "world scrolls, hero stays" trick is worth 30 seconds — it generalises to endless runners, side-scrollers, racing games.`}),
+
+S({kind:'content', eyebrow:'Question 2 · The bird', title:'The entire physics engine',
+  html:`<div class="cols wide-left"><div class="stack">
+    <pre class="code">function update(dt) {
+  bird.vy = bird.vy + <span class="n">GRAVITY</span> * dt;   <span class="c">// gravity changes speed</span>
+  bird.y  = bird.y  + bird.vy * dt;   <span class="c">// speed changes place</span>
+}</pre>
+    <p class="codecap">Two lines. This is called Euler integration, and it is what nearly every 2-D game ships with.</p>
+    <p style="margin-top:14px">Read it as a sentence: <em class="key">gravity pulls on the speed; the speed carries the bird.</em> Order matters — velocity first, then position.</p>
+  </div><div class="stack">
+    <div class="card"><h3>Is it exact?</h3><p class="small">No. It is a straight-line approximation over each 16&nbsp;ms step, so it drifts slightly from the true parabola. At 60&nbsp;Hz that error is far below one pixel, and no player will ever see it.</p></div>
+    <div class="card"><h3>When would that matter?</h3><p class="small">Orbits, springs, anything simulated for minutes. Then you reach for better integrators. For a bird that lives eleven seconds, this is the right tool.</p></div>
+  </div></div>`,
+  notes:`Do not oversell Euler. Naming its limitation honestly is what separates a games lecture from a numerical methods lecture — and it plants a seed for the latter.`}),
+
+S({kind:'activity', act:'poll', eyebrow:'Everybody votes', title:'Check the units',
+  poll:{qid:'q2', ask:'In our code <code>GRAVITY = 1050</code>. One thousand and fifty <em>what</em>?',
+    opts:[
+      {t:'pixels', why:'Pixels would be a distance — a fixed jump, not an acceleration.'},
+      {t:'pixels per second', why:'That is a velocity. It would be a constant fall speed with no acceleration at all — the bird would drop like a lift, not a stone.'},
+      {t:'pixels per second, per second', why:'It is multiplied by dt and added to a velocity, so it must be a velocity per unit time. The bird gains 1050 px/s of downward speed every second.', ok:true},
+      {t:'It has no units — it is just a tuning knob', why:'It <i>is</i> a tuning knob, but it still has units. Line up the code: (px/s²)(s) = px/s. That is what makes the line legal.'}
+    ]},
+  notes:`If the room splits between B and C, put both lines on the board and cancel the seconds. Do not just assert the answer.`}),
+
+S({kind:'content', eyebrow:'Question 2 · The bird', title:'The flap is an assignment, not an addition',
+  html:`<div class="cols"><div class="stack">
+    <pre class="code sm">function flap() {
+  bird.vy = <span class="n">FLAP</span>;      <span class="c">// = −360.  NOT +=</span>
+}</pre>
+    <p style="margin-top:14px">Every tap <em class="key">replaces</em> the bird's velocity instead of adding to it.</p>
+  </div><div class="stack">
+    <div class="card"><h3>Why replacing is the right call</h3>
+      <p class="small">One tap always produces exactly the same rise, whether the bird was hurtling down or drifting up. The control is <b>predictable</b>, so a death always feels like your mistake.</p></div>
+    <div class="card"><h3>What <code>+=</code> would give you</h3>
+      <p class="small">Mashing the button would stack velocity and rocket the bird off the top of the screen. Fun for four seconds; not a game.</p></div>
+  </div></div>`,
+  notes:`This is a <b>design</b> decision expressed as a one-character difference in code. Say that out loud — it is the most transferable idea in the lecture.`}),
+
+S({kind:'activity', act:'predict', eyebrow:'Predict, then run', title:'How high is one flap?',
+  demo:'flap',
+  html:`<div class="act predict">
+    <span class="chip"><span class="dot"></span>Predict → then we measure</span>
+    <p class="ask">With <code>g = 1050</code> and <code>flap = −360</code>: how high does one tap carry the bird, and how long until it is back where it started?</p>
+    <div class="cols wide-right"><div class="stack">
+      <p class="small">You have everything you need. Work it with the person next to you for ninety seconds — then the demo will measure it live and we compare.</p>
+      <div class="card"><h3>Hint</h3><p class="small">The bird stops rising when <code>vy</code> reaches 0. How long does gravity take to erase 360 px/s?</p></div>
+    </div><div class="demo" data-slot="demo"></div></div></div>`,
+  reveal:`<div class="grid2" style="margin-top:2px">
+     <div class="card"><h3>Time to the top</h3><p class="small"><code>t = 360 / 1050 = 0.34 s</code> — then the same again coming down: <b>0.69 s</b> of hang time.</p></div>
+     <div class="card"><h3>Height</h3><p class="small"><code>h = v² / 2g = 360² / 2100 ≈ 62 px</code> — about four bird-heights.</p></div></div>`,
+  notes:`They can derive this from the two lines of physics; that is the point. Then run the demo and let the measured numbers land within a pixel of the prediction.`}),
+
+S({kind:'content', eyebrow:'Live', title:'The tuning bench', demo:'flap2',
+  html:`<div class="cols wide-right"><div class="stack">
+    <p>Same two lines of physics. Only the constants change.</p>
+    <ul class="pts"><li>Heavy gravity, weak flap → a twitchy, punishing game</li><li>Light gravity, strong flap → floaty and dull</li><li>Somewhere between → the version your students liked</li></ul>
+    <p class="small">Find a pair of numbers you would ship. Write them down; we will compare them to ours on slide 37.</p>
+  </div><div class="demo" data-slot="demo"></div></div>`,
+  notes:`Invite one student to drive the sliders. Ask the room to call "too hard / too easy" — this is playtesting, compressed into ninety seconds.`}),
+
+S({kind:'content', eyebrow:'Question 2 · The bird', title:'One more line: terminal velocity',
+  html:`<div class="cols wide-left"><div class="stack">
+    <pre class="code">bird.vy = bird.vy + <span class="n">GRAVITY</span> * dt;
+<mark class="ok">bird.vy = Math.min(bird.vy, <span class="n">MAX_FALL</span>);</mark>   <span class="c">// 430 px/s</span>
+bird.y  = bird.y  + bird.vy * dt;</pre>
+    <p style="margin-top:14px">Without the clamp, a long fall builds enough speed to move the bird <b>past a whole stalk in a single frame</b> — and our collision test, which only looks at where things are <i>now</i>, never sees the hit.</p>
+  </div><div class="stack">
+    <div class="card"><h3>The bug it prevents</h3><p class="small">Called <b>tunnelling</b>. At 700 px/s and 60 Hz the bird jumps 12 px per frame; make the stalk thin enough or the bird fast enough and it passes straight through.</p></div>
+    <div class="card"><h3>The other reason</h3><p class="small">A capped fall speed is recoverable. Players can always save themselves with one tap, so a mistake feels survivable — right up until it isn't.</p></div>
+  </div></div>`,
+  notes:`Tunnelling is worth naming: it is the first time they meet the idea that discrete time has consequences for correctness, not just speed.`}),
+
+/* ---------- 21–26: obstacles ---------- */
+S({kind:'content', eyebrow:'Question 3 · The world', title:'A stalk is data, not a picture',
+  html:`<div class="cols"><div class="stack">
+    <pre class="code sm">{
+  x:      <span class="s">560</span>,     <span class="c">// left edge, pixels</span>
+  gapY:   <span class="s">180</span>,     <span class="c">// top of the opening</span>
+  gapH:   <span class="s">215</span>,     <span class="c">// how tall the opening is</span>
+  passed: <span class="k">false</span>    <span class="c">// have we scored it yet?</span>
+}</pre>
+    <p class="codecap">Four numbers. Everything you see on screen is drawn <i>from</i> these.</p>
+  </div><div class="stack">
+    <p>The drawing code can change completely — bamboo, pipes, icebergs — and none of the game logic notices.</p>
+    <div class="card"><h3>Why <code>passed</code> lives here</h3>
+      <p class="small">Scoring is a property of a <b>particular stalk</b>, not of the game. Putting the flag on the object is what stops one stalk scoring twice.</p></div>
+    <p class="note-line">This is the update/draw split again, in the shape of a data structure.</p>
+  </div></div>`,
+  notes:`Ask: "if we wanted moving stalks that slide up and down, what would we add?" → a <code>vy</code> field. The data model absorbs the feature.`}),
+
+S({kind:'content', eyebrow:'Question 3 · The world', title:'Making one, and making a row of them',
+  html:`<div class="cols wide-left"><pre class="code">function makeStalk(x) {
+  <span class="k">const</span> gap    = <span class="s">215</span>;                       <span class="c">// opening height</span>
+  <span class="k">const</span> margin = <span class="s">70</span>;                        <span class="c">// keep off the edges</span>
+  <span class="k">const</span> gapY   = margin +
+        Math.random() * (H - GROUND - margin*<span class="s">2</span> - gap);
+  <span class="k">return</span> { x, gapY, gapH: gap, passed: <span class="k">false</span> };
+}
+
+<span class="c">// four of them, evenly spaced, off to the right</span>
+<span class="k">let</span> x = W + <span class="s">240</span>;
+<span class="k">for</span> (<span class="k">let</span> i = <span class="s">0</span>; i &lt; <span class="s">4</span>; i++) {
+  stalks.push(makeStalk(x));
+  x += <span class="n">SPACING</span>;                              <span class="c">// 260 px apart</span>
+}</pre>
+   <div class="stack">
+     <div class="card"><h3>Why the margin</h3><p class="small">Without it <code>random()</code> will eventually put an opening flush against the ceiling, where no amount of skill saves you. Fairness is arithmetic here.</p></div>
+     <div class="card"><h3>Why exactly four</h3><p class="small">Screen width ÷ spacing, plus one entering and one leaving. Any more is memory you never draw.</p></div>
+   </div></div>`,
+  notes:`Have them compute "why four" rather than telling them: 480 px wide ÷ 260 px spacing ≈ 2 visible, +2 at the edges.`}),
+
+S({kind:'content', eyebrow:'Question 3 · The world', title:'Scrolling is subtraction. Recycling is the trick.',
+  html:`<div class="cols wide-left"><div class="stack">
+    <pre class="code">for (<span class="k">const</span> s of stalks) s.x -= speed * dt;      <span class="c">// the whole scroll</span>
+
+<span class="c">// when the leftmost one is fully off screen…</span>
+<span class="k">if</span> (stalks[<span class="s">0</span>].x &lt; -STALK_W) {
+  stalks.shift();                                <span class="c">// drop it</span>
+  <span class="k">const</span> last = stalks[stalks.length - <span class="s">1</span>];
+  stalks.push(makeStalk(last.x + <span class="n">SPACING</span>));      <span class="c">// re-use the slot</span>
+}</pre>
+    <p class="codecap">The array is always exactly four long. Forever.</p>
+  </div><div class="stack">
+    <div class="card"><h3>The alternative, and why not</h3>
+      <p class="small">Creating a new stalk every second and never removing the old ones works fine — for about four minutes. Then you are drawing four hundred invisible objects and the memory the browser has to clean up starts causing visible stutters.</p></div>
+    <div class="card"><h3>The name for this</h3><p class="small"><b>Object pooling.</b> Fixed-size reuse instead of allocate-and-discard. You will meet it again in networking, graphics and embedded code.</p></div>
+  </div></div>`,
+  notes:`"The array is always four long" is a great invariant to say out loud — invariants are how professionals reason about loops.`}),
+
+S({kind:'activity', act:'predict', eyebrow:'Predict, then run', title:'Watch the data, not the picture',
+  demo:'stalks',
+  html:`<div class="act predict">
+    <span class="chip"><span class="dot"></span>Predict → then we watch</span>
+    <p class="ask">Below, the four stalk objects are printed live beside the game. Predict what happens to the <b>array</b> at the moment the leftmost stalk disappears off screen.</p>
+    <div class="cols wide-right"><div class="stack">
+      <ul class="pts"><li>Does the array get longer?</li><li>Which object's <code>x</code> jumps, and to what?</li><li>What happens to its <code>passed</code> flag?</li></ul>
+      <p class="small">Watch the numbers, not the bamboo. The numbers are the program.</p>
+    </div><div class="demo" data-slot="demo"></div></div></div>`,
+  notes:`Pause on the recycle moment (there is a Step button). The re-used object gets a fresh gapY and <code>passed:false</code> — that reset is easy to forget and causes phantom scores.`}),
+
+S({kind:'activity', act:'poll', eyebrow:'Everybody votes', title:'A question about memory',
+  poll:{qid:'q3', ask:'A student plays for five minutes and scores 300. Roughly how many stalk objects exist in memory at the end?',
+    opts:[
+      {t:'About 4', why:'The array never grows. Every stalk that leaves the screen is re-used for the one entering — the same four objects circulate for the whole session.', ok:true},
+      {t:'About 300 — one per point', why:'That is how many were <i>scored</i>, not how many exist. Scoring flips a flag; it does not allocate anything.'},
+      {t:'It grows forever', why:'That is what happens if you only <code>push</code> and never <code>shift</code> — a real bug, and a common one, but not what our code does.'},
+      {t:'It depends on the frame rate', why:'Frame rate changes how often we scroll, not how many objects we keep. The array length is an invariant.'}
+    ]},
+  notes:`Follow-up if the room is quick: "what would make the answer C?" → deleting the <code>shift()</code>. That is the next slide's neighbourhood.`}),
+
+S({kind:'activity', act:'debug', eyebrow:'Find the bug', title:'This recycles wrong. Where?',
+  html:`<div class="act debug">
+    <span class="chip"><span class="dot"></span>Debug this · 2 minutes with a neighbour</span>
+    <div class="cols wide-left">
+      <pre class="code">let spawnX = W + 240;
+
+function recycle() {
+  if (stalks[0].x &lt; -STALK_W) {
+    stalks.shift();
+    stalks.push(makeStalk(spawnX + SPACING));
+  }
+}</pre>
+      <div class="stack">
+        <p>It compiles. It runs. The first few stalks look perfect, then the game becomes unplayable.</p>
+        <ul class="pts"><li>What is <code>spawnX</code> at the moment this runs?</li><li>What <i>should</i> the new stalk's x be measured from?</li></ul>
+      </div>
+    </div>
+  </div>`,
+  reveal:`<div class="cols wide-left" style="margin-top:6px">
+    <pre class="code sm">stalks.push(makeStalk(<mark>spawnX</mark> + SPACING));           <span class="c">// bug</span>
+stalks.push(makeStalk(<mark class="ok">stalks[stalks.length-1].x</mark> + SPACING));  <span class="c">// fix</span></pre>
+    <div class="card"><h3>What actually happens</h3><p class="small"><code>spawnX</code> never changes, so every recycled stalk is placed at the same fixed x — which by then is off the <i>left</i> of the screen. They pile up on top of each other and arrive as one impassable wall. The spacing must be measured from the <b>last stalk</b>, which is itself moving.</p></div></div>`,
+  notes:`Let them sit in it for the full two minutes. The lesson: a constant that "looks like" the right value is the most expensive kind of bug, because the program never complains.`}),
+
+/* ---------- 27–31: collision ---------- */
+S({kind:'content', eyebrow:'Question 4 · Collision', title:'Collision is geometry, not graphics',
+  html:`<div class="cols"><div class="stack">
+    <p>The bird on screen has wings, a tail and a beak. The bird the <em class="key">game</em> knows about is a circle: a centre and a radius.</p>
+    <p>Each stalk is two rectangles with a gap between them.</p>
+    <div class="card"><h3>So the question becomes</h3>
+      <p class="small">Does a circle overlap a rectangle? That is a question with a three-line answer.</p></div>
+  </div><div class="stack">
+    <div class="card"><h3>Why simplify at all</h3>
+      <p class="small">Testing the actual drawn shape would mean comparing thousands of pixels sixty times a second. Testing a circle against a box is four comparisons. The player cannot tell the difference — which makes the approximation free.</p></div>
+    <div class="card"><h3>The general lesson</h3>
+      <p class="small">Nearly every optimisation in games is "replace the thing with a simpler thing nobody can tell apart."</p></div>
+  </div></div>`,
+  notes:`Draw the circle over the bird on the whiteboard. Students who have seen the sprite struggle to stop thinking in feathers.`}),
+
+S({kind:'content', eyebrow:'Question 4 · Collision', title:'The test, written out',
+  html:`<div class="cols wide-left"><div class="stack">
+    <pre class="code">function hitsStalk(s) {
+  <span class="c">// 1. are we horizontally inside the stalk at all?</span>
+  <span class="k">const</span> overlapX = BIRD_X + R &gt; s.x &amp;&amp; BIRD_X - R &lt; s.x + STALK_W;
+  <span class="k">if</span> (!overlapX) <span class="k">return</span> <span class="k">false</span>;
+
+  <span class="c">// 2. if so, are we outside the opening?</span>
+  <span class="k">return</span> bird.y - R &lt; s.gapY            <span class="c">// clipped the top</span>
+      || bird.y + R &gt; s.gapY + s.gapH;   <span class="c">// clipped the bottom</span>
+}</pre>
+    <p class="codecap">Four comparisons and two boolean operators. That is the entire collision system.</p>
+  </div><div class="stack">
+    <div class="card"><h3>Read it as English</h3><p class="small">"If we are level with this stalk, and we are <b>not</b> inside its gap, we hit it."</p></div>
+    <div class="card"><h3>Why <code>± R</code> everywhere</h3><p class="small"><code>bird.y</code> is the <b>centre</b>. The part that actually touches the stalk is the edge, one radius away. Forgetting this is the next slide.</p></div>
+    <div class="card"><h3>Ceiling and floor</h3><p class="small">Two more comparisons of the same shape, against <code>0</code> and the ground line.</p></div>
+  </div></div>`,
+  notes:`Have the room read the return statement aloud as a sentence. Boolean logic becomes obvious the moment it is spoken in English.`}),
+
+S({kind:'content', eyebrow:'Live', title:'Drag the bird and watch the boolean', demo:'collide',
+  html:`<div class="cols wide-right"><div class="stack">
+    <p>Every number in that test is printed live. Drag the bird around the stalk and watch which comparison flips.</p>
+    <ul class="pts"><li>Find a spot where <code>overlapX</code> is true but there is no hit</li><li>Find the exact pixel where it changes</li><li>Shrink the radius and find the same spot again</li></ul>
+  </div><div class="demo" data-slot="demo"></div></div>`,
+  notes:`Let a student drive. The moment the boolean flips while the sprite still looks clear is the best argument for the fairness discussion two slides on.`}),
+
+S({kind:'activity', act:'debug', eyebrow:'Find the bug', title:'Players report dying "for no reason"',
+  html:`<div class="act debug">
+    <span class="chip"><span class="dot"></span>Debug this · 2 minutes with a neighbour</span>
+    <div class="cols wide-left">
+      <pre class="code">return bird.y &lt; s.gapY
+    || bird.y &gt; s.gapY + s.gapH;</pre>
+      <div class="stack">
+        <p>Testers say two things, and both are true at once:</p>
+        <ul class="pts"><li>"I died when I was clearly through the gap."</li><li>"I flew straight through the bamboo and nothing happened."</li></ul>
+        <p class="small">One missing thing causes <b>both</b> complaints. What is it?</p>
+      </div>
+    </div>
+  </div>`,
+  reveal:`<div class="cols wide-left" style="margin-top:6px">
+    <pre class="code sm">return bird.y <mark class="ok">- R</mark> &lt; s.gapY
+    || bird.y <mark class="ok">+ R</mark> &gt; s.gapY + s.gapH;</pre>
+    <div class="card"><h3>Why both complaints</h3><p class="small">Without the radius we test the bird's <b>centre</b>. Near the top edge of the gap the drawn bird overlaps the stalk while its centre is still inside — a free pass. Near the bottom the reverse happens. The sprite and the maths disagree by one radius in <i>both</i> directions, so players get phantom deaths and phantom escapes from the same missing term.</p></div></div>`,
+  notes:`Emphasise: two contradictory-sounding bug reports, one root cause. That is a genuine debugging skill — resist fixing each symptom separately.`}),
+
+S({kind:'activity', act:'pair', eyebrow:'Think · pair · share', title:'Should the hitbox match the picture?',
+  timer:180,
+  html:`<div class="act pair">
+    <span class="chip"><span class="dot"></span>Think · Pair · Share &nbsp;·&nbsp; 3 minutes</span>
+    <p class="ask">We set the collision radius to <b>12&nbsp;px</b> while the drawn bird is about <b>16&nbsp;px</b> across. The game is lying to the player. Is that acceptable?</p>
+    <div class="grid3">
+      <div class="card"><h3>Argue for</h3><p class="small">Near-misses feel skilful. A slightly generous hitbox makes the game read as fair even though it is technically wrong.</p></div>
+      <div class="card"><h3>Argue against</h3><p class="small">What you see should be what is true. Once you accept one lie, where is the line?</p></div>
+      <div class="card"><h3>Then decide</h3><p class="small">Is it different if the lie helps the player rather than hurting them?</p></div>
+    </div>
+    <div data-slot="timer"></div>
+  </div>`,
+  reveal:`<div class="card" style="margin-top:4px"><h3>Where the industry actually landed</h3>
+    <p class="small">Generous to the player, strict against them: hitboxes for the player's own body are usually <b>smaller</b> than the sprite, while hitboxes for things the player is trying to hit are usually <b>larger</b>. The asymmetry is deliberate and near-universal — and it is a design choice, not a bug, which is why it belongs in a design document rather than a comment.</p></div>`,
+  notes:`Good place to mention "coyote time" in platformers — the player can jump for ~100 ms after leaving a ledge. Same principle: the simulation bends toward the player.`}),
+
+/* ---------- 32–35: state machine ---------- */
+S({kind:'content', eyebrow:'Question 5 · Control', title:'The game is always in exactly one state',
+  html:`<div class="stack">
+    <div class="flow" style="margin:6px 0 10px">
+      <div class="node">READY<small>waiting for a tap</small></div><span class="arrow">→</span>
+      <div class="node">PLAYING<small>physics runs</small></div><span class="arrow">→</span>
+      <div class="node alt">DEAD<small>falling, input ignored</small></div><span class="arrow">→</span>
+      <div class="node">READY<small>after 0.5 s</small></div>
+    </div>
+    <div class="cols"><pre class="code sm"><span class="k">let</span> state = <span class="s">'READY'</span>;
+
+<span class="k">function</span> update(dt) {
+  <span class="k">if</span> (state === <span class="s">'READY'</span>)   { hover(dt);  <span class="k">return</span>; }
+  <span class="k">if</span> (state === <span class="s">'DEAD'</span>)    { fall(dt);   <span class="k">return</span>; }
+  physics(dt); scroll(dt); collide();
+}</pre>
+    <div class="stack">
+      <ul class="pts"><li>One variable answers "what is going on right now?"</li><li>Each state owns its own update</li><li>Input means different things in different states</li></ul>
+      <p class="small">A tap in READY starts the game. The same tap in PLAYING flaps. In DEAD it does nothing at all.</p>
+    </div></div></div>`,
+  notes:`Ask what a "PAUSED" state would need. Answer: almost nothing — freeze update, keep render. That is the payoff of the split from slide 6.`}),
+
+S({kind:'content', eyebrow:'Question 5 · Control', title:'Why not just use booleans?',
+  html:`<div class="cols"><div class="stack">
+    <pre class="code sm"><span class="k">let</span> started  = <span class="k">false</span>;
+<span class="k">let</span> dead     = <span class="k">false</span>;
+<span class="k">let</span> paused   = <span class="k">false</span>;</pre>
+    <p style="margin-top:14px">Three booleans describe <b>eight</b> combinations. How many of them are real?</p>
+    <ul class="pts"><li><code>started, !dead, !paused</code> — playing ✓</li><li><code>!started, dead</code> — dead before starting?</li><li><code>dead, paused</code> — paused while dying?</li></ul>
+  </div><div class="stack">
+    <div class="card"><h3>Five of the eight are nonsense</h3>
+      <p class="small">And nothing stops your code producing them. Every bug in that space is a "how did it even get here?" bug — the worst kind to reproduce.</p></div>
+    <div class="card"><h3>One variable, four values</h3>
+      <p class="small">A single <code>state</code> string can only ever hold a state that exists. The impossible combinations become <b>unrepresentable</b> rather than merely unlikely.</p></div>
+    <p class="note-line">Make illegal states impossible to write down. This idea scales from a 300-line game to a banking system.</p>
+  </div></div>`,
+  notes:`This is the slide advanced students remember a year later. Give it room.`}),
+
+S({kind:'activity', act:'debug', eyebrow:'Find the bug', title:'"It restarts before I let go"',
+  html:`<div class="act debug">
+    <span class="chip"><span class="dot"></span>Debug this · 2 minutes with a neighbour</span>
+    <div class="cols wide-left">
+      <pre class="code">function onTap() {
+  if (state === 'READY') { start(); return; }
+  if (state === 'DEAD')  { state = 'READY'; reset(); return; }
+  flap();
+}</pre>
+      <div class="stack">
+        <p>The bug: you crash, and the game instantly restarts before you have seen your score. Players think it "ate" the tap.</p>
+        <ul class="pts"><li>When does <code>onTap</code> fire relative to the crash?</li><li>What was the player's finger doing at that moment?</li></ul>
+      </div>
+    </div>
+  </div>`,
+  reveal:`<div class="cols wide-left" style="margin-top:6px">
+    <pre class="code sm">if (state === 'DEAD') {
+  <mark class="ok">if (now() - deadAt &lt; 500) return;</mark>   <span class="c">// ignore taps for half a second</span>
+  state = 'READY'; reset();
+}</pre>
+    <div class="card"><h3>Why it happens</h3><p class="small">The tap that killed you is often still in flight — players tap <i>hardest</i> right as they hit the stalk. That same input arrives one frame later, now in DEAD, and restarts the game. The fix is a short deadline on the state, not a change to the input code. States can own <b>time</b> as well as behaviour.</p></div></div>`,
+  notes:`Ask whether they have felt this bug in a shipped game. Nearly everyone has. Naming a felt experience as a code-level cause is the most satisfying moment of the hour.`}),
+
+S({kind:'activity', act:'poll', eyebrow:'Everybody votes', title:'Who owns the reset?',
+  poll:{qid:'q4', ask:'Score, bird position and the stalk array all need clearing between games. Which piece of code should do it?',
+    opts:[
+      {t:'The collision code, the moment you die', why:'Then the score is gone before the game-over screen can display it — and the death animation has nothing left to draw.'},
+      {t:'The transition <i>into</i> READY, before the next game starts', why:'The state that is about to need a clean world is the one that should create it. Death stays purely about ending; setup stays in one place, so a new game and a first game run identical code.', ok:true},
+      {t:'The draw code, when it notices the score is stale', why:'Draw must never change state — that is the rule from slide 6. A renderer with side effects is unpredictable to test and impossible to pause.'},
+      {t:'Each variable resets itself wherever it is used', why:'Scattered resets are how you end up with a game that mostly restarts. One forgotten variable, and stale state leaks between rounds.'}
+    ]},
+  notes:`Tie back to slide 6 explicitly when C comes up — and it will come up.`}),
+
+/* ---------- 36–40: scoring, difficulty, feel, wrap ---------- */
+S({kind:'content', eyebrow:'Question 6 · The game around the game', title:'When exactly does a point happen?',
+  html:`<div class="cols wide-left"><div class="stack">
+    <pre class="code">for (<span class="k">const</span> s of stalks) {
+  <span class="k">if</span> (!s.passed &amp;&amp; s.x + STALK_W/<span class="s">2</span> &lt; BIRD_X) {
+    s.passed = <span class="k">true</span>;      <span class="c">// ← the flag is the whole trick</span>
+    score++;
+    play(<span class="s">'ding'</span>);
+  }
+}</pre>
+    <p class="codecap">Runs every frame, fires once per stalk, forever.</p>
+  </div><div class="stack">
+    <div class="card"><h3>Without <code>passed</code></h3><p class="small">The condition stays true on every later frame, so one stalk scores sixty points a second. The flag turns a continuous condition into a single <b>event</b>.</p></div>
+    <div class="card"><h3>Why the stalk's centre</h3><p class="small">Scoring on the leading edge feels early; on the trailing edge it feels late. The centre is the moment the player perceives as "through".</p></div>
+    <p class="note-line">Reset <code>passed</code> to false when the object is recycled — or a re-used stalk can never score again.</p>
+  </div></div>`,
+  notes:`Connect back to slide 24's demo: they watched this flag flip. Continuous condition → discrete event is a genuinely deep idea, disguised as a boolean.`}),
+
+S({kind:'activity', act:'predict', eyebrow:'Predict, then run', title:'Difficulty is a function, not a level',
+  demo:'curve',
+  html:`<div class="act predict">
+    <span class="chip"><span class="dot"></span>Predict → then we render it</span>
+    <div class="cols wide-right"><div class="stack">
+      <pre class="code sm">gap   = max(<span class="s">165</span>, <span class="s">215</span> - score * <span class="s">1.2</span>);
+speed = <span class="s">130</span> + min(<span class="s">40</span>, score * <span class="s">2</span>);</pre>
+      <p class="ask" style="font-size:26px;margin-top:12px">At a score of 30, how tall is the gap — and what stops it reaching zero?</p>
+      <p class="small">The panel draws the <i>actual</i> opening at each score, to scale, next to the bird.</p>
+    </div><div class="demo" data-slot="demo"></div></div></div>`,
+  reveal:`<div class="grid2" style="margin-top:2px">
+    <div class="card"><h3>At score 30</h3><p class="small"><code>215 − 36 = 179 px</code>, still comfortably above the floor. The player feels the squeeze long before it bites.</p></div>
+    <div class="card"><h3>The floor is the design</h3><p class="small"><code>max(165, …)</code> means the game stops getting harder at score 42 and becomes a test of endurance instead. Without that floor, every player dies at the same score and skill stops mattering.</p></div></div>`,
+  notes:`Ask what happens with no <code>max()</code>: the gap goes negative around score 180 and the game becomes literally impossible. Difficulty curves need <b>asymptotes</b>.`}),
+
+S({kind:'activity', act:'pair', eyebrow:'Think · pair · share', title:'Which of these actually makes it fun?',
+  demo:'feel', timer:180,
+  html:`<div class="act pair">
+    <span class="chip"><span class="dot"></span>Think · Pair · Share &nbsp;·&nbsp; 3 minutes</span>
+    <div class="cols wide-right"><div class="stack">
+      <p class="ask" style="font-size:27px">None of these change a single rule. Toggle them off and on. Which one would you fight to keep?</p>
+      <ul class="pts"><li><b>Tilt</b> — the bird points where it is going</li><li><b>Wing beat</b> — one flap animation per tap</li><li><b>Screen shake</b> — 200&nbsp;ms on death</li><li><b>Sound</b> — a chirp up, a thud down</li></ul>
+      <p class="small">Rank them. Defend your first choice to your neighbour.</p>
+    </div><div class="demo" data-slot="demo"></div></div>
+    <div data-slot="timer"></div>
+  </div>`,
+  reveal:`<div class="card" style="margin-top:4px"><h3>What usually wins the argument</h3>
+    <p class="small">Tilt, almost always — because it is the only one that gives the player <b>information</b>. It shows velocity, which is otherwise invisible, so it helps you decide when to tap. The others are feedback about what already happened. That is the useful distinction: polish that <i>informs</i> beats polish that merely <i>rewards</i>. It is also roughly twenty lines of code.</p></div>`,
+  notes:`If the class picks sound, push: does it help you play, or just tell you what you already saw? Both are legitimate — but they are different jobs.`}),
+
+S({kind:'content', eyebrow:'The whole thing', title:'Three hundred lines, six ideas',
+  html:`<div class="cols wide-left"><div class="stack">
+    <table class="tune">
+      <tr><th>Part</th><th>Lines</th><th>The idea</th></tr>
+      <tr><td>Loop &amp; timing</td><td class="num">12</td><td>frames are not a clock</td></tr>
+      <tr><td>Physics</td><td class="num">4</td><td>velocity, then position</td></tr>
+      <tr><td>Obstacles</td><td class="num">22</td><td>data, scrolled and re-used</td></tr>
+      <tr><td>Collision</td><td class="num">8</td><td>circle against box</td></tr>
+      <tr><td>States &amp; scoring</td><td class="num">30</td><td>one variable, illegal states unwritable</td></tr>
+      <tr><td>Drawing &amp; feel</td><td class="num">220</td><td>everything the player actually sees</td></tr>
+    </table>
+    <p class="small" style="margin-top:12px">The rules of the game are about 80 lines. That is the shape of most software: a small correct core, wrapped in a lot of presentation.</p>
+  </div><div class="stack">
+    <div class="card"><h3>What we skipped, honestly</h3>
+      <p class="small">Sprite sheets and asset loading · touch controls beyond a tap · saving scores to a server · sub-stepping the physics for very fast objects · anything resembling a physics library.</p></div>
+    <div class="card"><h3>What you could add tonight</h3>
+      <p class="small">A pause state (you already know how) · moving stalks (add <code>vy</code> to the object) · a second bird on the same keyboard.</p></div>
+  </div></div>`,
+  notes:`Land the line-count table. It reframes "I could never write a game" into "I have written 80 lines of logic before."`}),
+
+S({kind:'content', eyebrow:'Your turn', title:'Lab: pick a tier, ship it Friday',
+  html:`<div class="grid3" style="margin-top:6px">
+    <div class="card"><h3>Tier 1 · Re-tune</h3>
+      <p class="small">Change only the constants. Produce a version you would call <b>Gentle</b> and one you would call <b>Brutal</b>, and write two sentences on what you changed and why. Hand in the numbers.</p></div>
+    <div class="card"><h3>Tier 2 · Add a rule</h3>
+      <p class="small">Add one mechanic that changes how the game is played: moving stalks, a shield you collect, a double-flap with a cooldown, or a two-player race. It must survive five minutes of play without breaking.</p></div>
+    <div class="card"><h3>Tier 3 · Change the loop</h3>
+      <p class="small">Add a PAUSED state, a replay that records and re-plays the taps, or a difficulty curve driven by how the player is <i>actually</i> doing rather than by score.</p></div>
+  </div>
+  <div class="card" style="margin-top:16px"><h3>What is graded</h3>
+    <p class="small">Not polish. Whether <code>update</code> and <code>render</code> stayed separate, whether every speed is multiplied by <code>dt</code>, whether your states are a single variable, and whether you can explain one bug you hit and how you found it.</p></div>`,
+  notes:`Say the grading criteria twice. Students optimise for what is graded — so grade the four habits from today.`}),
+
+S({kind:'activity', act:'poll', eyebrow:'Exit ticket', title:'One question before you go',
+  poll:{qid:'q5', ask:'Which idea from today do you most expect to use again outside this game?',
+    anon:true,
+    opts:[
+      {t:'Multiply by dt — make the simulation match a clock', why:'Shows up in animation, robotics, anything sampled.'},
+      {t:'Keep update and draw apart', why:'The architecture idea. It is why anything is testable.'},
+      {t:'Make illegal states unrepresentable', why:'The idea that scales furthest — from a game to a compiler.'},
+      {t:'Replace the thing with a simpler thing nobody can tell apart', why:'The optimisation habit. Circles instead of feathers.'}
+    ]},
+  html:`<p class="small" style="margin-top:auto;color:var(--ink-3)">No wrong answers here — this one is for me, not for you. Then: one sentence on paper, "the muddiest point of today", on your way out.</p>`,
+  notes:`This is a <b>one-minute paper</b> in poll form. The distribution tells you which idea to open with next lecture; the paper slips tell you what to re-teach.<br>Close on the finished game running behind you.`});
+</script>
+<script>
+/* =======================================================================
+   ENGINE — rendering, navigation, live demos, and the activity machinery.
+   ======================================================================= */
+(() => {
+const stage = document.getElementById('stage');
+const stagewrap = document.getElementById('stagewrap');
+const notesEl = document.getElementById('notes');
+const overEl = document.getElementById('over');
+const ACT_NAME = {predict:'Predict', poll:'Vote', pair:'Pair', debug:'Debug'};
+
+const POLLS = {};
+SLIDES.forEach((s, i) => { if (s.poll) POLLS[s.poll.qid] = { ...s.poll, slide: i }; });
+const LETTERS = ['A', 'B', 'C', 'D', 'E'];
+let db = null, voterId = null, session = null;
+
+try {
+  voterId = localStorage.getItem('flapdeck.voter');
+  if (!voterId) { voterId = (crypto.randomUUID ? crypto.randomUUID() : 'v' + Math.random().toString(36).slice(2)); localStorage.setItem('flapdeck.voter', voterId); }
+} catch (e) { voterId = 'v' + Math.random().toString(36).slice(2); }
+
+
+/* ---------- scale the fixed 1280x720 stage into whatever room we have ---------- */
+function fit() {
+  const pad = 22;
+  const w = stagewrap.clientWidth - pad * 2, h = stagewrap.clientHeight - pad * 2;
+  const k = Math.max(0.2, Math.min(w / 1280, h / 720));
+  stage.style.transform = `translate(${(stagewrap.clientWidth - 1280 * k) / 2}px,${(stagewrap.clientHeight - 720 * k) / 2}px) scale(${k})`;
+}
+addEventListener('resize', fit);
+
+/* ---------- build every slide once ---------- */
+const els = [];
+SLIDES.forEach((s, i) => {
+  const d = document.createElement('section');
+  d.className = 'slide' + (s.kind === 'title' ? ' title-slide' : '') + (s.demo ? ' pad-tight' : '');
+  d.setAttribute('aria-label', `Slide ${i + 1}: ${s.title}`);
+  let inner = '';
+  if (s.eyebrow && !s.act) inner += `<div class="eyebrow"><span class="tick"></span>${s.eyebrow}</div>`;
+  if (s.kind !== 'title' && s.title) inner += `<h2>${s.title}</h2>`;
+  inner += `<div class="body">${s.poll ? pollMarkup(s.poll) : ''}${s.html || ''}${s.reveal ? `<div data-slot="reveal"></div>` : ''}</div>`;
+  d.innerHTML = inner;
+  stage.appendChild(d);
+  els.push(d);
+});
+
+/* ---------- reveal blocks ---------- */
+SLIDES.forEach((s, i) => {
+  if (!s.reveal) return;
+  const slot = els[i].querySelector('[data-slot="reveal"]');
+  slot.innerHTML = `<div class="ctrls" style="margin-top:8px"><button class="b dark" data-rev>Reveal the answer &nbsp;<span style="opacity:.65">R</span></button></div>
+                    <div data-revbody hidden>${s.reveal}</div>`;
+  slot.querySelector('[data-rev]').addEventListener('click', () => toggleReveal(i));
+});
+function toggleReveal(i) {
+  const slot = els[i].querySelector('[data-slot="reveal"]');
+  if (!slot) return;
+  const body = slot.querySelector('[data-revbody]'), btn = slot.querySelector('[data-rev]');
+  body.hidden = !body.hidden;
+  btn.innerHTML = body.hidden ? 'Reveal the answer &nbsp;<span style="opacity:.65">R</span>' : 'Hide';
+}
+
+/* ---------- countdown timers for think-pair-share ---------- */
+const timers = {};
+SLIDES.forEach((s, i) => {
+  if (!s.timer) return;
+  const slot = els[i].querySelector('[data-slot="timer"]');
+  slot.innerHTML = `<div class="timer" style="margin-top:auto">
+      <span class="t" data-t>${fmt(s.timer)}</span>
+      <span class="tbar"><i data-tb style="width:100%"></i></span>
+      <button class="b go" data-start>Start &nbsp;<span style="opacity:.7">T</span></button>
+      <button class="b" data-reset>Reset</button></div>`;
+  const T = { left: s.timer, total: s.timer, id: null, el: slot };
+  timers[i] = T;
+  slot.querySelector('[data-start]').addEventListener('click', () => toggleTimer(i));
+  slot.querySelector('[data-reset]').addEventListener('click', () => { stopTimer(i); T.left = T.total; paintTimer(i); });
+});
+function fmt(s) { const m = Math.floor(s / 60); return m + ':' + String(Math.floor(s % 60)).padStart(2, '0'); }
+function paintTimer(i) {
+  const T = timers[i]; if (!T) return;
+  const t = T.el.querySelector('[data-t]');
+  t.textContent = fmt(Math.max(0, T.left));
+  t.classList.toggle('low', T.left <= 30);
+  T.el.querySelector('[data-tb]').style.width = Math.max(0, T.left / T.total * 100) + '%';
+  T.el.querySelector('[data-start]').innerHTML = T.id ? 'Pause' : 'Start &nbsp;<span style="opacity:.7">T</span>';
+}
+function toggleTimer(i) {
+  const T = timers[i]; if (!T) return;
+  if (T.id) return stopTimer(i);
+  T.id = setInterval(() => {
+    T.left -= 1; paintTimer(i);
+    if (T.left <= 0) { stopTimer(i); beep(); }
+  }, 1000);
+  paintTimer(i);
+}
+function stopTimer(i) { const T = timers[i]; if (T && T.id) { clearInterval(T.id); T.id = null; } paintTimer(i); }
+function beep() { try { const a = new (window.AudioContext || window.webkitAudioContext)(); [660, 880].forEach((f, k) => { const o = a.createOscillator(), g = a.createGain(); o.frequency.value = f; g.gain.value = .05; o.connect(g).connect(a.destination); o.start(a.currentTime + k * .18); o.stop(a.currentTime + k * .18 + .16); }); } catch (e) {} }
+
+/* =======================================================================
+   POLLS — three ways to run, so a poll always works
+   1. show of hands: tap + on any option (no network at all)
+   2. live device voting: students open this page and tap "I'm a student"
+   3. reveal + reasoning: always available
+   ======================================================================= */
+function pollMarkup(p) {
+  return `<div class="act poll" data-poll="${p.qid}">
+    <span class="chip"><span class="dot"></span>${p.anon ? 'Exit ticket · everyone votes' : 'Everybody votes'}</span>
+    <p class="ask">${p.ask}</p>
+    <div class="opts">${p.opts.map((o, k) => `
+      <div class="optwrap"><button class="opt" data-opt="${k}">
+        <span class="bar" style="width:0%"></span>
+        <span class="lt">${LETTERS[k]}</span>
+        <span><span>${o.t}</span><span class="why">${o.why}</span></span>
+        <span style="display:flex;align-items:center;gap:9px">
+          <span class="verdict" hidden>${o.ok ? '✓ correct' : ''}</span>
+          <span class="cnt">0</span>
+          <span class="b tiny" data-hand="${k}" title="record a show of hands">+</span>
+        </span>
+      </button></div>`).join('')}</div>
+    <div class="ctrls" style="margin-top:4px">
+      <button class="b dark" data-reveal>Reveal &nbsp;<span style="opacity:.65">R</span></button>
+      <button class="b" data-clear>Clear votes</button>
+      <span class="small" data-total>no votes yet</span>
+    </div></div>`;
+}
+
+const manual = {};       // qid -> [counts] recorded by hand
+const liveVotes = {};    // qid -> {voterId: choice}
+const revealed = {};
+let unsubVotes = null;
+
+SLIDES.forEach((s, i) => {
+  if (!s.poll) return;
+  const root = els[i].querySelector('[data-poll]');
+  const qid = s.poll.qid;
+  manual[qid] = s.poll.opts.map(() => 0);
+  liveVotes[qid] = {};
+  root.querySelectorAll('[data-hand]').forEach(b => b.addEventListener('click', ev => {
+    ev.stopPropagation(); ev.preventDefault();
+    manual[qid][+b.dataset.hand]++; paintPoll(qid);
+  }));
+  root.querySelectorAll('[data-opt]').forEach(b => b.addEventListener('click', () => {
+    // the presenter clicking an option marks it for discussion; it does not vote
+    b.classList.toggle('picked');
+  }));
+  root.querySelector('[data-reveal]').addEventListener('click', () => setRevealed(qid, !revealed[qid]));
+  root.querySelector('[data-clear]').addEventListener('click', () => clearVotes(qid));
+});
+
+function counts(qid) {
+  const p = POLLS[qid], out = p.opts.map((_, k) => manual[qid][k]);
+  Object.values(liveVotes[qid] || {}).forEach(c => { if (out[c] !== undefined) out[c]++; });
+  return out;
+}
+function paintPoll(qid) {
+  const p = POLLS[qid], root = els[p.slide].querySelector('[data-poll]');
+  const c = counts(qid), total = c.reduce((a, b) => a + b, 0);
+  root.querySelectorAll('[data-opt]').forEach((btn, k) => {
+    btn.querySelector('.bar').style.width = (total ? c[k] / Math.max(1, Math.max(...c)) * 100 : 0) + '%';
+    btn.querySelector('.cnt').textContent = c[k];
+    btn.classList.toggle('shown', !!revealed[qid]);
+    btn.classList.toggle('right', !!revealed[qid] && !!p.opts[k].ok);
+    btn.classList.toggle('wrong', !!revealed[qid] && !p.opts[k].ok);
+    const v = btn.querySelector('.verdict');
+    v.hidden = !(revealed[qid] && p.opts[k].ok);
+  });
+  root.querySelector('[data-total]').textContent = total ? `${total} vote${total === 1 ? '' : 's'}` : 'no votes yet';
+  root.querySelector('[data-reveal]').innerHTML = revealed[qid] ? 'Hide answers' : 'Reveal &nbsp;<span style="opacity:.65">R</span>';
+  renderStudent();
+}
+function setRevealed(qid, on) {
+  revealed[qid] = on; paintPoll(qid);
+  writeSession({ qid, open: true, revealed: on });
+}
+async function clearVotes(qid) {
+  manual[qid] = POLLS[qid].opts.map(() => 0);
+  liveVotes[qid] = {}; paintPoll(qid);
+  if (!db) return;
+  try {
+    const snap = await db.collection(`votes/${qid}/choices`).get();
+    await Promise.all(snap.docs.map(d => db.doc(`votes/${qid}/choices/${d.id}`).delete().catch(() => {})));
+  } catch (e) {}
+}
+function writeSession(patch) {
+  if (!db) return;
+  db.doc('session/state').set({ ...patch, ts: Date.now() }).catch(() => {});
+}
+function watchVotes(qid) {
+  if (unsubVotes) { unsubVotes(); unsubVotes = null; }
+  if (!db || !qid) return;
+  try {
+    unsubVotes = db.collection(`votes/${qid}/choices`).onSnapshot(snap => {
+      const m = {};
+      snap.docs.forEach(d => { const v = d.data(); if (v && typeof v.choice === 'number') m[d.id] = v.choice; });
+      liveVotes[qid] = m; paintPoll(qid);
+    }, () => {});
+  } catch (e) {}
+}
+
+/* ---------- student view ---------- */
+const joinBtn = document.getElementById('joinBtn');
+const joinPanel = document.getElementById('joinPanel');
+const joinBody = document.getElementById('joinBody');
+const joinStatus = document.getElementById('joinStatus');
+let studentMode = false, myVote = {};
+joinBtn.addEventListener('click', () => {
+  studentMode = !studentMode;
+  joinPanel.classList.toggle('on', studentMode);
+  joinBtn.textContent = studentMode ? 'Close voting panel' : "I'm a student — vote here";
+  renderStudent();
+});
+function renderStudent() {
+  if (!studentMode) return;
+  if (!db) { joinStatus.textContent = 'Live voting is not available on this copy — your instructor will take a show of hands.'; joinBody.innerHTML = ''; return; }
+  const qid = session && session.open ? session.qid : null;
+  if (!qid || !POLLS[qid]) { joinStatus.textContent = 'Connected. Waiting for the next question…'; joinBody.innerHTML = ''; return; }
+  const p = POLLS[qid];
+  joinStatus.textContent = revealed[qid] ? 'Answers are up.' : (myVote[qid] !== undefined ? 'Vote recorded — you can change it.' : 'Tap your answer.');
+  joinBody.innerHTML = `<p class="q">${p.ask}</p><div class="opts">${p.opts.map((o, k) => `
+    <button class="opt ${myVote[qid] === k ? 'picked' : ''} ${revealed[qid] && o.ok ? 'right' : ''}" data-svote="${k}">
+      <span class="lt">${LETTERS[k]}</span><span>${o.t}</span><span></span></button>`).join('')}</div>`;
+  joinBody.querySelectorAll('[data-svote]').forEach(b => b.addEventListener('click', async () => {
+    const k = +b.dataset.svote; myVote[qid] = k; renderStudent();
+    try { await db.doc(`votes/${qid}/choices/${voterId}`).set({ choice: k, ts: Date.now() }); }
+    catch (e) { joinStatus.textContent = 'Your vote could not be sent — tell your instructor to take hands.'; }
+  }));
+}
+
+/* ---------- capability wiring (everything above works without it) ---------- */
+const liveState = document.getElementById('liveState');
+liveState.textContent = 'Live voting: connecting…';
+(async () => {
+  try { db = window.claude && claude.use ? await claude.use('db') : null; } catch (e) { db = null; }
+  if (!db) { liveState.innerHTML = 'Live voting off · use <b>+</b> for a show of hands'; renderStudent(); return; }
+  liveState.innerHTML = '<span class="live"><span class="d"></span>Live voting on</span>';
+  try {
+    db.doc('session/state').onSnapshot(snap => {
+      session = snap.exists ? snap.data() : null;
+      if (session && session.qid && revealed[session.qid] !== session.revealed) {
+        revealed[session.qid] = !!session.revealed;
+        if (POLLS[session.qid]) paintPoll(session.qid);
+      }
+      renderStudent();
+    }, () => {});
+  } catch (e) {}
+  const s = SLIDES[idx];
+  if (s && s.poll) { writeSession({ qid: s.poll.qid, open: true, revealed: !!revealed[s.poll.qid] }); watchVotes(s.poll.qid); }
+  renderStudent();
+})();
+
+/* =======================================================================
+   LIVE DEMOS
+   ======================================================================= */
+const DEMOS = {};
+let running = null;
+function cv(host, w, h) {
+  const wrap = document.createElement('div');
+  wrap.className = 'cwrap';
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  wrap.appendChild(c); host.appendChild(wrap);
+  return c.getContext('2d');
+}
+function row(host, html) { const d = document.createElement('div'); d.className = 'row'; d.innerHTML = html; host.appendChild(d); return d; }
+function out(host) { const d = document.createElement('div'); d.className = 'readout'; host.appendChild(d); return d; }
+function loop(fn) {
+  let last = performance.now(), id = 0, stop = false;
+  const step = now => { if (stop) return; let dt = (now - last) / 1000; last = now; if (dt > .05) dt = .05; fn(dt, now); id = requestAnimationFrame(step); };
+  id = requestAnimationFrame(step);
+  return () => { stop = true; cancelAnimationFrame(id); };
+}
+const TF = (b) => b ? '<span class="t">true</span>' : '<span class="f">false</span>';
+
+/* --- the game itself, used by two slides --- */
+function buildGame(host, feelToggles) {
+  const W = 300, H = 400, ctx = cv(host, W, H);
+  const F = { tilt: true, wing: true, shake: true, sound: true };
+  let ctls = null;
+  if (feelToggles) {
+    ctls = row(host, ['tilt', 'wing', 'shake', 'sound'].map(k =>
+      `<button class="b tiny" data-f="${k}" aria-pressed="true">${k}</button>`).join(''));
+    ctls.querySelectorAll('[data-f]').forEach(b => b.addEventListener('click', () => {
+      const k = b.dataset.f; F[k] = !F[k]; b.setAttribute('aria-pressed', String(F[k]));
+    }));
+  }
+  const info = row(host, '<span>Click the panel, then <b>Space</b> or click to fly.</span>');
+  const G = 1050, FL = -360, MAXF = 430, SPACING = 175, SW = 40, GROUND = 46, BX = 78, BR = 11;
+  let st = 'READY', y = H / 2, vy = 0, wing = 0, tilt = 0, stalks = [], score = 0, best = 0, t = 0, shake = 0, deadAt = 0, scroll = 0;
+  const gapFor = s => Math.max(112, 150 - s * 1.2), spd = s => 110 + Math.min(34, s * 2);
+  function mk(x) { const g = gapFor(score); return { x, gapY: 34 + Math.random() * (H - GROUND - 68 - g), gapH: g, passed: false }; }
+  function reset() { y = H / 2 - 14; vy = 0; score = 0; stalks = []; let x = W + 120; for (let i = 0; i < 4; i++) { stalks.push(mk(x)); x += SPACING; } }
+  function bleep(f, d, ty, g2, sl) { if (!F.sound) return; try { const a = bleep.a || (bleep.a = new (window.AudioContext || window.webkitAudioContext)()); const o = a.createOscillator(), gg = a.createGain(); o.type = ty; o.frequency.setValueAtTime(f, a.currentTime); if (sl) o.frequency.exponentialRampToValueAtTime(sl, a.currentTime + d); gg.gain.setValueAtTime(g2, a.currentTime); gg.gain.exponentialRampToValueAtTime(.0001, a.currentTime + d); o.connect(gg).connect(a.destination); o.start(); o.stop(a.currentTime + d); } catch (e) {} }
+  function flap() {
+    if (st === 'READY') { reset(); st = 'PLAY'; }
+    else if (st === 'DEAD') { if (performance.now() - deadAt > 500) { st = 'READY'; reset(); } return; }
+    vy = FL; wing = 1; bleep(620, .08, 'triangle', .05, 900);
+  }
+  function die() { st = 'DEAD'; deadAt = performance.now(); shake = 1; best = Math.max(best, score); bleep(150, .25, 'sawtooth', .09, 60); }
+  reset();
+  const onKey = e => { if (e.code === 'Space' && host.closest('.slide').classList.contains('on')) { e.preventDefault(); flap(); } };
+  const onClick = () => flap();
+  document.addEventListener('keydown', onKey);
+  host.addEventListener('pointerdown', onClick);
+  const stop = loop(dt => {
+    t += dt; shake = Math.max(0, shake - dt * 3);
+    if (st === 'READY') { y = H / 2 - 14 + Math.sin(t * 3) * 7; wing = (Math.sin(t * 12) + 1) / 2; tilt = 0; scroll += 40 * dt; }
+    else if (st === 'DEAD') { vy = Math.min(MAXF, vy + G * dt); y = Math.min(H - GROUND - BR, y + vy * dt); tilt = Math.min(1.4, tilt + 4 * dt); }
+    else {
+      const v = spd(score); scroll += v * dt;
+      vy = Math.min(MAXF, vy + G * dt); y += vy * dt;
+      wing = Math.max(0, wing - dt * 6);
+      tilt += (Math.max(-.5, Math.min(1.2, vy / 430)) - tilt) * Math.min(1, dt * 10);
+      for (const s of stalks) s.x -= v * dt;
+      if (stalks[0].x < -SW - 20) { stalks.shift(); stalks.push(mk(stalks[stalks.length - 1].x + SPACING)); }
+      for (const s of stalks) if (!s.passed && s.x + SW / 2 < BX) { s.passed = true; score++; bleep(880, .1, 'sine', .05); }
+      if (y + BR >= H - GROUND || y - BR <= 0) { y = Math.max(BR, Math.min(H - GROUND - BR, y)); die(); }
+      for (const s of stalks) if (BX + BR > s.x && BX - BR < s.x + SW && (y - BR < s.gapY || y + BR > s.gapY + s.gapH)) die();
+    }
+    // ---- draw
+    ctx.save();
+    if (F.shake && shake > 0) ctx.translate((Math.random() - .5) * 8 * shake, (Math.random() - .5) * 8 * shake);
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#5B4478'); sky.addColorStop(.4, '#B4708A'); sky.addColorStop(.75, '#E89A72'); sky.addColorStop(1, '#F3C99B');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    const sg = ctx.createRadialGradient(220, 210, 8, 220, 210, 62);
+    sg.addColorStop(0, 'rgba(255,235,195,.9)'); sg.addColorStop(1, 'rgba(255,205,145,0)');
+    ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(220, 210, 62, 0, 6.283); ctx.fill();
+    for (const s of stalks) {
+      const g2 = ctx.createLinearGradient(s.x, 0, s.x + SW, 0);
+      g2.addColorStop(0, '#3F6A2F'); g2.addColorStop(.4, '#7BAA52'); g2.addColorStop(1, '#2E5122');
+      ctx.fillStyle = g2;
+      ctx.fillRect(s.x, -6, SW, s.gapY + 6);
+      ctx.fillRect(s.x, s.gapY + s.gapH, SW, H - GROUND - (s.gapY + s.gapH));
+      ctx.fillStyle = '#2E5122';
+      ctx.fillRect(s.x - 2, s.gapY - 5, SW + 4, 5); ctx.fillRect(s.x - 2, s.gapY + s.gapH, SW + 4, 5);
+    }
+    const gg = ctx.createLinearGradient(0, H - GROUND, 0, H);
+    gg.addColorStop(0, '#5B3E4B'); gg.addColorStop(1, '#241A26');
+    ctx.fillStyle = gg; ctx.fillRect(0, H - GROUND, W, GROUND);
+    ctx.save(); ctx.translate(BX, y); if (F.tilt) ctx.rotate(tilt);
+    ctx.fillStyle = '#2A2622';
+    ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(-22, -7); ctx.lineTo(-16, 0); ctx.lineTo(-22, 7); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, 0, 14, 9, 0, 0, 6.283); ctx.fill();
+    ctx.fillStyle = '#E8A85C'; ctx.beginPath(); ctx.ellipse(2, 3, 9, 5, 0, 0, 6.283); ctx.fill();
+    const wv = F.wing ? wing : .35;
+    ctx.fillStyle = '#1C1916'; ctx.save(); ctx.translate(-2, -2); ctx.rotate(-.9 * wv + .35 * (1 - wv));
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(-6, -14, -26, -11); ctx.quadraticCurveTo(-12, -3, -5, 5); ctx.closePath(); ctx.fill(); ctx.restore();
+    ctx.fillStyle = '#F6EEE4'; ctx.beginPath(); ctx.arc(7, -3, 2.4, 0, 6.283); ctx.fill();
+    ctx.fillStyle = '#1C1916'; ctx.beginPath(); ctx.arc(8, -3, 1.2, 0, 6.283); ctx.fill();
+    ctx.fillStyle = '#3A3330'; ctx.beginPath(); ctx.moveTo(13, -1.6); ctx.lineTo(19, 0); ctx.lineTo(13, 1.6); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    ctx.textAlign = 'center'; ctx.font = '700 30px "JetBrains Mono",monospace';
+    ctx.fillStyle = 'rgba(27,21,34,.35)'; ctx.fillText(score, W / 2 + 1, 45);
+    ctx.fillStyle = '#F6EEE4'; ctx.fillText(score, W / 2, 44);
+    if (st !== 'PLAY') {
+      ctx.fillStyle = 'rgba(20,16,26,.55)'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#F6EEE4'; ctx.font = '700 22px "Bricolage Grotesque",sans-serif';
+      ctx.fillText(st === 'READY' ? 'Tap to fly' : 'Down · ' + score, W / 2, H / 2);
+      ctx.font = '400 12px "Source Sans 3",sans-serif'; ctx.fillStyle = '#D9CFC6';
+      ctx.fillText(st === 'READY' ? 'space or click' : 'best ' + best, W / 2, H / 2 + 22);
+    }
+    ctx.restore();
+    info.innerHTML = `<span>score <b>${score}</b> · best <b>${best}</b> · gap <b>${Math.round(gapFor(score))}px</b> · speed <b>${Math.round(spd(score))}px/s</b></span>`;
+  });
+  return () => { stop(); document.removeEventListener('keydown', onKey); host.removeEventListener('pointerdown', onClick); };
+}
+DEMOS.game = h => buildGame(h, false);
+DEMOS.feel = h => buildGame(h, true);
+
+/* --- the bare loop --- */
+DEMOS.loop = host => {
+  const W = 460, H = 150, ctx = cv(host, W, H);
+  const r = row(host, `<label>speed <input type="range" id="lsp" min="20" max="400" value="120"><span id="lspv">120 px/s</span></label>
+                       <button class="b tiny" id="lrs">reset</button>`);
+  const o = out(host);
+  let x = 20, frames = 0, dtAvg = .016;
+  const sp = r.querySelector('#lsp'), spv = r.querySelector('#lspv');
+  sp.addEventListener('input', () => spv.textContent = sp.value + ' px/s');
+  r.querySelector('#lrs').addEventListener('click', () => { x = 20; frames = 0; });
+  return loop(dt => {
+    frames++; dtAvg = dtAvg * .9 + dt * .1;
+    x += (+sp.value) * dt;
+    if (x > W - 20) x = 20;
+    ctx.fillStyle = '#101418'; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(255,255,255,.12)';
+    for (let g = 0; g <= W; g += 46) { ctx.beginPath(); ctx.moveTo(g, 0); ctx.lineTo(g, H); ctx.stroke(); }
+    ctx.fillStyle = '#C4562F'; ctx.fillRect(x - 11, H / 2 - 11, 22, 22);
+    o.innerHTML = `frames <b>${frames}</b> &nbsp; dt <b>${(dtAvg * 1000).toFixed(1)} ms</b> (≈${Math.round(1 / dtAvg)} fps) &nbsp; x <b>${x.toFixed(1)}</b>
+      <br>update: <span style="color:#7E8A93">x = x + ${sp.value} * dt</span>`;
+  });
+};
+
+/* --- per-frame vs per-second --- */
+DEMOS.dt = host => {
+  const W = 420, H = 250, ctx = cv(host, W, H);
+  const r = row(host, `<button class="b tiny" id="dthr" aria-pressed="false">throttle to 20 fps</button>
+                       <button class="b tiny" id="ddrop">drop again</button>`);
+  const o = out(host);
+  const G = 600, top = 30, floor = H - 26;
+  let a = { y: top, v: 0, t: 0, done: 0 }, b = { y: top, v: 0, t: 0, done: 0 }, throttled = false, acc = 0, k = 0;
+  const btn = r.querySelector('#dthr');
+  btn.addEventListener('click', () => { throttled = !throttled; btn.setAttribute('aria-pressed', String(throttled)); btn.textContent = throttled ? 'back to full speed' : 'throttle to 20 fps'; drop(); });
+  r.querySelector('#ddrop').addEventListener('click', drop);
+  function drop() { a = { y: top, v: 0, t: 0, done: 0 }; b = { y: top, v: 0, t: 0, done: 0 }; acc = 0; k = 0; }
+  return loop(dt => {
+    acc += dt; k++;
+    const skip = throttled && (k % 3 !== 0);       // pretend the machine only manages 20 fps
+    if (!skip) {
+      const step = acc; acc = 0;
+      if (!a.done) { a.v += G * (1 / 60); a.y += a.v * (1 / 60); a.t += step; if (a.y >= floor) { a.y = floor; a.done = a.t; } }  // per frame
+      if (!b.done) { b.v += G * step;     b.y += b.v * step;     b.t += step; if (b.y >= floor) { b.y = floor; b.done = b.t; } }  // per second
+    }
+    ctx.fillStyle = '#101418'; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.setLineDash([5, 5]);
+    ctx.beginPath(); ctx.moveTo(0, floor + 12); ctx.lineTo(W, floor + 12); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font = '600 12px "JetBrains Mono",monospace'; ctx.textAlign = 'center';
+    ctx.fillStyle = '#A3302A'; ctx.fillText('y += v      (per frame)', W * .27, 16);
+    ctx.fillStyle = '#2E7D5B'; ctx.fillText('y += v*dt   (per second)', W * .73, 16);
+    ctx.fillStyle = '#E08C82'; ctx.beginPath(); ctx.arc(W * .27, a.y, 11, 0, 6.283); ctx.fill();
+    ctx.fillStyle = '#6BC49A'; ctx.beginPath(); ctx.arc(W * .73, b.y, 11, 0, 6.283); ctx.fill();
+    o.innerHTML = `frame rate <b>${throttled ? '20' : '60'} fps</b>
+      &nbsp;·&nbsp; per-frame bird: <b>${a.done ? a.done.toFixed(2) + ' s' : '…falling'}</b>
+      &nbsp;·&nbsp; per-second bird: <b>${b.done ? b.done.toFixed(2) + ' s' : '…falling'}</b>
+      <br><span style="color:#7E8A93">the dt bird always lands at the same time; the other one does not</span>`;
+  });
+};
+
+/* --- flap bench --- */
+function flapBench(host, sliders) {
+  const W = 330, H = 260, ctx = cv(host, W, H);
+  let r = null;
+  if (sliders) r = row(host, `<label>gravity <input type="range" id="fg" min="400" max="2200" value="1050"><span id="fgv">1050</span></label>
+                              <label>flap <input type="range" id="ff" min="-700" max="-160" value="-360"><span id="ffv">-360</span></label>`);
+  else row(host, '<span>click the panel to flap · <b>g = 1050</b>, <b>flap = −360</b></span>');
+  const o = out(host);
+  const floor = H - 24;
+  let y = floor - 60, v = 0, apex = 0, flapY = 0, flapT = 0, hang = 0, measuring = false;
+  const G = () => sliders ? +r.querySelector('#fg').value : 1050;
+  const FLP = () => sliders ? +r.querySelector('#ff').value : -360;
+  if (sliders) {
+    r.querySelector('#fg').addEventListener('input', e => r.querySelector('#fgv').textContent = e.target.value);
+    r.querySelector('#ff').addEventListener('input', e => r.querySelector('#ffv').textContent = e.target.value);
+  }
+  function flap() { v = FLP(); flapY = y; apex = 0; flapT = 0; measuring = true; }
+  const onDown = e => { if (e.target.tagName !== 'INPUT') flap(); };
+  host.addEventListener('pointerdown', onDown);
+  setTimeout(flap, 500);
+  const stop = loop(dt => {
+    v += G() * dt; y += v * dt;
+    if (measuring) { flapT += dt; apex = Math.max(apex, flapY - y); if (y >= flapY && v > 0) { hang = flapT; measuring = false; } }
+    if (y > floor) { y = floor; v = 0; measuring = false; }
+    if (y < 12) { y = 12; v = 0; }
+    ctx.fillStyle = '#101418'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(255,255,255,.07)'; ctx.fillRect(0, floor + 10, W, H - floor);
+    ctx.strokeStyle = 'rgba(196,86,47,.65)'; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(0, flapY); ctx.lineTo(W, flapY); ctx.stroke();
+    ctx.strokeStyle = 'rgba(46,125,91,.8)';
+    ctx.beginPath(); ctx.moveTo(0, flapY - apex); ctx.lineTo(W, flapY - apex); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font = '500 11px "JetBrains Mono",monospace'; ctx.textAlign = 'left';
+    ctx.fillStyle = '#C4562F'; ctx.fillText('tap height', 6, flapY - 5);
+    ctx.fillStyle = '#6BC49A'; ctx.fillText('apex', 6, flapY - apex - 5);
+    ctx.fillStyle = '#E8A85C'; ctx.beginPath(); ctx.ellipse(W / 2, y, 13, 9, Math.max(-.5, Math.min(1.1, v / 430)), 0, 6.283); ctx.fill();
+    const g = G(), f = -FLP();
+    o.innerHTML = `predicted &nbsp; height <b>${(f * f / (2 * g)).toFixed(0)} px</b> &nbsp; hang <b>${(2 * f / g).toFixed(2)} s</b>
+      <br>measured &nbsp; height <b>${apex.toFixed(0)} px</b> &nbsp; hang <b>${hang ? hang.toFixed(2) + ' s' : '—'}</b>`;
+  });
+  return () => { stop(); host.removeEventListener('pointerdown', onDown); };
+}
+DEMOS.flap = h => flapBench(h, false);
+DEMOS.flap2 = h => flapBench(h, true);
+
+/* --- stalks as data --- */
+DEMOS.stalks = host => {
+  const W = 360, H = 200, ctx = cv(host, W, H);
+  const r = row(host, `<button class="b tiny" id="spause" aria-pressed="false">pause</button><button class="b tiny" id="sstep">step</button><span>4 objects, forever</span>`);
+  const o = out(host);
+  const SW = 30, SPACING = 118, GR = 22;
+  let stalks = [], paused = false, stepOnce = false, recycles = 0, flash = 0;
+  let x = W + 40; for (let i = 0; i < 4; i++) { stalks.push(mk(x)); x += SPACING; }
+  function mk(x) { return { x, gapY: 24 + Math.random() * (H - GR - 100), gapH: 70, passed: false }; }
+  const pb = r.querySelector('#spause');
+  pb.addEventListener('click', () => { paused = !paused; pb.setAttribute('aria-pressed', String(paused)); pb.textContent = paused ? 'run' : 'pause'; });
+  r.querySelector('#sstep').addEventListener('click', () => { stepOnce = true; });
+  return loop(dt => {
+    flash = Math.max(0, flash - dt * 2);
+    if (!paused || stepOnce) {
+      const d = stepOnce ? .05 : dt; stepOnce = false;
+      for (const s of stalks) s.x -= 90 * d;
+      for (const s of stalks) if (!s.passed && s.x + SW / 2 < 60) s.passed = true;
+      if (stalks[0].x < -SW) { stalks.shift(); stalks.push(mk(stalks[stalks.length - 1].x + SPACING)); recycles++; flash = 1; }
+    }
+    ctx.fillStyle = '#101418'; ctx.fillRect(0, 0, W, H);
+    if (flash > 0) { ctx.fillStyle = `rgba(196,86,47,${flash * .25})`; ctx.fillRect(0, 0, W, H); }
+    ctx.fillStyle = 'rgba(255,255,255,.10)'; ctx.fillRect(0, H - GR, W, GR);
+    stalks.forEach((s, i) => {
+      ctx.fillStyle = s.passed ? '#4E7A3A' : '#7BAA52';
+      ctx.fillRect(s.x, 0, SW, s.gapY); ctx.fillRect(s.x, s.gapY + s.gapH, SW, H - GR - s.gapY - s.gapH);
+      ctx.fillStyle = '#E4E8EA'; ctx.font = '600 10px "JetBrains Mono",monospace'; ctx.textAlign = 'center';
+      ctx.fillText('[' + i + ']', s.x + SW / 2, 12);
+    });
+    ctx.strokeStyle = '#C4562F'; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(60, 0); ctx.lineTo(60, H); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#E8A85C'; ctx.beginPath(); ctx.arc(60, H / 2, 8, 0, 6.283); ctx.fill();
+    o.innerHTML = `stalks.length = <b>${stalks.length}</b> &nbsp; recycled <b>${recycles}</b>×<br>` +
+      stalks.map((s, i) => `[${i}] x <b>${s.x.toFixed(0).padStart(4)}</b>  gapY <b>${s.gapY.toFixed(0).padStart(3)}</b>  passed <b>${s.passed}</b>`).join('<br>');
+  });
+};
+
+/* --- collision --- */
+DEMOS.collide = host => {
+  const W = 340, H = 230, ctx = cv(host, W, H);
+  const r = row(host, `<label>radius <input type="range" id="cr" min="4" max="26" value="12"><span id="crv">12</span></label><span>drag the bird</span>`);
+  const o = out(host);
+  const SX = 170, SW = 54, gapY = 78, gapH = 84;
+  let bx = 90, by = 120, drag = false;
+  const R = () => +r.querySelector('#cr').value;
+  r.querySelector('#cr').addEventListener('input', e => r.querySelector('#crv').textContent = e.target.value);
+  const pos = e => { const b = host.querySelector('canvas').getBoundingClientRect(); return [(e.clientX - b.left) * (W / b.width), (e.clientY - b.top) * (H / b.height)]; };
+  const dn = e => { if (e.target.tagName === 'INPUT') return; drag = true; [bx, by] = pos(e); };
+  const mv = e => { if (drag) [bx, by] = pos(e); };
+  const up = () => drag = false;
+  host.addEventListener('pointerdown', dn); host.addEventListener('pointermove', mv);
+  addEventListener('pointerup', up);
+  return (() => {
+    const stop = loop(() => {
+      const rr = R();
+      const oxA = bx + rr > SX, oxB = bx - rr < SX + SW, overlapX = oxA && oxB;
+      const above = by - rr < gapY, below = by + rr > gapY + gapH;
+      const hit = overlapX && (above || below);
+      ctx.fillStyle = '#101418'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = hit ? '#A3302A' : '#4E7A3A';
+      ctx.fillRect(SX, 0, SW, gapY); ctx.fillRect(SX, gapY + gapH, SW, H - gapY - gapH);
+      ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(SX, 0); ctx.lineTo(SX, H); ctx.moveTo(SX + SW, 0); ctx.lineTo(SX + SW, H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, gapY); ctx.lineTo(W, gapY); ctx.moveTo(0, gapY + gapH); ctx.lineTo(W, gapY + gapH); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = '#E8A85C'; ctx.beginPath(); ctx.ellipse(bx, by, 15, 10, 0, 0, 6.283); ctx.fill();
+      ctx.strokeStyle = hit ? '#FF6B5E' : '#6BC49A'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(bx, by, rr, 0, 6.283); ctx.stroke(); ctx.lineWidth = 1;
+      o.innerHTML = `bird.y <b>${by.toFixed(0)}</b> &nbsp; R <b>${rr}</b> &nbsp; gapY <b>${gapY}</b>–<b>${gapY + gapH}</b><br>
+        overlapX ${TF(overlapX)} &nbsp; above ${TF(above)} &nbsp; below ${TF(below)}<br>
+        <b>hit = ${TF(hit)}</b>`;
+    });
+    return () => { stop(); host.removeEventListener('pointerdown', dn); host.removeEventListener('pointermove', mv); removeEventListener('pointerup', up); };
+  })();
+};
+
+/* --- difficulty curve, drawn as the real openings --- */
+DEMOS.curve = host => {
+  const W = 380, H = 250, ctx = cv(host, W, H);
+  const r = row(host, `<label>score <input type="range" id="qs" min="0" max="60" value="0"><span id="qsv">0</span></label>`);
+  const o = out(host);
+  const gapFor = s => Math.max(165, 215 - s * 1.2), spd = s => 130 + Math.min(40, s * 2);
+  const sl = r.querySelector('#qs');
+  sl.addEventListener('input', () => r.querySelector('#qsv').textContent = sl.value);
+  return loop(() => {
+    const marks = [0, 15, 30, 45, 60], k = H / 300;
+    ctx.fillStyle = '#101418'; ctx.fillRect(0, 0, W, H);
+    marks.forEach((m, i) => {
+      const x = 30 + i * 72, g = gapFor(m) * k, top = (H - g) / 2;
+      ctx.fillStyle = m == sl.value ? '#7BAA52' : 'rgba(123,170,82,.45)';
+      ctx.fillRect(x, 18, 40, top - 18); ctx.fillRect(x, top + g, 40, H - 26 - top - g);
+      ctx.fillStyle = '#E4E8EA'; ctx.font = '600 11px "JetBrains Mono",monospace'; ctx.textAlign = 'center';
+      ctx.fillText('score ' + m, x + 20, H - 8);
+      ctx.fillStyle = '#8A9198'; ctx.fillText(Math.round(gapFor(m)) + 'px', x + 20, 13);
+    });
+    const s = +sl.value, g = gapFor(s) * k, top = (H - g) / 2;
+    ctx.fillStyle = '#E8A85C'; ctx.beginPath(); ctx.ellipse(14, top + g / 2, 10, 7, 0, 0, 6.283); ctx.fill();
+    o.innerHTML = `at score <b>${s}</b> &nbsp; gap <b>${Math.round(gapFor(s))} px</b> &nbsp; speed <b>${Math.round(spd(s))} px/s</b>
+      <br><span style="color:#7E8A93">floor reached at score 42 — after that only the speed rises</span>`;
+  });
+};
+
+/* =======================================================================
+   NAVIGATION
+   ======================================================================= */
+let idx = 0;
+function show(n) {
+  n = Math.max(0, Math.min(SLIDES.length - 1, n));
+  if (running) { running(); running = null; }
+  els[idx].classList.remove('on');
+  idx = n;
+  const s = SLIDES[idx], el = els[idx];
+  el.classList.add('on');
+  document.getElementById('cur').textContent = idx + 1;
+  document.getElementById('prog').style.width = ((idx + 1) / SLIDES.length * 100) + '%';
+  const tag = document.getElementById('slideTag');
+  tag.textContent = s.act ? ACT_NAME[s.act] : '';
+  tag.style.color = s.act ? `var(--${s.act})` : 'var(--ink-3)';
+  notesEl.innerHTML = `<b>Slide ${idx + 1} · ${s.title}</b><br>${s.notes || ''}`;
+  if (s.demo && DEMOS[s.demo]) {
+    const host = el.querySelector('[data-slot="demo"]') || el.querySelector('.demo');
+    if (host) { host.innerHTML = ''; running = DEMOS[s.demo](host); }
+  }
+  if (s.poll) { watchVotes(s.poll.qid); writeSession({ qid: s.poll.qid, open: true, revealed: !!revealed[s.poll.qid] }); paintPoll(s.poll.qid); }
+  else { if (unsubVotes) { unsubVotes(); unsubVotes = null; } writeSession({ qid: null, open: false, revealed: false }); }
+  renderStudent();
+  fit();
+}
+const next = () => show(idx + 1), prev = () => show(idx - 1);
+
+document.addEventListener('keydown', ev => {
+  if (ev.target.tagName === 'INPUT') return;
+  const k = ev.key;
+  if (k === 'ArrowRight' || k === 'PageDown') { ev.preventDefault(); next(); }
+  else if (k === 'ArrowLeft' || k === 'PageUp') { ev.preventDefault(); prev(); }
+  else if (k === 'Home') show(0);
+  else if (k === 'End') show(SLIDES.length - 1);
+  else if (k === 'n' || k === 'N') notesEl.classList.toggle('on'), fit();
+  else if (k === 'o' || k === 'O') overEl.classList.toggle('on');
+  else if (k === 'Escape') overEl.classList.remove('on');
+  else if (k === 'f' || k === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {}); }
+  else if (k === 'r' || k === 'R') { const s = SLIDES[idx]; if (s.poll) setRevealed(s.poll.qid, !revealed[s.poll.qid]); else if (s.reveal) toggleReveal(idx); }
+  else if (k === 't' || k === 'T') { if (timers[idx]) toggleTimer(idx); }
+});
+
+/* overview map */
+const overList = document.getElementById('overList');
+SLIDES.forEach((s, i) => {
+  const b = document.createElement('button');
+  b.className = s.act ? 'a-' + s.act : '';
+  b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span><span>${s.title}${s.act ? ` <span class="tag" style="color:var(--${s.act})">· ${ACT_NAME[s.act]}</span>` : ''}</span>`;
+  b.addEventListener('click', () => { overEl.classList.remove('on'); show(i); });
+  overList.appendChild(b);
+});
+
+fit();
+show(0);
+})();
+</script>
+</body></html>

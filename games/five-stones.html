@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Five Stones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #EFEBE3;
+    --ground-2: #E5DFD3;
+    --ink: #221B15;
+    --ink-2: #5C5147;
+    --ink-3: #9A8F82;
+    --rule: #CFC6B8;
+    --seal: #B3372B;
+    --seal-ink: #FFFFFF;
+    --wood: #D8A55A;
+    --wood-2: #C48F44;
+    --grid: #4A2E12;
+    --slate: #17181A;
+    --shell: #F4F0E6;
+    --panel: #F7F4EE;
+    --focus: #B3372B;
+    --shadow: 0 30px 60px -30px rgba(40, 24, 8, .55), 0 8px 18px -10px rgba(40, 24, 8, .35);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #1C1512;
+      --ground-2: #241C17;
+      --ink: #EFE7DA;
+      --ink-2: #B7AA99;
+      --ink-3: #7D7062;
+      --rule: #3A2F27;
+      --seal: #D1493A;
+      --panel: #241C17;
+      --focus: #E06A5C;
+      --shadow: 0 30px 60px -30px rgba(0, 0, 0, .9), 0 8px 18px -10px rgba(0, 0, 0, .6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #1C1512;
+    --ground-2: #241C17;
+    --ink: #EFE7DA;
+    --ink-2: #B7AA99;
+    --ink-3: #7D7062;
+    --rule: #3A2F27;
+    --seal: #D1493A;
+    --panel: #241C17;
+    --focus: #E06A5C;
+    --shadow: 0 30px 60px -30px rgba(0, 0, 0, .9), 0 8px 18px -10px rgba(0, 0, 0, .6);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  button, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+  .app {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 24px 48px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 36px;
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .app { grid-template-columns: 1fr; gap: 24px; padding: 18px 14px 40px; }
+  }
+
+  /* ---------- header ---------- */
+  .masthead {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 14px;
+  }
+  .masthead h1 {
+    font-family: "Shippori Mincho", "Noto Serif JP", Georgia, serif;
+    font-weight: 500;
+    font-size: 30px;
+    letter-spacing: .01em;
+    margin: 0;
+    line-height: 1.1;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+  .masthead h1 .kanji {
+    font-size: 22px;
+    color: var(--ink-2);
+    font-weight: 700;
+  }
+  .masthead .rule-line {
+    font-size: 13px;
+    color: var(--ink-2);
+    text-align: right;
+  }
+  @media (max-width: 560px) { .masthead .rule-line { display: none; } }
+
+  /* ---------- board ---------- */
+  .board-wrap {
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+  canvas#board {
+    width: min(100%, 720px);
+    aspect-ratio: 1 / 1;
+    height: auto;
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    touch-action: manipulation;
+    display: block;
+  }
+  canvas#board.locked { cursor: default; }
+
+  /* ---------- sidebar ---------- */
+  .side { display: flex; flex-direction: column; gap: 22px; }
+
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+  }
+  .status .stone {
+    width: 26px; height: 26px; border-radius: 50%; flex: 0 0 auto;
+    box-shadow: inset -3px -4px 6px rgba(0,0,0,.45), 0 1px 2px rgba(0,0,0,.4);
+  }
+  .status .stone.black { background: radial-gradient(circle at 35% 30%, #5b5d62, var(--slate) 65%); }
+  .status .stone.white { background: radial-gradient(circle at 35% 30%, #ffffff, #d9d3c4 70%); }
+  .status .stone.none { display: none; }
+  .status .text {
+    font-family: "Shippori Mincho", Georgia, serif;
+    font-size: 21px;
+    font-weight: 500;
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+  .status .text.thinking { color: var(--ink-2); }
+  .status .text.win { color: var(--seal); }
+
+  .field {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .label {
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 600;
+  }
+  .seg {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .seg button {
+    border: 0;
+    background: transparent;
+    padding: 8px 6px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--ink-2);
+    border-right: 1px solid var(--rule);
+  }
+  .seg button:last-child { border-right: 0; }
+  .seg button[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--ground);
+    font-weight: 500;
+  }
+  .seg button:hover:not([aria-pressed="true"]) { background: var(--ground-2); }
+
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn {
+    border: 1px solid var(--rule);
+    background: var(--panel);
+    border-radius: 4px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .btn:hover { background: var(--ground-2); }
+  .btn.primary {
+    background: var(--seal);
+    color: var(--seal-ink);
+    border-color: var(--seal);
+  }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .btn:disabled:hover { background: var(--panel); }
+
+  .tally {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .tally div {
+    padding: 10px 0;
+    text-align: center;
+    border-right: 1px solid var(--rule);
+  }
+  .tally div:last-child { border-right: 0; }
+  .tally .n {
+    font-family: "Shippori Mincho", Georgia, serif;
+    font-size: 24px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .tally .k { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+
+  .record { display: grid; gap: 6px; }
+  .record ol {
+    list-style: none;
+    margin: 0; padding: 0;
+    font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+    font-size: 13px;
+    max-height: 260px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 14px;
+    row-gap: 2px;
+    color: var(--ink-2);
+  }
+  .record li {
+    display: grid;
+    grid-template-columns: 2.2em 1fr;
+    padding: 2px 0;
+    border-bottom: 1px dotted var(--rule);
+  }
+  .record li .num { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .record li.last { color: var(--ink); font-weight: 500; }
+  .record .empty { color: var(--ink-3); font-size: 13px; }
+
+  .hint { font-size: 13px; color: var(--ink-2); max-width: 32em; margin: 0; }
+  .hint kbd {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 0 5px;
+    background: var(--panel);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .status .text { transition: color .2s ease; }
+  }
+</style>
+</head><body>
+
+<div class="app">
+  <header class="masthead">
+    <h1>Five Stones <span class="kanji" lang="zh">五子棋</span></h1>
+    <div class="rule-line">15 × 15 · black plays first · five in a row wins</div>
+  </header>
+
+  <section class="board-wrap" aria-label="Board">
+    <canvas id="board" width="900" height="900" role="img" aria-label="Gomoku board, 15 by 15"></canvas>
+  </section>
+
+  <aside class="side">
+    <div class="status" aria-live="polite">
+      <span class="stone black" id="statusStone"></span>
+      <span class="text" id="statusText">Your move</span>
+    </div>
+
+    <div class="field">
+      <span class="label">You play</span>
+      <div class="seg" role="group" aria-label="Your color">
+        <button type="button" data-color="1" aria-pressed="true">Black · first</button>
+        <button type="button" data-color="2" aria-pressed="false">White · second</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="label">Opponent</span>
+      <div class="seg" role="group" aria-label="Difficulty">
+        <button type="button" data-level="easy" aria-pressed="false">Easy</button>
+        <button type="button" data-level="medium" aria-pressed="true">Medium</button>
+        <button type="button" data-level="hard" aria-pressed="false">Hard</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn" id="undoBtn" disabled>Undo</button>
+      <button type="button" class="btn primary" id="newBtn">New game</button>
+    </div>
+
+    <div class="tally" aria-label="Record against the computer">
+      <div><div class="n" id="tW">0</div><div class="k">Wins</div></div>
+      <div><div class="n" id="tL">0</div><div class="k">Losses</div></div>
+      <div><div class="n" id="tD">0</div><div class="k">Draws</div></div>
+    </div>
+
+    <div class="record">
+      <span class="label">Move record</span>
+      <ol id="moves"></ol>
+      <span class="empty" id="movesEmpty">No stones placed yet.</span>
+    </div>
+
+    <p class="hint">Click an intersection to place a stone. The red dot marks the last move. <kbd>U</kbd> undoes, <kbd>N</kbd> starts a new game.</p>
+  </aside>
+</div>
+
+<script>
+/* ===================== ENGINE ===================== */
+const N = 15;
+const EMPTY = 0, BLACK = 1, WHITE = 2;
+const DIRS = [[0, 1], [1, 0], [1, 1], [1, -1]];
+
+function newBoard() { return Array.from({ length: N }, () => new Array(N).fill(EMPTY)); }
+function inside(r, c) { return r >= 0 && r < N && c >= 0 && c < N; }
+
+// Returns the winning cells (5 or more in a row through r,c) or null.
+function winningLine(b, r, c) {
+  const p = b[r][c];
+  if (!p) return null;
+  for (const [dr, dc] of DIRS) {
+    const cells = [[r, c]];
+    for (const s of [1, -1]) {
+      let rr = r + dr * s, cc = c + dc * s;
+      while (inside(rr, cc) && b[rr][cc] === p) { cells.push([rr, cc]); rr += dr * s; cc += dc * s; }
+    }
+    if (cells.length >= 5) return cells;
+  }
+  return null;
+}
+
+// Pattern table, evaluated on strings where o = own stone, x = opponent/wall, _ = empty.
+const PATTERNS = [
+  [/(?=ooooo)/g, 1000000],
+  [/(?=_oooo_)/g, 100000],
+  [/(?=xoooo_|_oooox|o_ooo|oo_oo|ooo_o)/g, 9000],
+  [/(?=_ooo_)/g, 5000],
+  [/(?=_oo_o_|_o_oo_)/g, 3500],
+  [/(?=xooo__|__ooox|xoo_o_|_o_oox|xo_oo_|_oo_ox)/g, 600],
+  [/(?=_oo_)/g, 300],
+  [/(?=_o_o_)/g, 200],
+  [/(?=xoo__|__oox)/g, 40],
+];
+function scoreLine(s) {
+  let t = 0;
+  for (const [re, w] of PATTERNS) {
+    const m = s.match(re);
+    if (m) t += m.length * w;
+  }
+  return t;
+}
+function cellChar(v, me) { return v === EMPTY ? '_' : (v === me ? 'o' : 'x'); }
+
+// All 72 lines of the board (rows, columns, both diagonals with length >= 5).
+const LINES = (() => {
+  const out = [];
+  for (let r = 0; r < N; r++) out.push(Array.from({ length: N }, (_, c) => [r, c]));
+  for (let c = 0; c < N; c++) out.push(Array.from({ length: N }, (_, r) => [r, c]));
+  for (let k = -(N - 5); k <= N - 5; k++) {
+    const d1 = [], d2 = [];
+    for (let r = 0; r < N; r++) {
+      const c1 = r - k, c2 = (N - 1 - r) - k;
+      if (inside(r, c1)) d1.push([r, c1]);
+      if (inside(r, c2)) d2.push([r, c2]);
+    }
+    if (d1.length >= 5) out.push(d1);
+    if (d2.length >= 5) out.push(d2);
+  }
+  return out;
+})();
+
+function evaluate(b, me) {
+  const opp = 3 - me;
+  let mine = 0, theirs = 0;
+  for (const line of LINES) {
+    let a = 'x', z = 'x';
+    for (const [r, c] of line) { const v = b[r][c]; a += cellChar(v, me); z += cellChar(v, opp); }
+    a += 'x'; z += 'x';
+    mine += scoreLine(a);
+    theirs += scoreLine(z);
+  }
+  return mine - theirs * 1.05;
+}
+
+// Quick score for placing `me` at (r,c): 9-cell windows in 4 directions.
+function pointScore(b, r, c, me) {
+  let t = 0;
+  for (const [dr, dc] of DIRS) {
+    let s = '';
+    for (let i = -4; i <= 4; i++) {
+      const rr = r + dr * i, cc = c + dc * i;
+      if (!inside(rr, cc)) s += 'x';
+      else if (i === 0) s += 'o';
+      else s += cellChar(b[rr][cc], me);
+    }
+    t += scoreLine(s);
+  }
+  return t;
+}
+
+function candidates(b, me, limit) {
+  const opp = 3 - me;
+  const seen = new Set();
+  const list = [];
+  let any = false;
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    if (!b[r][c]) continue;
+    any = true;
+    for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
+      const rr = r + dr, cc = c + dc;
+      if (!inside(rr, cc) || b[rr][cc]) continue;
+      const key = rr * N + cc;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const atk = pointScore(b, rr, cc, me);
+      const def = pointScore(b, rr, cc, opp);
+      list.push({ r: rr, c: cc, atk, def, score: atk + def * 0.9 });
+    }
+  }
+  if (!any) return [{ r: 7, c: 7, atk: 0, def: 0, score: 0 }];
+  list.sort((p, q) => q.score - p.score);
+  return limit ? list.slice(0, limit) : list;
+}
+
+function search(b, me, depth, alpha, beta, maximizing, width) {
+  const player = maximizing ? me : 3 - me;
+  const moves = candidates(b, player, width);
+  if (depth === 0) return evaluate(b, me);
+  let best = maximizing ? -Infinity : Infinity;
+  for (const m of moves) {
+    b[m.r][m.c] = player;
+    let v;
+    if (winningLine(b, m.r, m.c)) v = (maximizing ? 1 : -1) * (10000000 + depth);
+    else v = search(b, me, depth - 1, alpha, beta, !maximizing, Math.max(4, width - 2));
+    b[m.r][m.c] = EMPTY;
+    if (maximizing) { if (v > best) best = v; if (best > alpha) alpha = best; }
+    else { if (v < best) best = v; if (best < beta) beta = best; }
+    if (beta <= alpha) break;
+  }
+  return best;
+}
+
+function chooseMove(b, me, level) {
+  const opp = 3 - me;
+  const cands = candidates(b, me, 0);
+  // Win now if possible.
+  for (const m of cands) {
+    b[m.r][m.c] = me;
+    const w = !!winningLine(b, m.r, m.c);
+    b[m.r][m.c] = EMPTY;
+    if (w) return m;
+  }
+  // Block an immediate five.
+  const blocks = cands.filter(m => {
+    b[m.r][m.c] = opp;
+    const w = !!winningLine(b, m.r, m.c);
+    b[m.r][m.c] = EMPTY;
+    return w;
+  });
+  if (blocks.length) return blocks[0];
+
+  if (level === 'easy') {
+    const top = cands.slice(0, 4);
+    const pick = top[Math.floor(Math.random() * top.length)];
+    return pick;
+  }
+  const depth = level === 'hard' ? 4 : 2;
+  const width = level === 'hard' ? 10 : 8;
+  let best = null, bestV = -Infinity;
+  for (const m of cands.slice(0, width)) {
+    b[m.r][m.c] = me;
+    const v = search(b, me, depth - 1, -Infinity, Infinity, false, width - 2);
+    b[m.r][m.c] = EMPTY;
+    if (v > bestV) { bestV = v; best = m; }
+  }
+  return best || cands[0];
+}
+
+/* ===================== UI ===================== */
+const canvas = document.getElementById('board');
+const ctx = canvas.getContext('2d');
+const SIZE = canvas.width;
+const PAD = 52;
+const STEP = (SIZE - PAD * 2) / (N - 1);
+const STAR = [[3, 3], [3, 11], [7, 7], [11, 3], [11, 11]];
+const COLS = 'ABCDEFGHIJKLMNO';
+
+const state = {
+  board: newBoard(),
+  history: [],
+  turn: BLACK,
+  human: BLACK,
+  level: 'medium',
+  over: false,
+  winLine: null,
+  hover: null,
+  thinking: false,
+};
+let tally = { w: 0, l: 0, d: 0 };
+try { const t = JSON.parse(localStorage.getItem('fivestones.tally')); if (t && typeof t.w === 'number') tally = t; } catch (e) {}
+try {
+  const lv = localStorage.getItem('fivestones.level'); if (lv === 'easy' || lv === 'medium' || lv === 'hard') state.level = lv;
+  const hc = localStorage.getItem('fivestones.color'); if (hc === '1' || hc === '2') state.human = +hc;
+} catch (e) {}
+
+function saveTally() { try { localStorage.setItem('fivestones.tally', JSON.stringify(tally)); } catch (e) {} }
+function savePrefs() { try { localStorage.setItem('fivestones.level', state.level); localStorage.setItem('fivestones.color', String(state.human)); } catch (e) {} }
+
+function px(i) { return PAD + i * STEP; }
+function coordName(r, c) { return COLS[c] + (N - r); }
+
+// Wood texture drawn once to an offscreen canvas.
+const woodCanvas = document.createElement('canvas');
+woodCanvas.width = SIZE; woodCanvas.height = SIZE;
+(function paintWood() {
+  const g = woodCanvas.getContext('2d');
+  const base = g.createLinearGradient(0, 0, SIZE, SIZE);
+  base.addColorStop(0, '#DFAF63');
+  base.addColorStop(0.5, '#D8A55A');
+  base.addColorStop(1, '#CB9448');
+  g.fillStyle = base;
+  g.fillRect(0, 0, SIZE, SIZE);
+  // grain: soft vertical bands with slight waviness
+  let seed = 7;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  for (let i = 0; i < 140; i++) {
+    const x = rnd() * SIZE;
+    const w = 1 + rnd() * 3;
+    const alpha = 0.04 + rnd() * 0.07;
+    g.strokeStyle = `rgba(90, 55, 15, ${alpha})`;
+    g.lineWidth = w;
+    g.beginPath();
+    const amp = 6 + rnd() * 14, freq = 0.004 + rnd() * 0.006, ph = rnd() * 10;
+    for (let y = 0; y <= SIZE; y += 6) {
+      const xx = x + Math.sin(y * freq + ph) * amp;
+      if (y === 0) g.moveTo(xx, y); else g.lineTo(xx, y);
+    }
+    g.stroke();
+  }
+  // vignette
+  const v = g.createRadialGradient(SIZE / 2, SIZE / 2, SIZE * 0.35, SIZE / 2, SIZE / 2, SIZE * 0.8);
+  v.addColorStop(0, 'rgba(0,0,0,0)');
+  v.addColorStop(1, 'rgba(60,30,0,0.18)');
+  g.fillStyle = v;
+  g.fillRect(0, 0, SIZE, SIZE);
+})();
+
+function drawStone(x, y, color, alpha) {
+  const R = STEP * 0.46;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  // shadow
+  ctx.beginPath();
+  ctx.arc(x + 2, y + 3, R, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(40, 20, 0, 0.35)';
+  ctx.fill();
+  const grad = ctx.createRadialGradient(x - R * 0.35, y - R * 0.4, R * 0.1, x, y, R);
+  if (color === BLACK) {
+    grad.addColorStop(0, '#6a6d73');
+    grad.addColorStop(0.45, '#2a2b2e');
+    grad.addColorStop(1, '#0f1012');
+  } else {
+    grad.addColorStop(0, '#ffffff');
+    grad.addColorStop(0.6, '#efeadf');
+    grad.addColorStop(1, '#cbc3b1');
+  }
+  ctx.beginPath();
+  ctx.arc(x, y, R, 0, Math.PI * 2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.restore();
+}
+
+function draw() {
+  ctx.drawImage(woodCanvas, 0, 0);
+  // grid
+  ctx.strokeStyle = '#4A2E12';
+  ctx.lineWidth = 1.4;
+  for (let i = 0; i < N; i++) {
+    ctx.beginPath(); ctx.moveTo(px(0), px(i)); ctx.lineTo(px(N - 1), px(i)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(i), px(0)); ctx.lineTo(px(i), px(N - 1)); ctx.stroke();
+  }
+  ctx.lineWidth = 2.6;
+  ctx.strokeRect(px(0), px(0), STEP * (N - 1), STEP * (N - 1));
+  // star points
+  ctx.fillStyle = '#4A2E12';
+  for (const [r, c] of STAR) { ctx.beginPath(); ctx.arc(px(c), px(r), 4.5, 0, Math.PI * 2); ctx.fill(); }
+  // coordinates
+  ctx.fillStyle = 'rgba(74, 46, 18, 0.85)';
+  ctx.font = '500 15px "IBM Plex Mono", monospace';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (let i = 0; i < N; i++) {
+    ctx.fillText(COLS[i], px(i), PAD * 0.45);
+    ctx.fillText(COLS[i], px(i), SIZE - PAD * 0.45);
+    ctx.fillText(String(N - i), PAD * 0.42, px(i));
+    ctx.fillText(String(N - i), SIZE - PAD * 0.42, px(i));
+  }
+  // winning line glow
+  if (state.winLine) {
+    const a = state.winLine[0], z = state.winLine[state.winLine.length - 1];
+    let far = a, near = a;
+    for (const cell of state.winLine) {
+      if (cell[0] * N + cell[1] < near[0] * N + near[1]) near = cell;
+      if (cell[0] * N + cell[1] > far[0] * N + far[1]) far = cell;
+    }
+    ctx.save();
+    ctx.strokeStyle = 'rgba(179, 55, 43, 0.55)';
+    ctx.lineWidth = STEP * 1.05;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(px(near[1]), px(near[0])); ctx.lineTo(px(far[1]), px(far[0])); ctx.stroke();
+    ctx.restore();
+  }
+  // stones
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    if (state.board[r][c]) drawStone(px(c), px(r), state.board[r][c], 1);
+  }
+  // ghost
+  if (state.hover && !state.over && !state.thinking && state.turn === state.human) {
+    const [r, c] = state.hover;
+    if (!state.board[r][c]) drawStone(px(c), px(r), state.human, 0.45);
+  }
+  // last move marker
+  const last = state.history[state.history.length - 1];
+  if (last) {
+    ctx.beginPath();
+    ctx.arc(px(last.c), px(last.r), STEP * 0.12, 0, Math.PI * 2);
+    ctx.fillStyle = '#B3372B';
+    ctx.fill();
+  }
+}
+
+/* ---------- status & record ---------- */
+const statusText = document.getElementById('statusText');
+const statusStone = document.getElementById('statusStone');
+const movesEl = document.getElementById('moves');
+const movesEmpty = document.getElementById('movesEmpty');
+const undoBtn = document.getElementById('undoBtn');
+
+function setStatus(text, cls, stone) {
+  statusText.textContent = text;
+  statusText.className = 'text' + (cls ? ' ' + cls : '');
+  statusStone.className = 'stone ' + (stone === BLACK ? 'black' : stone === WHITE ? 'white' : 'none');
+}
+function refreshStatus() {
+  if (state.over) return;
+  if (state.thinking) setStatus('Thinking…', 'thinking', 3 - state.human);
+  else setStatus(state.history.length === 0 && state.turn === state.human ? 'Your move — you open' : 'Your move', '', state.human);
+}
+function refreshRecord() {
+  movesEl.innerHTML = '';
+  movesEmpty.hidden = state.history.length > 0;
+  state.history.forEach((m, i) => {
+    const li = document.createElement('li');
+    if (i === state.history.length - 1) li.className = 'last';
+    const who = m.p === BLACK ? '●' : '○';
+    li.innerHTML = `<span class="num">${i + 1}.</span><span>${who} ${coordName(m.r, m.c)}</span>`;
+    movesEl.appendChild(li);
+  });
+  movesEl.scrollTop = movesEl.scrollHeight;
+  undoBtn.disabled = state.history.filter(m => m.p === state.human).length === 0 || state.thinking;
+}
+function refreshTally() {
+  document.getElementById('tW').textContent = tally.w;
+  document.getElementById('tL').textContent = tally.l;
+  document.getElementById('tD').textContent = tally.d;
+}
+function refreshSegs() {
+  document.querySelectorAll('[data-color]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.color === state.human)));
+  document.querySelectorAll('[data-level]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.level === state.level)));
+}
+
+/* ---------- game flow ---------- */
+function place(r, c, p) {
+  state.board[r][c] = p;
+  state.history.push({ r, c, p });
+  const line = winningLine(state.board, r, c);
+  if (line) {
+    state.over = true;
+    state.winLine = line;
+    if (p === state.human) { tally.w++; setStatus('You win', 'win', p); }
+    else { tally.l++; setStatus('The computer wins', 'win', p); }
+    saveTally(); refreshTally();
+  } else if (state.history.length === N * N) {
+    state.over = true;
+    tally.d++; saveTally(); refreshTally();
+    setStatus('Draw — the board is full', 'win', 0);
+  } else {
+    state.turn = 3 - p;
+  }
+  refreshRecord();
+  draw();
+}
+
+function maybeComputerMove() {
+  if (state.over || state.turn === state.human) return;
+  state.thinking = true;
+  canvas.classList.add('locked');
+  refreshStatus(); refreshRecord();
+  const started = performance.now();
+  setTimeout(() => {
+    const me = 3 - state.human;
+    const m = chooseMove(state.board, me, state.level);
+    // keep a short beat so the move reads as a reply, not a flash
+    const wait = Math.max(0, 350 - (performance.now() - started));
+    setTimeout(() => {
+      state.thinking = false;
+      canvas.classList.remove('locked');
+      if (!state.over && state.turn === me) place(m.r, m.c, me);
+      refreshStatus(); refreshRecord();
+    }, wait);
+  }, 30);
+}
+
+function humanMove(r, c) {
+  if (state.over || state.thinking || state.turn !== state.human || state.board[r][c]) return;
+  place(r, c, state.human);
+  if (!state.over) { refreshStatus(); maybeComputerMove(); }
+}
+
+function newGame() {
+  state.board = newBoard();
+  state.history = [];
+  state.turn = BLACK;
+  state.over = false;
+  state.winLine = null;
+  state.thinking = false;
+  canvas.classList.remove('locked');
+  refreshStatus(); refreshRecord(); draw();
+  maybeComputerMove();
+}
+
+function undo() {
+  if (state.thinking) return;
+  // Roll back to before the human's last move.
+  let idx = -1;
+  for (let i = state.history.length - 1; i >= 0; i--) if (state.history[i].p === state.human) { idx = i; break; }
+  if (idx < 0) return;
+  const removed = state.history.splice(idx);
+  for (const m of removed) state.board[m.r][m.c] = EMPTY;
+  state.over = false; state.winLine = null;
+  state.turn = state.human;
+  refreshStatus(); refreshRecord(); draw();
+}
+
+/* ---------- input ---------- */
+function cellFromEvent(ev) {
+  const rect = canvas.getBoundingClientRect();
+  const x = (ev.clientX - rect.left) * (SIZE / rect.width);
+  const y = (ev.clientY - rect.top) * (SIZE / rect.height);
+  const c = Math.round((x - PAD) / STEP), r = Math.round((y - PAD) / STEP);
+  if (!inside(r, c)) return null;
+  if (Math.abs(x - px(c)) > STEP * 0.5 || Math.abs(y - px(r)) > STEP * 0.5) return null;
+  return [r, c];
+}
+canvas.addEventListener('mousemove', ev => {
+  const cell = cellFromEvent(ev);
+  const changed = (cell && !state.hover) || (!cell && state.hover) || (cell && state.hover && (cell[0] !== state.hover[0] || cell[1] !== state.hover[1]));
+  if (changed) { state.hover = cell; draw(); }
+});
+canvas.addEventListener('mouseleave', () => { state.hover = null; draw(); });
+canvas.addEventListener('click', ev => {
+  const cell = cellFromEvent(ev);
+  if (cell) humanMove(cell[0], cell[1]);
+});
+document.getElementById('newBtn').addEventListener('click', newGame);
+undoBtn.addEventListener('click', undo);
+document.querySelectorAll('[data-color]').forEach(b => b.addEventListener('click', () => {
+  state.human = +b.dataset.color; savePrefs(); refreshSegs(); newGame();
+}));
+document.querySelectorAll('[data-level]').forEach(b => b.addEventListener('click', () => {
+  state.level = b.dataset.level; savePrefs(); refreshSegs();
+}));
+document.addEventListener('keydown', ev => {
+  if (ev.target && (ev.target.tagName === 'INPUT' || ev.target.tagName === 'SELECT')) return;
+  if (ev.key === 'u' || ev.key === 'U') undo();
+  if (ev.key === 'n' || ev.key === 'N') newGame();
+});
+
+refreshSegs(); refreshTally();
+newGame();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+</script>
+</body></html>

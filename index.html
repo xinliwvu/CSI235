@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="CSI-235 Artificial Intelligence for All, Fall 2026, University at Albany. Weekly schedule, interactive lecture decks and course policies.">
+<title>CSI-235 · AI for All</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --paper:#F6F5F2; --panel:#FFFFFF; --panel-2:#FAF9F6;
+  --ink:#1A181D; --ink-2:#54505C; --ink-3:#8A8592; --rule:#E2DFDA;
+  --plum:#472C63;          /* structure, headings */
+  --plum-soft:#6B4C88;
+  --gold:#B4880F;          /* interactive things, this week */
+  --good:#2E6B4F; --warn:#A8501E;
+  --shadow:0 20px 44px -28px rgba(30,20,40,.42), 0 2px 5px -2px rgba(30,20,40,.10);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#151318; --panel:#1D1A22; --panel-2:#221E29;
+    --ink:#F1EEF4; --ink-2:#B5AEBF; --ink-3:#847D90; --rule:#332E3B;
+    --plum:#B79BD6; --plum-soft:#9C7FBE; --gold:#E0B23F;
+    --good:#6FC49A; --warn:#E09A63;
+    --shadow:0 20px 44px -28px rgba(0,0,0,.8), 0 2px 5px -2px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#151318; --panel:#1D1A22; --panel-2:#221E29;
+  --ink:#F1EEF4; --ink-2:#B5AEBF; --ink-3:#847D90; --rule:#332E3B;
+  --plum:#B79BD6; --plum-soft:#9C7FBE; --gold:#E0B23F;
+  --good:#6FC49A; --warn:#E09A63;
+  --shadow:0 20px 44px -28px rgba(0,0,0,.8), 0 2px 5px -2px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Public Sans","Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--plum);text-decoration-color:color-mix(in srgb, var(--plum) 35%, transparent);text-underline-offset:2px}
+a:hover{text-decoration-color:currentColor}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:3px}
+.wrap{max-width:1060px;margin:0 auto;padding:0 24px}
+@media (max-width:640px){.wrap{padding:0 16px}}
+
+/* ---------- masthead ---------- */
+header.top{border-bottom:1px solid var(--rule);background:var(--panel);}
+.top .wrap{padding-top:26px;padding-bottom:24px}
+.crumb{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+h1{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:clamp(30px,5vw,46px);line-height:1.05;margin:10px 0 6px;letter-spacing:-.015em}
+h1 .code{color:var(--plum)}
+.tagline{font-size:clamp(16px,2.2vw,19px);color:var(--ink-2);margin:0;max-width:44em}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:18px 28px;margin-top:22px;padding-top:20px;border-top:1px solid var(--rule)}
+.fact b{display:block;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:3px}
+.fact span,.fact a{font-size:15.5px}
+.next{
+  display:inline-flex;align-items:center;gap:10px;margin-top:18px;padding:8px 14px;
+  border:1px solid var(--rule);border-radius:999px;background:var(--panel-2);font-size:14.5px;
+}
+.next .dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.next b{font-weight:600}
+
+/* ---------- sections ---------- */
+section{padding:44px 0 8px}
+section.pad{padding-bottom:40px}
+h2{
+  font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:26px;margin:0 0 4px;letter-spacing:-.01em;
+}
+.sub{color:var(--ink-2);margin:0 0 20px;max-width:52em;font-size:16px}
+h3{font-family:"Public Sans",sans-serif;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:0 0 8px}
+
+/* ---------- weekly rhythm ---------- */
+.rhythm{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.rc{border:1px solid var(--rule);border-radius:10px;padding:16px 18px;background:var(--panel)}
+.rc .when{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.rc h4{margin:6px 0 5px;font-size:17px;font-family:"Source Serif 4",Georgia,serif;font-weight:600}
+.rc p{margin:0;font-size:14.5px;color:var(--ink-2);line-height:1.45}
+
+/* ---------- schedule ---------- */
+.sched{border:1px solid var(--rule);border-radius:12px;overflow:hidden;background:var(--panel)}
+.wk{display:grid;grid-template-columns:62px 1fr;gap:0;border-bottom:1px solid var(--rule)}
+.wk:last-child{border-bottom:0}
+.wk .n{
+  display:flex;align-items:flex-start;justify-content:center;padding:16px 0 0;
+  font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:14px;color:var(--ink-3);
+  background:var(--panel-2);border-right:1px solid var(--rule);
+}
+.wk .body{padding:14px 20px 16px}
+.wk h4{margin:0 0 3px;font-size:18.5px;font-family:"Source Serif 4",Georgia,serif;font-weight:600;line-height:1.25}
+.wk .anchor{margin:0;font-size:15px;color:var(--ink-2);line-height:1.45}
+.wk .anchor::before{content:"Story · ";font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.wk.now{background:color-mix(in srgb, var(--gold) 9%, var(--panel))}
+.wk.now .n{background:var(--gold);color:#fff}
+.wk .badge{
+  display:inline-block;margin-left:8px;padding:2px 8px;border-radius:4px;
+  font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;vertical-align:2px;
+  background:color-mix(in srgb, var(--warn) 14%, transparent);color:var(--warn);
+}
+.wk .badge.now{background:var(--gold);color:#fff}
+.mats{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.mat{
+  display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:7px;
+  border:1px solid var(--rule);background:var(--panel-2);font-size:14px;font-weight:500;
+  text-decoration:none;color:var(--ink);
+}
+.mat:hover{border-color:var(--plum);color:var(--plum)}
+.mat .ic{font-size:14px;line-height:1}
+.mat .kind{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+
+/* ---------- assessment ---------- */
+.grid2{display:grid;grid-template-columns:1.35fr 1fr;gap:26px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+table.asmt{width:100%;border-collapse:collapse;font-size:15.5px}
+table.asmt th{text-align:left;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);font-weight:600;padding:0 0 8px}
+table.asmt td{padding:10px 0;border-top:1px solid var(--rule);vertical-align:top}
+table.asmt td.w{font-family:"IBM Plex Mono",monospace;font-weight:600;text-align:right;width:64px;font-variant-numeric:tabular-nums}
+table.asmt td.note{color:var(--ink-2);font-size:14px}
+table.asmt tr.tot td{border-top:2px solid var(--ink-3);font-weight:600}
+.scale{border:1px solid var(--rule);border-radius:10px;padding:16px 18px;background:var(--panel)}
+.scale dl{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;margin:0;font-size:15px}
+.scale dt{font-family:"IBM Plex Mono",monospace;font-weight:600;color:var(--plum)}
+.scale dd{margin:0;color:var(--ink-2)}
+
+/* ---------- callout ---------- */
+.callout{border:1px solid var(--rule);border-left:4px solid var(--plum);border-radius:8px;padding:16px 20px;background:var(--panel);margin-top:8px}
+.callout.gold{border-left-color:var(--gold)}
+.callout p{margin:0;font-size:15.5px;color:var(--ink-2)}
+.callout p+p{margin-top:8px}
+.callout strong{color:var(--ink)}
+
+/* ---------- extras ---------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.card{border:1px solid var(--rule);border-radius:10px;padding:16px 18px;background:var(--panel);text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:5px}
+.card:hover{border-color:var(--plum)}
+.card .ic{font-size:20px}
+.card b{font-family:"Source Serif 4",Georgia,serif;font-size:17px;font-weight:600}
+.card span{font-size:14px;color:var(--ink-2);line-height:1.4}
+
+/* ---------- policies ---------- */
+.pol{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px 30px}
+.pol div p{margin:0;font-size:14.5px;color:var(--ink-2);line-height:1.5}
+.pol div p a{word-break:break-word}
+
+footer{margin-top:46px;border-top:1px solid var(--rule);background:var(--panel)}
+footer .wrap{padding-top:22px;padding-bottom:30px;display:flex;flex-wrap:wrap;gap:14px 26px;align-items:baseline;justify-content:space-between}
+footer p{margin:0;font-size:13.5px;color:var(--ink-3)}
+.themebtn{border:1px solid var(--rule);background:var(--panel-2);border-radius:6px;padding:5px 11px;font-size:13px;cursor:pointer;color:var(--ink-2)}
+.themebtn:hover{border-color:var(--ink-3)}
+@media print{
+  .next,.themebtn,footer{display:none}
+  body{background:#fff}
+  .sched,.rc,.card,.scale,.callout{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div class="wrap">
+    <div class="crumb">University at Albany · Department of Computer Science · Fall 2026</div>
+    <h1><span class="code">CSI-235</span> — Artificial Intelligence for All</h1>
+    <p class="tagline">A fifteen-week tour of what AI has actually changed, built for students who are not computer scientists. Breadth over depth; no programming required.</p>
+    <div class="next" id="nextMeeting" hidden><span class="dot"></span><span id="nextText"></span></div>
+    <div class="facts">
+      <div class="fact"><b>Meets</b><span>Tu &amp; Th · 3:00–4:20 pm</span></div>
+      <div class="fact"><b>Room</b><span>Biology 248</span></div>
+      <div class="fact"><b>Instructor</b><span>Xin Li, Professor</span></div>
+      <div class="fact"><b>Office &amp; hours</b><span>UAB-413 · Tu &amp; Th 2:30–3:00 pm</span></div>
+      <div class="fact"><b>Email</b><a href="mailto:xli48@albany.edu">xli48@albany.edu</a></div>
+      <div class="fact"><b>Prerequisites</b><span>None · corequisite CSI-201</span></div>
+      <div class="fact"><b>Textbook</b><span>None</span></div>
+      <div class="fact"><b>TA / Peer educators</b><span>TBD</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section>
+  <h2>Brightspace is the system of record</h2>
+  <p class="sub">Assignments, the current syllabus, grades and announcements all live in Brightspace. This page is a public companion: the schedule at a glance, plus the interactive materials used in class. If the two ever disagree, Brightspace is correct.</p>
+  <div class="callout gold">
+    <p><strong>This is not an online course.</strong> Attendance and participation are required. Attendance is taken at every meeting by QR code, so bring a phone; each unexcused absence costs one point of your participation grade.</p>
+  </div>
+</section>
+
+<section>
+  <h2>The weekly rhythm</h2>
+  <p class="sub">The week has a fixed shape, and knowing it in advance is most of what you need to succeed here.</p>
+  <div class="rhythm">
+    <div class="rc"><div class="when">Before class</div><h4>One short warmup</h4>
+      <p>A news article, a press release, or a video clip — nothing over about twenty minutes. Highly recommended. A five-question concept quiz opens the first meeting of most weeks.</p></div>
+    <div class="rc"><div class="when">Tuesday</div><h4>The story</h4>
+      <p>What is the problem? Told properly, with the concept built out of it. This is the closest thing to lecture the course contains.</p></div>
+    <div class="rc"><div class="when">Thursday</div><h4>The activity</h4>
+      <p>How can AI solve it? Every week has one, none requires a computer, and all of them show AI at work in a different field.</p></div>
+    <div class="rc"><div class="when">After class</div><h4>A short reflection</h4>
+      <p>Your own thinking applied to the week's story, due before the Tuesday meeting of the following week. Starts in Week 2.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Semester schedule</h2>
+  <p class="sub">Fifteen weeks, fifteen stories. Tentative — check Brightspace for the current version. Materials appear here as each week is taught.</p>
+  <div class="sched" id="sched"></div>
+</section>
+
+<section>
+  <h2>Assessment</h2>
+  <div class="grid2">
+    <div>
+      <table class="asmt">
+        <tr><th>Component</th><th style="text-align:right">Weight</th><th>Schedule</th></tr>
+        <tr><td>Weekly story reflections</td><td class="w">20%</td><td class="note">12 assigned, 2 lowest dropped</td></tr>
+        <tr><td>Weekly concept quizzes</td><td class="w">20%</td><td class="note">12 given, 2 lowest dropped</td></tr>
+        <tr><td>Debates and participation</td><td class="w">10%</td><td class="note">Randomly distributed by topic</td></tr>
+        <tr><td>Midterm exam <span style="color:var(--ink-3)">(closed book)</span></td><td class="w">25%</td><td class="note">Week 7, second meeting</td></tr>
+        <tr><td>Final exam / project <span style="color:var(--ink-3)">(open book)</span></td><td class="w">25%</td><td class="note">University examination period</td></tr>
+        <tr class="tot"><td>Total</td><td class="w">100%</td><td></td></tr>
+      </table>
+      <div class="callout" style="margin-top:18px">
+        <p><strong>Using AI in this course.</strong> You may use generative AI to ask general questions about the material. Anything you submit for grading must be written by you. Responsible use is discussed in Week 1.</p>
+        <p>Laptops are fine for note-taking as long as the use is not disruptive.</p>
+      </div>
+    </div>
+    <div>
+      <div class="scale">
+        <h3>Grading scale</h3>
+        <dl>
+          <dt>A</dt><dd>95–100</dd>
+          <dt>A−</dt><dd>90–94</dd>
+          <dt>B+</dt><dd>85–89</dd>
+          <dt>B</dt><dd>80–84</dd>
+          <dt>B−</dt><dd>75–79</dd>
+          <dt>C+</dt><dd>70–74</dd>
+          <dt>C</dt><dd>65–69</dd>
+          <dt>C−</dt><dd>60–64</dd>
+          <dt>D</dt><dd>55–59</dd>
+          <dt>E</dt><dd>54 and below — failed</dd>
+        </dl>
+        <p style="font-size:13.5px;color:var(--ink-3);margin:14px 0 0;line-height:1.45">All requirements must be completed to pass. Final grades are computed from these formulas and are not negotiable. Per department policy, additional work cannot be submitted to improve a grade after the course has ended.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Learning objectives</h2>
+  <p class="sub">By the end of the course you will:</p>
+  <div class="cards">
+    <div class="card"><b>Connect AI to your field</b><span>Basic knowledge of how AI meets neuroscience, physics, medicine, law, climate, and the arts.</span></div>
+    <div class="card"><b>See the whole landscape</b><span>Exposure to foundational and use-inspired AI topics at a high level, without the programming.</span></div>
+    <div class="card"><b>Work with the tools</b><span>Practical skill with ChatGPT, Claude and Gemini for real problem-solving tasks.</span></div>
+    <div class="card"><b>Be ready for what's next</b><span>Prepared to take CSI-435, Introduction to AI, if you want to go further.</span></div>
+  </div>
+</section>
+
+<section id="extras">
+  <h2>Playable extras</h2>
+  <p class="sub">Not assessed, and not required. Built alongside the Week&nbsp;3 material — small games you can play in a browser, and two walkthroughs of how they were designed.</p>
+  <div class="cards" id="extraCards"></div>
+</section>
+
+<section class="pad">
+  <h2>Policies</h2>
+  <div class="pol">
+    <div><h3>Students with disabilities</h3><p>Reasonable accommodations are provided for documented physical, sensory, systemic, cognitive, learning and psychiatric disabilities. Contact the Disability Resource Center (Campus Center 137, 442-5490), which will verify the disability and recommend accommodations. <a href="https://www.albany.edu/disability/faculty-staff.shtml">Reasonable Accommodation Policy</a></p></div>
+    <div><h3>Academic integrity</h3><p>Every student is responsible for knowing the University's standards. Claims of ignorance, unintentional error, or academic pressure are not excuses. Plagiarism and other acts of academic dishonesty are punished. <a href="https://www.albany.edu/undergraduate_bulletin/regulations.html">Undergraduate Bulletin</a> · <a href="https://www.albany.edu/graduatebulletin/requirements_degree.htm#standards_integrity">Graduate Bulletin</a></p></div>
+    <div><h3>Responsible computing</h3><p>Students must read and apply the University at Albany <a href="https://www.albany.edu/its/policies_responsible_use_of_IT.htm">Policy for the Responsible Use of Information Technology</a> to all electronic communication in this course.</p></div>
+    <div><h3>Attendance and lateness</h3><p>Attend every class and arrive on time; do not enter late or leave early without approval. Absences approved by the instructor beforehand are excused. <a href="https://www.albany.edu/health_center/medicalexcuse.shtml">Medical excuse policy</a></p></div>
+    <div><h3>Incompletes</h3><p>An incomplete is given only when circumstances beyond your control leave a substantial amount of work unfinished at the end of the semester. Make every effort to prevent this; the instructor is the sole judge of whether one is warranted.</p></div>
+  </div>
+</section>
+
+</main>
+
+<footer><div class="wrap">
+  <p>CSI-235 · Artificial Intelligence for All · Fall 2026 · Xin&nbsp;Li · University at Albany, SUNY<br>
+     Course materials are on <strong>Brightspace</strong>; this page is a companion and may lag behind it.</p>
+  <button class="themebtn" id="themeBtn">Dark mode</button>
+</div></footer>
+
+<script>
+/* ---------------------------------------------------------------
+   CSI-235 course homepage.
+   To turn on the "this week" highlight and the next-meeting notice,
+   set FIRST_MONDAY to the Monday of Week 1, e.g. '2026-08-24'.
+   Leave it empty and the page simply shows the schedule with no
+   week highlighted — nothing else changes.
+   --------------------------------------------------------------- */
+const FIRST_MONDAY = '';
+
+const WEEKS = [
+  {n:1,  topic:'AI and You',                        anchor:'ELIZA, 1966 — and the secretary who asked to be left alone with it'},
+  {n:2,  topic:'AI and Neuroscience',               anchor:'Hubel and Wiesel find a feature detector in a cat, 1959'},
+  {n:3,  topic:'AI and Games',                      anchor:'Deep Blue 1997 versus AlphaGo’s Move 37, 2016', mats:['fivestones-deck','flap-deck']},
+  {n:4,  topic:'AI and Linguistics / Lost Knowledge', anchor:'A sealed Herculaneum scroll read cover to cover, June 2026', mats:['lostknowledge']},
+  {n:5,  topic:'AI and Health / Medicine',          anchor:'Two Nobel Prizes for AI in two days, October 2024', mats:['alphafold']},
+  {n:6,  topic:'AI and Animals / Plants',           anchor:'Sperm whale vowels, April 2026 — and what we still cannot read'},
+  {n:7,  topic:'AI and Weather / Climate',          anchor:'Europe’s forecasting agency goes AI-operational, February 2025', badge:'Midterm · second meeting'},
+  {n:8,  topic:'AI and Mathematics / Science',      anchor:'Gold-medal Olympiad performance, 2025 — and what “proved” means'},
+  {n:9,  topic:'AI and Robotics / Sports',          anchor:'The Mojave, 2004: nobody finishes. 2026: half a million rides a week'},
+  {n:10, topic:'AI and Justice / Forensics',        anchor:'COMPAS, ProPublica, and two definitions of fair that cannot both hold'},
+  {n:11, topic:'AI and Privacy / Security',         anchor:'Clearview AI: 3 billion faces in 2020, 50 billion now'},
+  {n:12, topic:'AI and Truth / Fairness',           anchor:'EU transparency rules take effect, 2 August 2026'},
+  {n:13, topic:'AI and Work / Ethics',              anchor:'“Stop training radiologists now” — Hinton, 2016. It is 2026.'},
+  {n:14, topic:'AI and Creativity / Ownership',     anchor:'$432,500 in 2018; a $1.5 billion settlement in 2026'},
+  {n:15, topic:'AI and What Comes Next',            anchor:'Your field, your story'},
+];
+
+const MATERIALS = {
+  'lostknowledge':  {ic:'📜', kind:'Interactive deck', name:'Reading the Unreadable',   href:'lectures/04-lost-knowledge.html'},
+  'alphafold':      {ic:'🧬', kind:'Interactive deck', name:'AlphaFold as an Instrument', href:'lectures/05-alphafold.html'},
+  'fivestones-deck':{ic:'⚫', kind:'Interactive deck', name:'Five Stones, Step by Step', href:'lectures/03-five-stones-design.html'},
+  'flap-deck':      {ic:'🐦', kind:'Interactive deck', name:'Flap: A Game in 40 Steps',  href:'lectures/03-flap-design.html'},
+};
+const EXTRAS = [
+  {ic:'⚫', name:'Five Stones',         blurb:'Gomoku against a computer opponent with three strengths.', href:'games/five-stones.html'},
+  {ic:'🏓', name:'Eleven Points',       blurb:'Table-tennis Pong — first to 11, win by 2, one or two players.', href:'games/eleven-points.html'},
+  {ic:'🐦', name:'Swift Through Bamboo', blurb:'A one-button flying game. Gentle and Classic difficulty.', href:'games/swift-through-bamboo.html'},
+  {ic:'🏮', name:'Moth Garden',         blurb:'A maze chase in a hedge garden. Controls are I, J, K, L.', href:'games/moth-garden.html'},
+];
+
+/* ---------- render the schedule ---------- */
+const sched = document.getElementById('sched');
+let currentWeek = null;
+if (FIRST_MONDAY) {
+  const start = new Date(FIRST_MONDAY + 'T00:00:00');
+  const diff = Math.floor((Date.now() - start.getTime()) / 604800000) + 1;
+  if (diff >= 1 && diff <= WEEKS.length) currentWeek = diff;
+}
+sched.innerHTML = WEEKS.map(w => {
+  const now = w.n === currentWeek;
+  const mats = (w.mats || []).map(k => {
+    const m = MATERIALS[k]; if (!m) return '';
+    return `<a class="mat" href="${m.href}"><span class="ic">${m.ic}</span><span>${m.name}<br><span class="kind">${m.kind}</span></span></a>`;
+  }).join('');
+  return `<div class="wk${now ? ' now' : ''}">
+    <div class="n">${String(w.n).padStart(2,'0')}</div>
+    <div class="body">
+      <h4>${w.topic}${now ? '<span class="badge now">This week</span>' : ''}${w.badge ? `<span class="badge">${w.badge}</span>` : ''}</h4>
+      <p class="anchor">${w.anchor}</p>
+      ${mats ? `<div class="mats">${mats}</div>` : ''}
+    </div></div>`;
+}).join('');
+
+/* ---------- extras ---------- */
+document.getElementById('extraCards').innerHTML = EXTRAS.map(e =>
+  `<a class="card" href="${e.href}"><span class="ic">${e.ic}</span><b>${e.name}</b><span>${e.blurb}</span></a>`).join('');
+
+/* ---------- next meeting (Tu & Th, 3:00 pm) ---------- */
+(function nextMeeting(){
+  const el = document.getElementById('nextMeeting'), txt = document.getElementById('nextText');
+  if (!FIRST_MONDAY) return;                    // no semester dates set — stay quiet
+  const now = new Date();
+  for (let i = 0; i < 8; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, 15, 0, 0);
+    if ((d.getDay() === 2 || d.getDay() === 4) && d > now) {
+      const day = d.toLocaleDateString(undefined, {weekday:'long', month:'short', day:'numeric'});
+      const soon = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : day;
+      txt.innerHTML = `<b>Next meeting:</b> ${soon} · 3:00–4:20 pm · Biology 248`;
+      el.hidden = false;
+      return;
+    }
+  }
+})();
+
+/* ---------- theme toggle (remembers your choice) ---------- */
+(function theme(){
+  const btn = document.getElementById('themeBtn');
+  let mode = null;
+  try { mode = localStorage.getItem('csi235.theme'); } catch (e) {}
+  const apply = m => {
+    if (m) document.documentElement.setAttribute('data-theme', m);
+    else document.documentElement.removeAttribute('data-theme');
+    const dark = m === 'dark' || (!m && matchMedia('(prefers-color-scheme: dark)').matches);
+    btn.textContent = dark ? 'Light mode' : 'Dark mode';
+  };
+  apply(mode);
+  btn.addEventListener('click', () => {
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark'
+      || (!document.documentElement.hasAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+    mode = dark ? 'light' : 'dark';
+    try { localStorage.setItem('csi235.theme', mode); } catch (e) {}
+    apply(mode);
+  });
+})();
+</script>
+
+</body>
+</html>
