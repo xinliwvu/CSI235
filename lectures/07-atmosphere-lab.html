@@ -1,0 +1,1511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Atmosphere Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a lab bench — a quiet brief on the left, the live instrument on the right,
+   five experiments in lecture order behind a tab rail.                              */
+:root {
+  --bg:        #f8f6fb;   /* page plane, a breath of violet          */
+  --surface:   #ffffff;   /* instrument panels                        */
+  --sunk:      #f1edf6;   /* wells behind charts                      */
+  --ink:       #1d1328;
+  --ink-2:     #564b63;
+  --muted:     #847a90;
+  --line:      #e3dcec;
+  --accent:    #4c116f;   /* UAlbany purple                           */
+  --accent-2:  #6b2c96;
+  --on-accent: #ffffff;
+  --gold:      #eeb211;   /* UAlbany gold — fills only on light       */
+  --gold-ink:  #7a5600;
+  /* data series (validated: worst CVD ΔE 9.2 light / 9.4 dark) */
+  --s1: #2a78d6;  --s2: #eb6834;  --s3: #1baf7a;
+  --truth: #1d1328;
+  /* diverging ramp, cold ↔ warm, neutral midpoint */
+  --cold: #184f95; --cold-2: #6da7ec; --mid: #efedf0; --warm-2: #f0a08f; --warm: #b8302f;
+  /* greenness ramp (one hue) and error ramp (one hue) */
+  --veg-0: #f3f0e6; --veg-1: #a9cf8f; --veg-2: #2f7a32; --veg-3: #164a1b;
+  --err-0: #fff1e8; --err-1: #f6a77c; --err-2: #b8470f;
+  --land-0: #f1ece3; --land-1: #b9a58a; --land-2: #5d4a35;
+  --cloud: rgba(255,255,255,.92);
+  --flood: #0092b8;
+  --font-ui: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #130a1c; --surface: #1d1029; --sunk: #160c21; --ink: #f5f1fa; --ink-2: #c9bfd6;
+    --muted: #958aa4; --line: #362747; --accent: #c9a6ee; --accent-2: #dcc3f6; --on-accent: #1d1029;
+    --gold: #eeb211; --gold-ink: #eeb211;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --truth: #f5f1fa;
+    --cold: #8ab8f1; --cold-2: #3b6fb0; --mid: #2b2233; --warm-2: #a8463c; --warm: #f08a7a;
+    --veg-0: #221d1a; --veg-1: #3c6b33; --veg-2: #7cc46d; --veg-3: #c3f0b4;
+    --err-0: #24170f; --err-1: #9a4a20; --err-2: #ffb48a;
+    --land-0: #241e18; --land-1: #7a6650; --land-2: #e2cfb2;
+    --cloud: rgba(232,226,240,.88); --flood: #4fd3f0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #130a1c; --surface: #1d1029; --sunk: #160c21; --ink: #f5f1fa; --ink-2: #c9bfd6;
+  --muted: #958aa4; --line: #362747; --accent: #c9a6ee; --accent-2: #dcc3f6; --on-accent: #1d1029;
+  --gold: #eeb211; --gold-ink: #eeb211;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --truth: #f5f1fa;
+  --cold: #8ab8f1; --cold-2: #3b6fb0; --mid: #2b2233; --warm-2: #a8463c; --warm: #f08a7a;
+  --veg-0: #221d1a; --veg-1: #3c6b33; --veg-2: #7cc46d; --veg-3: #c3f0b4;
+  --err-0: #24170f; --err-1: #9a4a20; --err-2: #ffb48a;
+  --land-0: #241e18; --land-1: #7a6650; --land-2: #e2cfb2;
+  --cloud: rgba(232,226,240,.88); --flood: #4fd3f0;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-ui);
+  font-size: 15px; line-height: 1.55; margin: 0;
+  padding-inline: clamp(16px, 4vw, 40px); padding-block: 28px 64px;
+}
+.wrap { max-width: 1240px; margin-inline: auto; display: grid; gap: 22px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; line-height: 1.15; }
+p { margin: 0; }
+a { color: var(--accent); text-underline-offset: 3px; }
+:focus-visible { outline: 2.5px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+
+/* ── masthead ── */
+.mast { display: grid; gap: 10px; padding-block: 6px 4px; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--accent); }
+.mast h1 { font-size: clamp(30px, 4.6vw, 46px); font-weight: 800; letter-spacing: -.02em; }
+.mast h1 span { color: var(--accent); }
+.mast .lede { font-size: 17px; color: var(--ink-2); max-width: 68ch; }
+.goldrule { width: 72px; height: 5px; background: var(--gold); border-radius: 3px; }
+
+/* ── tab rail ── */
+.rail { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.rail button {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink-2); background: transparent;
+  border: 1px solid transparent; border-radius: 999px; padding: 7px 14px 7px 10px; cursor: pointer;
+  display: inline-flex; gap: 8px; align-items: center;
+}
+.rail button .n {
+  font-family: var(--font-data); font-size: 11.5px; width: 22px; height: 22px; border-radius: 50%;
+  display: inline-grid; place-items: center; background: var(--sunk); color: var(--ink-2);
+}
+.rail button:hover { background: var(--sunk); }
+.rail button[aria-selected="true"] { background: var(--accent); color: var(--on-accent); }
+.rail button[aria-selected="true"] .n { background: var(--gold); color: #1d1328; }
+
+/* ── experiment ── */
+.exp { display: grid; grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 920px) { .exp { grid-template-columns: minmax(0, 1fr); } }
+.brief { display: grid; gap: 14px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+@media (max-width: 920px) { .brief { position: static; } }
+.brief h2 { font-size: 26px; font-weight: 800; letter-spacing: -.01em; }
+.brief .q { font-size: 15.5px; color: var(--ink-2); }
+.brief h3 { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.brief ol { margin: 0; padding-left: 20px; display: grid; gap: 7px; color: var(--ink); }
+.brief ol li::marker { color: var(--gold-ink); font-weight: 700; }
+.brief .box { border-top: 1px solid var(--line); padding-top: 12px; }
+.brief .small { font-size: 13.5px; color: var(--ink-2); }
+.slides { font-family: var(--font-data); font-size: 12px; color: var(--gold-ink); font-weight: 600; }
+
+.bench { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 16px; min-width: 0; }
+.controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: end; }
+.ctl { display: grid; gap: 4px; min-width: 160px; flex: 1 1 180px; }
+.ctl label, .ctl .lab { font-size: 12.5px; font-weight: 600; color: var(--ink-2); display: flex; justify-content: space-between; gap: 8px; }
+.ctl output { font-family: var(--font-data); font-size: 12.5px; color: var(--ink); font-weight: 600; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { font: inherit; font-size: 13px; font-weight: 600; padding: 6px 12px; border: 0; background: transparent; color: var(--ink-2); cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.btn { font: inherit; font-size: 13.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer;
+       border: 1px solid var(--accent); background: var(--accent); color: var(--on-accent); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.figs { display: grid; gap: 14px; }
+.figs.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.figs.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 640px) { .figs.two { grid-template-columns: minmax(0, 1fr); } .figs.three { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
+figcaption { font-size: 12.5px; color: var(--ink-2); font-weight: 600; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+figcaption .v { font-family: var(--font-data); font-weight: 600; color: var(--ink); }
+.well { background: var(--sunk); border-radius: 8px; position: relative; overflow: hidden; }
+canvas { display: block; width: 100%; height: auto; touch-action: none; }
+.map canvas { image-rendering: pixelated; aspect-ratio: 1; }
+
+.readouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.ro { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 2px; }
+.ro .k { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ro .v { font-size: 24px; font-weight: 800; letter-spacing: -.01em; }
+.ro .d { font-size: 12.5px; color: var(--ink-2); }
+.ro.key { border-color: var(--gold); box-shadow: inset 4px 0 0 var(--gold); }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--ink-2); align-items: center; }
+.legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.legend i.dash { background: repeating-linear-gradient(90deg, var(--muted) 0 4px, transparent 4px 7px); height: 2px; }
+.ramp { height: 10px; border-radius: 3px; min-width: 120px; flex: 1 1 140px; max-width: 260px; }
+.ramplab { font-family: var(--font-data); font-size: 11.5px; color: var(--ink-2); }
+
+.callout { border-radius: 8px; padding: 12px 14px; background: var(--sunk); font-size: 14.5px; color: var(--ink); }
+.callout b { color: var(--accent); }
+.hoverline { font-family: var(--font-data); font-size: 12px; color: var(--ink-2); min-height: 1.5em; }
+.tip { position: absolute; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--line);
+       border-radius: 6px; padding: 6px 8px; font-size: 12px; line-height: 1.4; box-shadow: 0 4px 14px rgba(0,0,0,.12);
+       font-family: var(--font-data); white-space: nowrap; transform: translate(-50%, -110%); }
+.tip[hidden] { display: none !important; }
+table.coef { border-collapse: collapse; font-size: 13px; width: 100%; }
+table.coef th, table.coef td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+table.coef td.n { font-family: var(--font-data); font-variant-numeric: tabular-nums; text-align: right; }
+details summary { cursor: pointer; font-weight: 700; font-size: 13.5px; color: var(--accent); }
+details[open] summary { margin-bottom: 8px; }
+.foot { border-top: 1px solid var(--line); padding-top: 16px; font-size: 13px; color: var(--ink-2); display: grid; gap: 6px; max-width: 90ch; }
+#l-ramp, #d-ramp { background: linear-gradient(90deg, var(--cold), var(--cold-2), var(--mid), var(--warm-2), var(--warm)); }
+#g-ramp { background: linear-gradient(90deg, var(--veg-0), var(--veg-1), var(--veg-2), var(--veg-3)); }
+.busy { font-family: var(--font-data); font-size: 12px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div class="eyebrow">CSI 235 · AI for All · Week 7</div>
+    <h1>Atmosphere <span>Lab</span></h1>
+    <div class="goldrule" aria-hidden="true"></div>
+    <p class="lede">Five experiments on how AI forecasts weather and why climate is a harder problem. Everything runs in your browser on toy versions of the real thing, so you can break them and watch what happens.</p>
+  </header>
+
+  <nav class="rail" role="tablist" aria-label="Experiments">
+    <button role="tab" id="tab-chaos" aria-controls="chaos" aria-selected="true"><span class="n">1</span>Butterfly</button>
+    <button role="tab" id="tab-learn" aria-controls="learn" aria-selected="false"><span class="n">2</span>Learning the weather</button>
+    <button role="tab" id="tab-climate" aria-controls="climate" aria-selected="false"><span class="n">3</span>Weather is not climate</button>
+    <button role="tab" id="tab-down" aria-controls="down" aria-selected="false"><span class="n">4</span>Downscaling</button>
+    <button role="tab" id="tab-gaps" aria-controls="gaps" aria-selected="false"><span class="n">5</span>Filling the gaps</button>
+  </nav>
+
+  <!-- ═══════════════════════════════ 1 · chaos ═══════════════════════════════ -->
+  <section class="exp" id="chaos" role="tabpanel" aria-labelledby="tab-chaos">
+    <div class="brief">
+      <h2>Fifty forecasts beat one</h2>
+      <p class="q">Start fifty copies of a tiny chaotic atmosphere from almost the same place. Watch them disagree, and turn the disagreement into a chance of rain.</p>
+      <div class="box">
+        <h3>Try this</h3>
+        <ol>
+          <li>Press <b>Play</b>. Early on, every member agrees. When do they split?</li>
+          <li>Drag the lead time to the end. Read the chance of the wet wing, then press <b>Reveal what happened</b>.</li>
+          <li>Make the starting error 100 times smaller. How much longer do the members agree? (Much less than 100 times.)</li>
+          <li>Look at the gold line. The average of all fifty forecasts barely moves. No real day ever looks like that.</li>
+        </ol>
+      </div>
+      <div class="box small">
+        <h3>In the lecture</h3>
+        <p><span class="slides">Slides 3, 10, 16.</span> A single best guess (GraphCast) versus a crowd of possible futures (GenCast). The flat gold line is why models trained to be right on average produce forecasts that are too calm.</p>
+      </div>
+      <div class="box small">
+        <h3>What is simplified</h3>
+        <p>This is the Lorenz-63 system, three variables standing in for a whole atmosphere. Its two wings stand in for two weather regimes. Time is in model units, not days.</p>
+      </div>
+    </div>
+
+    <div class="bench">
+      <div class="controls">
+        <div class="ctl"><label for="c-n">Members <output id="c-n-o">50</output></label><input type="range" id="c-n" min="10" max="100" step="10" value="50"></div>
+        <div class="ctl"><label for="c-eps">Starting error <output id="c-eps-o">0.01</output></label><input type="range" id="c-eps" min="0" max="4" step="1" value="2"></div>
+        <div class="ctl"><label for="c-t">Lead time <output id="c-t-o">10.4</output></label><input type="range" id="c-t" min="0" max="400" step="1" value="260"></div>
+        <div class="btnrow">
+          <button class="btn" id="c-play" type="button">Play</button>
+          <button class="btn ghost" id="c-reveal" type="button" aria-pressed="false">Reveal what happened</button>
+          <button class="btn ghost" id="c-new" type="button">New starting day</button>
+        </div>
+      </div>
+      <div class="figs two">
+        <figure>
+          <figcaption>The two wings, seen from the side <span class="v" id="c-wing">—</span></figcaption>
+          <div class="well"><canvas id="c-fly" width="600" height="440" role="img" aria-label="Ensemble members on the Lorenz attractor"></canvas></div>
+        </figure>
+        <figure>
+          <figcaption>Every member over time <span class="v">above 0: wet wing</span></figcaption>
+          <div class="well"><canvas id="c-spag" width="600" height="440" role="img" aria-label="Spaghetti plot of ensemble members"></canvas></div>
+        </figure>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--s1)"></i>One forecast member</span>
+        <span><i style="background:var(--gold);height:4px"></i>Average of all members</span>
+        <span><i style="background:var(--truth)"></i>What actually happened (after reveal)</span>
+      </div>
+      <div class="readouts">
+        <div class="ro key"><span class="k">Chance of the wet wing</span><span class="v" id="c-p">—</span><span class="d" id="c-pd">share of members on the right</span></div>
+        <div class="ro"><span class="k">Spread</span><span class="v" id="c-sd">—</span><span class="d">how far members disagree</span></div>
+        <div class="ro"><span class="k">Typical swing</span><span class="v" id="c-sw">—</span><span class="d" id="c-swd">members vs their average</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════ 2 · learn ═══════════════════════════════ -->
+  <section class="exp" id="learn" role="tabpanel" aria-labelledby="tab-learn" hidden>
+    <div class="brief">
+      <h2>Learning the weather from its past</h2>
+      <p class="q">A small model studies a year of history from a toy atmosphere and learns its rules. Then it forecasts ten days ahead, against the real physics and against a forecast of "same as today".</p>
+      <div class="box">
+        <h3>Try this</h3>
+        <ol>
+          <li>Read off how many days each forecast stays useful.</li>
+          <li>Make the history it learned from noisier. Which curve moves?</li>
+          <li>Make today's starting picture worse. Watch the physics lose its advantage. Knowing today matters as much as the model.</li>
+          <li>Open <b>Look inside the learned rule</b>. It rediscovered the physics, approximately. Keep the forcing constant in mind for experiment 3.</li>
+        </ol>
+      </div>
+      <div class="box small">
+        <h3>In the lecture</h3>
+        <p><span class="slides">Slides 8, 9, 13, 38.</span> Predicting the next state from the last one, rolling forward, errors compounding, and the analysis step that every model still depends on.</p>
+      </div>
+      <div class="box small">
+        <h3>What is simplified</h3>
+        <p>Lorenz-96: 40 points around one latitude circle. One step is 6 hours, using Lorenz's own scaling. The learned model is a 21-number regression, not a neural network, but it learns the same way: from history alone.</p>
+      </div>
+    </div>
+
+    <div class="bench">
+      <div class="controls">
+        <div class="ctl"><label for="l-sig">Noise in the history it learned from <output id="l-sig-o">0.6</output></label><input type="range" id="l-sig" min="0" max="12" step="1" value="6"></div>
+        <div class="ctl"><label for="l-ana">Error in today's starting picture <output id="l-ana-o">0.20</output></label><input type="range" id="l-ana" min="0" max="7" step="1" value="2"></div>
+        <div class="btnrow"><button class="btn ghost" id="l-new" type="button">New forecast day</button><button class="btn ghost" id="l-diff" type="button" aria-pressed="false">Show the errors</button></div>
+      </div>
+      <div class="figs three">
+        <figure><figcaption>What happened</figcaption><div class="well"><canvas id="l-h-true" width="300" height="300" role="img" aria-label="Actual weather, 40 points by 10 days"></canvas></div></figure>
+        <figure><figcaption id="l-cap-emu">Learned model</figcaption><div class="well"><canvas id="l-h-emu" width="300" height="300" role="img" aria-label="Learned model forecast"></canvas></div></figure>
+        <figure><figcaption id="l-cap-phys">Physics model</figcaption><div class="well"><canvas id="l-h-phys" width="300" height="300" role="img" aria-label="Physics model forecast"></canvas></div></figure>
+      </div>
+      <div class="legend">
+        <span class="ramplab" id="l-lo">colder than usual</span><span class="ramp" id="l-ramp"></span><span class="ramplab" id="l-hi">warmer than usual</span>
+        <span>· across: 40 points around the circle · down: 0 to 10 days ahead</span>
+      </div>
+      <figure>
+        <figcaption>Forecast error by lead time, averaged over 24 forecast days <span class="v busy" id="l-busy"></span></figcaption>
+        <div class="well"><canvas id="l-err" width="900" height="360" role="img" aria-label="Forecast error versus lead time"></canvas><div class="tip" id="l-tip" hidden></div></div>
+      </figure>
+      <div class="legend">
+        <span><i style="background:var(--s1)"></i>Learned model</span>
+        <span><i style="background:var(--s3)"></i>Physics model</span>
+        <span><i style="background:var(--s2)"></i>"Same as today"</span>
+        <span><i class="dash"></i>No-skill line: just forecast the average</span>
+      </div>
+      <div class="readouts">
+        <div class="ro key"><span class="k">Learned model useful for</span><span class="v" id="l-u-emu">—</span><span class="d">until its error crosses the no-skill line</span></div>
+        <div class="ro"><span class="k">Physics useful for</span><span class="v" id="l-u-phys">—</span><span class="d">same start, perfect rules</span></div>
+        <div class="ro"><span class="k">"Same as today" useful for</span><span class="v" id="l-u-pers">—</span><span class="d">the baseline to beat</span></div>
+      </div>
+      <details>
+        <summary>Look inside the learned rule</summary>
+        <table class="coef">
+          <thead><tr><th>Part of the rule</th><th style="text-align:right">Learned</th><th style="text-align:right">True physics</th></tr></thead>
+          <tbody id="l-coef"></tbody>
+        </table>
+        <p class="small" style="margin-top:8px;color:var(--ink-2)">The forcing is the steady energy input that keeps this atmosphere stirred. The model only ever saw one value of it, so it learned that value as a fixed number.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════ 3 · climate ═══════════════════════════════ -->
+  <section class="exp" id="climate" role="tabpanel" aria-labelledby="tab-climate" hidden>
+    <div class="brief">
+      <h2>A model learns the climate it was trained in</h2>
+      <p class="q">Turn up the energy input of the toy atmosphere, like adding heat to a warming world. The real system gets stormier. The learned model, trained only on today's climate, keeps producing today's weather.</p>
+      <div class="box">
+        <h3>Try this</h3>
+        <ol>
+          <li>Set the energy input to 8, the value it was trained on. Both lines agree.</li>
+          <li>Push it to 12. The real system's storminess climbs. Where does the learned model settle?</li>
+          <li>Go down to 5. The model fails in the other direction too.</li>
+          <li>Watch the right-hand chart. The learned model starts from the real, stormier day, then sinks back to its old climate within about two weeks.</li>
+        </ol>
+      </div>
+      <div class="box small">
+        <h3>In the lecture</h3>
+        <p><span class="slides">Slides 32, 33.</span> Weather is interpolation: tomorrow looks like some day in the training data. Climate is extrapolation: the 2070s look like none of them. NeuralGCM's authors report the same limit for their hybrid model.</p>
+      </div>
+      <div class="box small">
+        <h3>What is simplified</h3>
+        <p>Same toy atmosphere and learned model as experiment 2, trained once on a year of history at energy input 8. Most AI weather models also have no input for greenhouse gases.</p>
+      </div>
+    </div>
+
+    <div class="bench">
+      <div class="controls">
+        <div class="ctl"><label for="k-F">Energy input <output id="k-F-o">11.0</output></label><input type="range" id="k-F" min="5" max="13" step="0.5" value="11"></div>
+      </div>
+      <div class="figs two">
+        <figure>
+          <figcaption>Long-run storminess at each energy input <span class="v busy" id="k-busy"></span></figcaption>
+          <div class="well"><canvas id="k-curve" width="600" height="420" role="img" aria-label="Climate curve: storminess versus energy input"></canvas><div class="tip" id="k-tip" hidden></div></div>
+        </figure>
+        <figure>
+          <figcaption>120 days from the same start <span class="v" id="k-days">—</span></figcaption>
+          <div class="well"><canvas id="k-ts" width="600" height="420" role="img" aria-label="Storminess over time"></canvas></div>
+        </figure>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--truth)"></i>Real system</span>
+        <span><i style="background:var(--s1)"></i>Learned model</span>
+        <span><i style="background:var(--gold);height:10px;width:10px;border-radius:2px"></i>The climate it learned from</span>
+      </div>
+      <div class="readouts">
+        <div class="ro"><span class="k">Real storminess</span><span class="v" id="k-true">—</span><span class="d">at this energy input</span></div>
+        <div class="ro"><span class="k">Learned model</span><span class="v" id="k-emu">—</span><span class="d">after it settles</span></div>
+        <div class="ro key"><span class="k">Missing change</span><span class="v" id="k-miss">—</span><span class="d" id="k-missd">of the real change since energy input 8</span></div>
+      </div>
+      <p class="callout" id="k-call">—</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════ 4 · downscaling ═══════════════════════════════ -->
+  <section class="exp" id="down" role="tabpanel" aria-labelledby="tab-down" hidden>
+    <div class="brief">
+      <h2>Turning coarse into local</h2>
+      <p class="q">A global model gives one temperature for a whole block of hills and valleys. Downscaling adds the local detail back. Prithvi WxC does this with a foundation model; here a much simpler learner does the same job.</p>
+      <div class="box">
+        <h3>Try this</h3>
+        <ol>
+          <li>Compare the coarse input with the truth. What does the coarse model miss?</li>
+          <li>Compare simple stretching (bilinear) with the learned model. Read both errors.</li>
+          <li>Switch to a still winter night. Cold air sinks into the valley, so low ground is colder. The learned rule was trained on afternoons. What does it add now?</li>
+          <li>Hover any map to read the temperatures at one spot.</li>
+        </ol>
+      </div>
+      <div class="box small">
+        <h3>In the lecture</h3>
+        <p><span class="slides">Slides 25, 34, 36.</span> Prithvi WxC cut downscaling error about fourfold over interpolation. The learned detail is invented, and on an unusual night it can be confidently wrong.</p>
+      </div>
+      <div class="box small">
+        <h3>What is simplified</h3>
+        <p>Synthetic terrain, not a real place. The learner fits one relationship between height and temperature from three training afternoons. A real downscaler uses many variables and far more data.</p>
+      </div>
+    </div>
+
+    <div class="bench">
+      <div class="controls">
+        <div class="ctl" style="flex:0 1 auto"><span class="lab">Coarse model cell</span>
+          <div class="seg" id="d-f" role="group" aria-label="Coarsening factor">
+            <button type="button" data-v="4" aria-pressed="false">4 × 4</button>
+            <button type="button" data-v="8" aria-pressed="true">8 × 8</button>
+            <button type="button" data-v="16" aria-pressed="false">16 × 16</button>
+          </div></div>
+        <div class="ctl" style="flex:0 1 auto"><span class="lab">Day</span>
+          <div class="seg" id="d-day" role="group" aria-label="Weather situation">
+            <button type="button" data-v="0" aria-pressed="true">Summer afternoon</button>
+            <button type="button" data-v="1" aria-pressed="false">Still winter night</button>
+          </div></div>
+      </div>
+      <div class="figs three">
+        <figure class="map"><figcaption>Terrain <span class="v">20 – 1150 m</span></figcaption><div class="well"><canvas id="d-elev" width="128" height="128" role="img" aria-label="Terrain map"></canvas></div></figure>
+        <figure class="map"><figcaption>Coarse model output</figcaption><div class="well"><canvas id="d-coarse" width="128" height="128" role="img" aria-label="Coarse temperature"></canvas></div></figure>
+        <figure class="map"><figcaption>Truth</figcaption><div class="well"><canvas id="d-true" width="128" height="128" role="img" aria-label="True temperature"></canvas></div></figure>
+        <figure class="map"><figcaption>Simple stretching <span class="v" id="d-e-bil">—</span></figcaption><div class="well"><canvas id="d-bil" width="128" height="128" role="img" aria-label="Bilinear interpolation"></canvas></div></figure>
+        <figure class="map"><figcaption>Learned downscaling <span class="v" id="d-e-lrn">—</span></figcaption><div class="well"><canvas id="d-lrn" width="128" height="128" role="img" aria-label="Learned downscaling"></canvas></div></figure>
+        <figure class="map"><figcaption>Detail the model invented</figcaption><div class="well"><canvas id="d-add" width="128" height="128" role="img" aria-label="Difference between learned and bilinear"></canvas></div></figure>
+      </div>
+      <div class="legend">
+        <span class="ramplab" id="d-lo">—</span><span class="ramp" id="d-ramp"></span><span class="ramplab" id="d-hi">—</span>
+        <span>· invented detail uses the same colours: blue made colder, red made warmer</span>
+      </div>
+      <p class="hoverline" id="d-hover">Hover a map to read one spot.</p>
+      <div class="readouts">
+        <div class="ro"><span class="k">Simple stretching error</span><span class="v" id="d-r-bil">—</span><span class="d">typical miss, °C</span></div>
+        <div class="ro key"><span class="k">Learned model error</span><span class="v" id="d-r-lrn">—</span><span class="d" id="d-r-d">—</span></div>
+        <div class="ro"><span class="k">Rule it learned</span><span class="v" id="d-lapse">—</span><span class="d">°C per km of height, from afternoons</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════ 5 · gaps ═══════════════════════════════ -->
+  <section class="exp" id="gaps" role="tabpanel" aria-labelledby="tab-gaps" hidden>
+    <div class="brief">
+      <h2>Seeing through the clouds</h2>
+      <p class="q">Satellites cannot see the ground through clouds. Prithvi EO is trained by hiding patches of imagery and learning to restore them. Here two simple methods try to fill in a cloudy month of vegetation greenness.</p>
+      <div class="box">
+        <h3>Try this</h3>
+        <ol>
+          <li>Raise the cloud cover. Which method falls apart?</li>
+          <li>Move to April, then July. Why does looking sideways struggle most in summer?</li>
+          <li>Turn on <b>A flood this month</b>. The fields by the river are under water. Which method still sees it?</li>
+          <li>Press and hold <b>Peek at the ground</b> to compare with the truth.</li>
+        </ol>
+      </div>
+      <div class="box small">
+        <h3>In the lecture</h3>
+        <p><span class="slides">Slides 28, 29, 36.</span> Telling a model when and where it is looking makes it much better on an ordinary month. On the month that matters, it fills in what usually happens.</p>
+      </div>
+      <div class="box small">
+        <h3>What is simplified</h3>
+        <p>A synthetic landscape of crop fields, forest, grassland, town and river with made-up seasonal curves. The time method is a linear regression from the other eleven months, learned on this month's clear pixels.</p>
+      </div>
+    </div>
+
+    <div class="bench">
+      <div class="controls">
+        <div class="ctl"><label for="g-m">Month <output id="g-m-o">Jul</output></label><input type="range" id="g-m" min="0" max="11" step="1" value="6"></div>
+        <div class="ctl"><label for="g-c">Cloud cover <output id="g-c-o">45%</output></label><input type="range" id="g-c" min="10" max="70" step="5" value="45"></div>
+        <div class="btnrow">
+          <button class="btn ghost" id="g-flood" type="button" aria-pressed="false">A flood this month</button>
+          <button class="btn ghost" id="g-peek" type="button">Peek at the ground</button>
+        </div>
+      </div>
+      <div class="figs three">
+        <figure class="map"><figcaption>What the satellite sees <span class="v" id="g-cov">—</span></figcaption><div class="well"><canvas id="g-obs" width="96" height="96" role="img" aria-label="Cloudy satellite image"></canvas></div></figure>
+        <figure class="map"><figcaption>Fill by looking sideways <span class="v" id="g-e-sp">—</span></figcaption><div class="well"><canvas id="g-sp" width="96" height="96" role="img" aria-label="Spatial fill"></canvas></div></figure>
+        <figure class="map"><figcaption>Fill using this place's year <span class="v" id="g-e-tm">—</span></figcaption><div class="well"><canvas id="g-tm" width="96" height="96" role="img" aria-label="Fill using time context"></canvas></div></figure>
+      </div>
+      <figure>
+        <figcaption>The rest of this year, cloud-free <span class="v">the time method learns each spot's yearly pattern from these</span></figcaption>
+        <div class="well"><canvas id="g-year" width="1200" height="100" role="img" aria-label="Small images of each month of the year"></canvas></div>
+      </figure>
+      <div class="legend">
+        <span class="ramplab">bare, water</span><span class="ramp" id="g-ramp"></span><span class="ramplab">lush</span>
+        <span>· greenness index from 0 to 0.9 · cyan outline: flooded fields</span>
+      </div>
+      <p class="hoverline" id="g-hover">Hover a map to read one spot.</p>
+      <div class="readouts">
+        <div class="ro"><span class="k">Looking sideways</span><span class="v" id="g-r-sp">—</span><span class="d">typical error under cloud</span></div>
+        <div class="ro key"><span class="k">Using this place's year</span><span class="v" id="g-r-tm">—</span><span class="d">typical error under cloud</span></div>
+        <div class="ro"><span class="k" id="g-r-fk">Hidden flood found</span><span class="v" id="g-r-fl">—</span><span class="d" id="g-r-fd">turn on the flood</span></div>
+      </div>
+      <p class="callout" id="g-call">—</p>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p><b>About these models.</b> Every number on this page is computed live by the code in the page. Experiments 1–3 use the Lorenz-63 and Lorenz-96 systems, the classic toy atmospheres meteorologists use to test ideas. Experiments 4 and 5 use synthetic maps. None of them is a real forecast, and none of them is NASA's or IBM's actual model.</p>
+    <p>Companion to the Week 7 deck <i>Weather and Climate: foundation models for the atmosphere</i>. Prithvi WxC and Prithvi EO are open models from NASA and IBM, available on Hugging Face.</p>
+  </footer>
+</div>
+<script>
+/* engine.js — numerical core for the Atmosphere Lab demos.
+   Plain functions, no DOM. Runs in Node for verification and is inlined
+   verbatim into the page.                                              */
+(function (root) {
+  "use strict";
+
+  /* ───────────────────────── randomness ───────────────────────── */
+  function rng(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function gauss(r) {
+    let u = 0, v = 0;
+    while (u === 0) u = r();
+    while (v === 0) v = r();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+
+  /* ───────────────────────── Lorenz-63 ───────────────────────── */
+  const L63 = { s: 10, r: 28, b: 8 / 3 };
+  function l63d(p, o) {
+    o[0] = L63.s * (p[1] - p[0]);
+    o[1] = p[0] * (L63.r - p[2]) - p[1];
+    o[2] = p[0] * p[1] - L63.b * p[2];
+  }
+  const _k = [new Float64Array(3), new Float64Array(3), new Float64Array(3),
+              new Float64Array(3)], _t = new Float64Array(3);
+  function l63step(p, dt) {
+    l63d(p, _k[0]);
+    for (let i = 0; i < 3; i++) _t[i] = p[i] + 0.5 * dt * _k[0][i];
+    l63d(_t, _k[1]);
+    for (let i = 0; i < 3; i++) _t[i] = p[i] + 0.5 * dt * _k[1][i];
+    l63d(_t, _k[2]);
+    for (let i = 0; i < 3; i++) _t[i] = p[i] + dt * _k[2][i];
+    l63d(_t, _k[3]);
+    for (let i = 0; i < 3; i++)
+      p[i] += dt / 6 * (_k[0][i] + 2 * _k[1][i] + 2 * _k[2][i] + _k[3][i]);
+  }
+  /* A state on the attractor, reproducible from a seed. */
+  function l63start(seed) {
+    const r = rng(seed), p = new Float64Array([1 + r(), 1 + r(), 20 + r()]);
+    const n = 2000 + Math.floor(r() * 3000);
+    for (let i = 0; i < n; i++) l63step(p, 0.01);
+    return p;
+  }
+  /* Ensemble: returns {truth:[[x,y,z]..], members:[[[x,y,z]..]..]} sampled every `every` steps. */
+  function l63ensemble(start, nMem, eps, steps, every, seed) {
+    const r = rng(seed);
+    const truth = Float64Array.from(start);
+    const mem = [];
+    for (let m = 0; m < nMem; m++)
+      mem.push(new Float64Array([start[0] + eps * gauss(r), start[1] + eps * gauss(r),
+                                 start[2] + eps * gauss(r)]));
+    const out = { truth: [], members: mem.map(() => []) };
+    for (let s = 0; s <= steps; s++) {
+      if (s % every === 0) {
+        out.truth.push([truth[0], truth[1], truth[2]]);
+        mem.forEach((p, m) => out.members[m].push([p[0], p[1], p[2]]));
+      }
+      if (s < steps) {
+        l63step(truth, 0.01);
+        for (const p of mem) l63step(p, 0.01);
+      }
+    }
+    return out;
+  }
+
+  /* ───────────────────────── Lorenz-96 ───────────────────────── */
+  const K96 = 40, DT96 = 0.01, SUB96 = 5;   // one model step = 0.05 time units ≈ 6 h
+  function l96d(x, F, o) {
+    const K = x.length;
+    for (let i = 0; i < K; i++) {
+      const ip1 = x[(i + 1) % K], im1 = x[(i - 1 + K) % K], im2 = x[(i - 2 + K) % K];
+      o[i] = (ip1 - im2) * im1 - x[i] + F;
+    }
+  }
+  function l96step(x, F) {
+    const K = x.length;
+    const k1 = new Float64Array(K), k2 = new Float64Array(K), k3 = new Float64Array(K),
+          k4 = new Float64Array(K), t = new Float64Array(K);
+    for (let s = 0; s < SUB96; s++) {
+      l96d(x, F, k1);
+      for (let i = 0; i < K; i++) t[i] = x[i] + 0.5 * DT96 * k1[i];
+      l96d(t, F, k2);
+      for (let i = 0; i < K; i++) t[i] = x[i] + 0.5 * DT96 * k2[i];
+      l96d(t, F, k3);
+      for (let i = 0; i < K; i++) t[i] = x[i] + DT96 * k3[i];
+      l96d(t, F, k4);
+      for (let i = 0; i < K; i++)
+        x[i] += DT96 / 6 * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]);
+    }
+  }
+  function l96spin(F, seed, n) {
+    const r = rng(seed), x = new Float64Array(K96);
+    for (let i = 0; i < K96; i++) x[i] = F + 0.5 * gauss(r);
+    for (let s = 0; s < (n || 400); s++) l96step(x, F);
+    return x;
+  }
+  /* A run of `steps` model steps (6-hourly), returns array of Float64Array states. */
+  function l96run(x0, F, steps) {
+    const x = Float64Array.from(x0), out = [Float64Array.from(x)];
+    for (let s = 0; s < steps; s++) { l96step(x, F); out.push(Float64Array.from(x)); }
+    return out;
+  }
+
+  /* The learned model. It looks at one point and its four neighbours and
+     learns how fast that point changes, from noisy 6-hourly history alone.
+     The same small rule is applied at every point (like a convolution) and
+     stepped forward with the same integrator the physics uses.
+     Features: constant, 5 neighbours, 15 pairwise products = 21.        */
+  const NF = 21;
+  function feats(x, i, f) {
+    const K = x.length;
+    const n0 = x[(i - 2 + K) % K], n1 = x[(i - 1 + K) % K], n2 = x[i],
+          n3 = x[(i + 1) % K], n4 = x[(i + 2) % K];
+    const n = [n0, n1, n2, n3, n4];
+    let c = 0;
+    f[c++] = 1;
+    for (let a = 0; a < 5; a++) f[c++] = n[a];
+    for (let a = 0; a < 5; a++) for (let b = a; b < 5; b++) f[c++] = n[a] * n[b] / 10;
+    return f;
+  }
+  function solve(A, b, n) {               // Gaussian elimination, partial pivoting
+    const M = A.map((row, i) => Array.from(row).concat([b[i]]));
+    for (let c = 0; c < n; c++) {
+      let p = c;
+      for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+      [M[c], M[p]] = [M[p], M[c]];
+      const d = M[c][c] || 1e-12;
+      for (let r = 0; r < n; r++) {
+        if (r === c) continue;
+        const k = M[r][c] / d;
+        if (k) for (let j = c; j <= n; j++) M[r][j] -= k * M[c][j];
+      }
+    }
+    return M.map((row, i) => row[n] / (row[i] || 1e-12));
+  }
+  /* sigma: how noisy the "reanalysis" is.  days: how much history.        */
+  function trainEmulator(F, days, sigma, seed) {
+    const r = rng(seed);
+    const steps = Math.max(8, Math.round(days * 4));
+    const hist = l96run(l96spin(F, seed + 1), F, steps)
+      .map(s => Float64Array.from(s, v => v + sigma * gauss(r)));
+    const A = Array.from({ length: NF }, () => new Float64Array(NF));
+    const b = new Float64Array(NF), f = new Float64Array(NF);
+    for (let t = 1; t < hist.length - 1; t++) {
+      for (let i = 0; i < K96; i++) {
+        feats(hist[t], i, f);
+        const y = (hist[t + 1][i] - hist[t - 1][i]) / (2 * DT96 * SUB96);
+        for (let p = 0; p < NF; p++) {
+          b[p] += f[p] * y;
+          for (let q = 0; q < NF; q++) A[p][q] += f[p] * f[q];
+        }
+      }
+    }
+    const lam = 1e-4 * hist.length * K96;
+    const Am = Array.from(A, (row, p) => { const rr = Array.from(row); rr[p] += lam; return rr; });
+    return { w: solve(Am, Array.from(b), NF), F, days, sigma };
+  }
+  function emuTend(w, x, o) {
+    const K = x.length, f = new Float64Array(NF);
+    for (let i = 0; i < K; i++) {
+      feats(x, i, f);
+      let d = 0;
+      for (let p = 0; p < NF; p++) d += w[p] * f[p];
+      o[i] = d;
+    }
+  }
+  function emuStep(model, x) {
+    const K = x.length, w = model.w;
+    const k1 = new Float64Array(K), k2 = new Float64Array(K), k3 = new Float64Array(K),
+          k4 = new Float64Array(K), t = new Float64Array(K), y = Float64Array.from(x);
+    for (let s = 0; s < SUB96; s++) {
+      emuTend(w, y, k1);
+      for (let i = 0; i < K; i++) t[i] = y[i] + 0.5 * DT96 * k1[i];
+      emuTend(w, t, k2);
+      for (let i = 0; i < K; i++) t[i] = y[i] + 0.5 * DT96 * k2[i];
+      emuTend(w, t, k3);
+      for (let i = 0; i < K; i++) t[i] = y[i] + DT96 * k3[i];
+      emuTend(w, t, k4);
+      for (let i = 0; i < K; i++) y[i] += DT96 / 6 * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]);
+    }
+    return y;
+  }
+  function emuRun(model, x0, steps) {
+    let x = Float64Array.from(x0);
+    const out = [x];
+    for (let s = 0; s < steps; s++) {
+      x = emuStep(model, x);
+      if (!x.every(Number.isFinite) || x.some(v => Math.abs(v) > 1e3)) { out.unstable = s + 1; break; }
+      out.push(x);
+    }
+    return out;
+  }
+  function rmse(a, b) {
+    let s = 0;
+    for (let i = 0; i < a.length; i++) s += (a[i] - b[i]) ** 2;
+    return Math.sqrt(s / a.length);
+  }
+  function stats(states) {
+    let n = 0, m = 0, m2 = 0;
+    for (const s of states) for (const v of s) { n++; const d = v - m; m += d / n; m2 += d * (v - m); }
+    return { mean: m, sd: Math.sqrt(m2 / Math.max(1, n - 1)) };
+  }
+
+  /* ───────────────────────── terrain + downscaling ───────────────────────── */
+  function valueNoise(N, seed, octaves) {
+    const r = rng(seed), out = new Float64Array(N * N);
+    let amp = 1, tot = 0;
+    for (let o = 0; o < octaves; o++) {
+      const g = 4 << o, lat = new Float64Array((g + 1) * (g + 1));
+      for (let i = 0; i < lat.length; i++) lat[i] = r();
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+        const fx = x / N * g, fy = y / N * g, ix = Math.floor(fx), iy = Math.floor(fy);
+        const tx = fx - ix, ty = fy - iy;
+        const sx = tx * tx * (3 - 2 * tx), sy = ty * ty * (3 - 2 * ty);
+        const a = lat[iy * (g + 1) + ix], b = lat[iy * (g + 1) + ix + 1],
+              c = lat[(iy + 1) * (g + 1) + ix], d = lat[(iy + 1) * (g + 1) + ix + 1];
+        out[y * N + x] += amp * ((a * (1 - sx) + b * sx) * (1 - sy) + (c * (1 - sx) + d * sx) * sy);
+      }
+      tot += amp; amp *= 0.5;
+    }
+    for (let i = 0; i < out.length; i++) out[i] /= tot;
+    return out;
+  }
+  function noiseG(N, seed, g0, oct) {
+    const r = rng(seed), out = new Float64Array(N * N);
+    let amp = 1, tot = 0;
+    for (let o = 0; o < oct; o++) {
+      const g = g0 << o, lat = new Float64Array((g + 1) * (g + 1));
+      for (let i = 0; i < lat.length; i++) lat[i] = r();
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+        const fx = x / N * g, fy = y / N * g, ix = Math.floor(fx), iy = Math.floor(fy);
+        const tx = fx - ix, ty = fy - iy, sx = tx * tx * (3 - 2 * tx), sy = ty * ty * (3 - 2 * ty);
+        const a = lat[iy * (g + 1) + ix], b = lat[iy * (g + 1) + ix + 1],
+              c = lat[(iy + 1) * (g + 1) + ix], d = lat[(iy + 1) * (g + 1) + ix + 1];
+        out[y * N + x] += amp * ((a * (1 - sx) + b * sx) * (1 - sy) + (c * (1 - sx) + d * sx) * sy);
+      }
+      tot += amp; amp *= 0.55;
+    }
+    for (let i = 0; i < out.length; i++) out[i] /= tot;
+    return out;
+  }
+  /* A synthetic river valley between ridged uplands. Elevation in metres.
+     The ridges are deliberately finer than a coarse model cell.           */
+  function terrain(N, seed) {
+    const lo = noiseG(N, seed, 3, 2), hi = noiseG(N, seed + 1, 10, 3), e = new Float64Array(N * N);
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const k = y * N + x, u = x / N, v = y / N;
+      const rx = 0.50 + 0.09 * Math.sin(v * 5.2 + 0.6), d = Math.abs(u - rx);
+      const upland = Math.min(1, Math.max(0, (d - 0.04) / 0.22));
+      const ridged = 1 - Math.abs(2 * hi[k] - 1);
+      e[k] = 30 + 380 * upland + upland * (900 * ridged * ridged - 250) + 300 * (lo[k] - 0.5) * upland;
+    }
+    for (let i = 0; i < e.length; i++) e[i] = Math.max(20, e[i]);
+    return e;
+  }
+  /* True near-surface temperature (°C). `inversion` = a still winter night where
+     cold air pools in the valley and temperature rises with height near the floor. */
+  function trueTemp(N, elev, seed, inversion) {
+    const r = rng(seed), T = new Float64Array(N * N), lap = valueNoise(N, seed + 7, 2);
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const k = y * N + x, v = y / N, u = x / N;
+      const large = inversion ? (-6 - 3 * v + 0.8 * Math.sin(u * 3)) : (19 - 5 * v + 1.2 * Math.sin(u * 3 + v * 2));
+      let t;
+      if (!inversion) {
+        const gamma = 6.0 + 1.2 * (lap[k] - 0.5);             // K per km, varies a little
+        t = large - gamma * elev[k] / 1000;
+      } else {
+        const h = elev[k];
+        t = large + (h < 650 ? 12.0 * h / 1000 : 12.0 * 0.65 - 5.5 * (h - 650) / 1000);
+      }
+      T[k] = t + 0.25 * gauss(r);
+    }
+    return T;
+  }
+  function coarsen(A, N, f) {
+    const M = N / f, C = new Float64Array(M * M);
+    for (let Y = 0; Y < M; Y++) for (let X = 0; X < M; X++) {
+      let s = 0;
+      for (let y = 0; y < f; y++) for (let x = 0; x < f; x++) s += A[(Y * f + y) * N + X * f + x];
+      C[Y * M + X] = s / (f * f);
+    }
+    return C;
+  }
+  function bilinear(C, M, N) {
+    const f = N / M, out = new Float64Array(N * N);
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const gx = Math.min(M - 1, Math.max(0, (x + 0.5) / f - 0.5));
+      const gy = Math.min(M - 1, Math.max(0, (y + 0.5) / f - 0.5));
+      const x0 = Math.floor(gx), y0 = Math.floor(gy);
+      const x1 = Math.min(M - 1, x0 + 1), y1 = Math.min(M - 1, y0 + 1);
+      const tx = gx - x0, ty = gy - y0;
+      out[y * N + x] = (C[y0 * M + x0] * (1 - tx) + C[y0 * M + x1] * tx) * (1 - ty)
+                     + (C[y1 * M + x0] * (1 - tx) + C[y1 * M + x1] * tx) * ty;
+    }
+    return out;
+  }
+  /* Learn how fine detail relates to the terrain from training days, then apply it.
+     Model: fine-minus-smooth temperature = a × (fine-minus-smooth elevation) + b.   */
+  function fitDownscaler(trainDays, N, f) {
+    let sxx = 0, sx = 0, sy = 0, sxy = 0, n = 0;
+    for (const d of trainDays) {
+      const Tb = bilinear(coarsen(d.T, N, f), N / f, N);
+      const Eb = bilinear(coarsen(d.E, N, f), N / f, N);
+      for (let k = 0; k < N * N; k++) {
+        const xv = d.E[k] - Eb[k], yv = d.T[k] - Tb[k];
+        sxx += xv * xv; sx += xv; sy += yv; sxy += xv * yv; n++;
+      }
+    }
+    const a = (n * sxy - sx * sy) / (n * sxx - sx * sx), b = (sy - a * sx) / n;
+    return { a, b };
+  }
+  function downscale(model, Tc, Ec, Efine, N, f) {
+    const Tb = bilinear(Tc, N / f, N), Eb = bilinear(Ec, N / f, N), out = new Float64Array(N * N);
+    for (let k = 0; k < N * N; k++) out[k] = Tb[k] + model.a * (Efine[k] - Eb[k]) + model.b;
+    return { learned: out, bilin: Tb };
+  }
+
+  /* ───────────────────────── land surface + gap filling ───────────────────────── */
+  const CLASSES = [
+    { name: "Cropland",  curve: m => 0.18 + 0.62 * Math.exp(-((m - 6.2) ** 2) / 3.0) },
+    { name: "Forest",    curve: m => 0.62 + 0.20 * Math.exp(-((m - 6.5) ** 2) / 8.0) },
+    { name: "Grassland", curve: m => 0.25 + 0.40 * Math.exp(-((m - 4.8) ** 2) / 4.0) },
+    { name: "Water",     curve: m => 0.02 },
+    { name: "Urban",     curve: m => 0.14 + 0.04 * Math.exp(-((m - 6.5) ** 2) / 6.0) },
+  ];
+  function landscape(N, seed) {
+    const r = rng(seed), P = 46, pts = [];
+    for (let p = 0; p < P; p++) {
+      const x = r() * N, y = r() * N;
+      const riverX = N * (0.48 + 0.08 * Math.sin(y / N * 6));
+      let cls;
+      if (Math.abs(x - riverX) < N * 0.06) cls = 3;
+      else { const q = r(); cls = q < 0.42 ? 0 : q < 0.66 ? 1 : q < 0.86 ? 2 : 4; }
+      pts.push({ x, y, cls, amp: 0.85 + 0.3 * r(), shift: (r() - 0.5) * 1.2,
+                 nearRiver: Math.abs(x - riverX) < N * 0.20 });
+    }
+    const parcel = new Int16Array(N * N);
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      let best = 0, bd = 1e9;
+      for (let p = 0; p < P; p++) {
+        const d = (x - pts[p].x) ** 2 + (y - pts[p].y) ** 2;
+        if (d < bd) { bd = d; best = p; }
+      }
+      const riverX = N * (0.48 + 0.08 * Math.sin(y / N * 6));
+      parcel[y * N + x] = Math.abs(x - riverX) < 2.2 ? -1 : best;
+    }
+    const cube = [];
+    for (let m = 0; m < 12; m++) {
+      const a = new Float64Array(N * N);
+      for (let k = 0; k < N * N; k++) {
+        const p = parcel[k];
+        if (p < 0) { a[k] = 0.02 + 0.02 * gauss(r); continue; }
+        const P0 = pts[p], c = CLASSES[P0.cls];
+        const base = c.curve(m + P0.shift);
+        a[k] = Math.max(0, Math.min(0.95, P0.cls === 3 ? base : 0.05 + (base - 0.05) * P0.amp))
+             + 0.025 * gauss(r);
+      }
+      cube.push(a);
+    }
+    return { N, parcel, pts, cube };
+  }
+  function clouds(N, cover, seed) {
+    const n = valueNoise(N, seed, 3), sorted = Float64Array.from(n).sort();
+    const thr = sorted[Math.min(sorted.length - 1, Math.floor((1 - cover) * sorted.length))];
+    const mask = new Uint8Array(N * N);
+    for (let k = 0; k < N * N; k++) mask[k] = n[k] >= thr ? 1 : 0;
+    return mask;
+  }
+  /* The flood: parcels near the river become standing water in the target month. */
+  function applyFlood(L, month) {
+    const img = Float64Array.from(L.cube[month]), flooded = new Uint8Array(L.N * L.N);
+    for (let k = 0; k < img.length; k++) {
+      const p = L.parcel[k];
+      if (p >= 0 && L.pts[p].nearRiver && L.pts[p].cls !== 3) {
+        img[k] = 0.03 + 0.02 * Math.sin(k);
+        flooded[k] = 1;
+      }
+    }
+    return { img, flooded };
+  }
+  /* Method A — look sideways: fill each cloudy pixel from clear neighbours. */
+  function fillSpatial(img, mask, N) {
+    const out = Float64Array.from(img), known = Uint8Array.from(mask, v => 1 - v);
+    let remaining = mask.reduce((s, v) => s + v, 0), guard = 0;
+    while (remaining > 0 && guard++ < 400) {
+      const nk = Uint8Array.from(known), nv = Float64Array.from(out);
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+        const k = y * N + x;
+        if (known[k]) continue;
+        let s = 0, c = 0;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const xx = x + dx, yy = y + dy;
+          if (xx < 0 || yy < 0 || xx >= N || yy >= N) continue;
+          const kk = yy * N + xx;
+          if (known[kk]) { s += out[kk]; c++; }
+        }
+        if (c) { nv[k] = s / c; nk[k] = 1; remaining--; }
+      }
+      out.set(nv); known.set(nk);
+    }
+    return out;
+  }
+  /* Method B — look back in time: a regression that predicts this month from the
+     other eleven, learned on the pixels that happen to be clear this month.   */
+  function fillTemporal(L, month, img, mask) {
+    const N = L.N, others = [];
+    for (let m = 0; m < 12; m++) if (m !== month) others.push(m);
+    const nf = others.length + 1;
+    const A = Array.from({ length: nf }, () => new Float64Array(nf)), b = new Float64Array(nf);
+    const f = new Float64Array(nf);
+    for (let k = 0; k < N * N; k++) {
+      if (mask[k]) continue;
+      f[0] = 1;
+      others.forEach((m, j) => { f[j + 1] = L.cube[m][k]; });
+      for (let p = 0; p < nf; p++) { b[p] += f[p] * img[k]; for (let q = 0; q < nf; q++) A[p][q] += f[p] * f[q]; }
+    }
+    const Am = Array.from(A, (row, p) => { const rr = Array.from(row); rr[p] += 1e-3; return rr; });
+    const w = solve(Am, Array.from(b), nf);
+    const out = Float64Array.from(img);
+    for (let k = 0; k < N * N; k++) {
+      if (!mask[k]) continue;
+      let v = w[0];
+      others.forEach((m, j) => { v += w[j + 1] * L.cube[m][k]; });
+      out[k] = v;
+    }
+    return out;
+  }
+  function maskedRmse(a, b, mask, sel) {
+    let s = 0, n = 0;
+    for (let k = 0; k < a.length; k++) if (mask[k] && (!sel || sel[k])) { s += (a[k] - b[k]) ** 2; n++; }
+    return n ? Math.sqrt(s / n) : 0;
+  }
+
+  const API = { rng, gauss, l63step, l63start, l63ensemble, K96, l96step, l96spin, l96run,
+    trainEmulator, emuStep, emuRun, rmse, noiseG, stats, valueNoise, terrain, trueTemp, coarsen,
+    bilinear, fitDownscaler, downscale, CLASSES, landscape, clouds, applyFlood,
+    fillSpatial, fillTemporal, maskedRmse };
+  if (typeof module !== "undefined" && module.exports) module.exports = API;
+  else root.WX = API;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>
+/* app.js — the five experiments. All numbers come from WX (engine.js). */
+(function () {
+  "use strict";
+  const W = window.WX;
+  const $ = id => document.getElementById(id);
+  const root = document.documentElement;
+
+  /* ───────────────────────── colour from theme tokens ───────────────────────── */
+  function tok(n) { return getComputedStyle(root).getPropertyValue(n).trim(); }
+  function rgb(c) {
+    c = c.trim();
+    if (c.startsWith("#")) {
+      if (c.length === 4) c = "#" + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
+      return [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)];
+    }
+    const m = c.match(/[\d.]+/g) || [0, 0, 0];
+    return [+m[0], +m[1], +m[2]];
+  }
+  function ramp(names) {
+    const st = names.map(n => rgb(tok(n)));
+    return t => {
+      t = Math.max(0, Math.min(1, t)) * (st.length - 1);
+      const i = Math.min(st.length - 2, Math.floor(t)), f = t - i, a = st[i], b = st[i + 1];
+      return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f];
+    };
+  }
+  const DIV = () => ramp(["--cold", "--cold-2", "--mid", "--warm-2", "--warm"]);
+  const VEG = () => ramp(["--veg-0", "--veg-1", "--veg-2", "--veg-3"]);
+  const LAND = () => ramp(["--land-0", "--land-1", "--land-2"]);
+
+  /* ───────────────────────── canvas plumbing ───────────────────────── */
+  function size(cv) {
+    if (!cv.dataset.aspect) cv.dataset.aspect = String(cv.height / cv.width);
+    const w = Math.max(40, Math.round(cv.getBoundingClientRect().width));
+    const h = Math.round(w * +cv.dataset.aspect);
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) {
+      cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+    }
+    const ctx = cv.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    return { ctx, w, h };
+  }
+  /* Draw an N×M field through a colour function, scaled crisply to the canvas. */
+  const off = document.createElement("canvas");
+  function field(cv, nx, ny, colorAt) {
+    off.width = nx; off.height = ny;
+    const oc = off.getContext("2d"), im = oc.createImageData(nx, ny), d = im.data;
+    for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) {
+      const c = colorAt(x, y), k = (y * nx + x) * 4;
+      d[k] = c[0]; d[k + 1] = c[1]; d[k + 2] = c[2]; d[k + 3] = c.length > 3 ? c[3] : 255;
+    }
+    oc.putImageData(im, 0, 0);
+    const S = size(cv);
+    S.ctx.imageSmoothingEnabled = false;
+    S.ctx.drawImage(off, 0, 0, S.w, S.h);
+    return S;
+  }
+  function fmt(v, d) { return (Math.abs(v) < 1e-9 ? 0 : v).toFixed(d == null ? 1 : d); }
+
+  /* A small line-chart helper: one y axis, recessive grid, direct labels. */
+  function chart(cv, spec) {
+    const S = size(cv), { ctx, w, h } = S;
+    const P = { l: 46, r: spec.right == null ? 112 : spec.right, t: 14, b: 38 };
+    const X = v => P.l + (v - spec.x0) / (spec.x1 - spec.x0) * (w - P.l - P.r);
+    const Y = v => h - P.b - (v - spec.y0) / (spec.y1 - spec.y0) * (h - P.t - P.b);
+    const ink2 = tok("--ink-2"), muted = tok("--muted"), line = tok("--line");
+    ctx.font = "11.5px " + tok("--font-data");
+    ctx.lineWidth = 1;
+    (spec.bands || []).forEach(b => {
+      ctx.fillStyle = b.color; ctx.globalAlpha = b.alpha || 0.18;
+      ctx.fillRect(X(b.x0), P.t, X(b.x1) - X(b.x0), h - P.t - P.b);
+      ctx.globalAlpha = 1;
+      if (b.label) { ctx.fillStyle = tok("--gold-ink"); ctx.textAlign = "center"; ctx.fillText(b.label, (X(b.x0) + X(b.x1)) / 2, P.t + 12); }
+    });
+    ctx.strokeStyle = line; ctx.fillStyle = muted; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    spec.yt.forEach(v => {
+      ctx.beginPath(); ctx.moveTo(P.l, Y(v)); ctx.lineTo(w - P.r, Y(v)); ctx.stroke();
+      ctx.fillText(spec.yf ? spec.yf(v) : v, P.l - 6, Y(v));
+    });
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    spec.xt.forEach(v => ctx.fillText(spec.xf ? spec.xf(v) : v, X(v), h - P.b + 6));
+    ctx.fillStyle = ink2; ctx.font = "600 11.5px " + tok("--font-ui");
+    if (spec.xl) ctx.fillText(spec.xl, P.l + (w - P.l - P.r) / 2, h - 16);
+    if (spec.yl) { ctx.save(); ctx.translate(12, P.t + (h - P.t - P.b) / 2); ctx.rotate(-Math.PI / 2); ctx.textBaseline = "middle"; ctx.fillText(spec.yl, 0, 0); ctx.restore(); }
+    (spec.hlines || []).forEach(l => {
+      ctx.strokeStyle = l.color; ctx.setLineDash(l.dash || [5, 4]); ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(P.l, Y(l.y)); ctx.lineTo(w - P.r, Y(l.y)); ctx.stroke(); ctx.setLineDash([]);
+    });
+    (spec.vlines || []).forEach(l => {
+      ctx.strokeStyle = l.color; ctx.lineWidth = l.width || 1;
+      ctx.beginPath(); ctx.moveTo(X(l.x), P.t); ctx.lineTo(X(l.x), h - P.b); ctx.stroke();
+    });
+    const ends = [];
+    (spec.series || []).forEach(s => {
+      if (!s.pts.length) return;
+      ctx.strokeStyle = s.color; ctx.lineWidth = s.width || 2; ctx.globalAlpha = s.alpha == null ? 1 : s.alpha;
+      ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.setLineDash(s.dash || []);
+      ctx.beginPath();
+      s.pts.forEach((p, i) => (i ? ctx.lineTo(X(p[0]), Y(Math.max(spec.y0, Math.min(spec.y1, p[1])))) : ctx.moveTo(X(p[0]), Y(Math.max(spec.y0, Math.min(spec.y1, p[1]))))));
+      ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+      if (s.label) { const p = s.pts[s.pts.length - 1]; ends.push({ y: Y(Math.max(spec.y0, Math.min(spec.y1, p[1]))), x: X(p[0]), s }); }
+    });
+    (spec.dots || []).forEach(d => {
+      ctx.fillStyle = d.color; ctx.strokeStyle = tok("--surface"); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(X(d.x), Y(d.y), d.r || 5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+    });
+    ends.sort((a, b) => a.y - b.y);
+    for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 15) ends[i].y = ends[i - 1].y + 15;
+    ctx.font = "600 12px " + tok("--font-ui"); ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    ends.forEach(e => {
+      ctx.fillStyle = e.s.color; ctx.beginPath(); ctx.arc(e.x, Y(e.s.pts[e.s.pts.length - 1][1]), 3.5, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = tok("--ink"); ctx.fillText(e.s.label, e.x + 8, e.y);
+    });
+    return { X, Y, P, w, h };
+  }
+  function tipAt(tip, cv, x, y, html) {
+    const r = cv.getBoundingClientRect(), pr = cv.parentElement.getBoundingClientRect();
+    tip.innerHTML = html; tip.hidden = false;
+    tip.style.left = (x + r.left - pr.left) + "px"; tip.style.top = (y + r.top - pr.top) + "px";
+  }
+
+  /* ═════════════════════════ 1 · Butterfly ═════════════════════════ */
+  const C = { n: 50, epsI: 2, lead: 260, seed: 42, reveal: false, playing: false, paused: false, E: null, bg: null };
+  const EPS = [0.0001, 0.001, 0.01, 0.1, 0.5], CSTEPS = 1600, CEVERY = 4, CDT = 0.01 * CEVERY;
+  function chaosCompute() {
+    C.E = W.l63ensemble(W.l63start(C.seed), C.n, EPS[C.epsI], CSTEPS, CEVERY, C.seed + 1);
+    if (!C.bg) {
+      const p = W.l63start(5), bg = [];
+      for (let i = 0; i < 24000; i++) { W.l63step(p, 0.01); if (i % 3 === 0) bg.push([p[0], p[2]]); }
+      C.bg = bg;
+    }
+  }
+  function chaosDraw() {
+    if (!C.E) return;
+    const t = C.lead, E = C.E;
+    // butterfly
+    { const S = size($("c-fly")), { ctx, w, h } = S;
+      const X = v => w / 2 + v / 24 * (w / 2 - 10), Y = v => h - 14 - v / 52 * (h - 28);
+      ctx.fillStyle = tok("--muted"); ctx.globalAlpha = 0.22;
+      for (const q of C.bg) ctx.fillRect(X(q[0]), Y(q[1]), 1.2, 1.2);
+      ctx.globalAlpha = 1;
+      ctx.font = "600 12px " + tok("--font-ui"); ctx.fillStyle = tok("--ink-2"); ctx.textBaseline = "top";
+      ctx.textAlign = "left"; ctx.fillText("dry wing", 10, 10);
+      ctx.textAlign = "right"; ctx.fillText("wet wing", w - 10, 10);
+      const s1 = tok("--s1");
+      ctx.strokeStyle = s1; ctx.globalAlpha = 0.28; ctx.lineWidth = 1;
+      for (const m of E.members) {
+        ctx.beginPath();
+        for (let k = Math.max(0, t - 14); k <= t; k++) (k === Math.max(0, t - 14) ? ctx.moveTo(X(m[k][0]), Y(m[k][2])) : ctx.lineTo(X(m[k][0]), Y(m[k][2])));
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1; ctx.fillStyle = s1; ctx.strokeStyle = tok("--surface"); ctx.lineWidth = 1.5;
+      for (const m of E.members) { ctx.beginPath(); ctx.arc(X(m[t][0]), Y(m[t][2]), 3.6, 0, 7); ctx.fill(); ctx.stroke(); }
+      let mx = 0, mz = 0; for (const m of E.members) { mx += m[t][0]; mz += m[t][2]; } mx /= E.members.length; mz /= E.members.length;
+      ctx.fillStyle = tok("--gold"); ctx.strokeStyle = tok("--surface"); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(X(mx), Y(mz) - 7); ctx.lineTo(X(mx) + 7, Y(mz)); ctx.lineTo(X(mx), Y(mz) + 7); ctx.lineTo(X(mx) - 7, Y(mz)); ctx.closePath(); ctx.fill(); ctx.stroke();
+      if (C.reveal) {
+        const tr = E.truth[t]; ctx.strokeStyle = tok("--truth"); ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(X(tr[0]), Y(tr[2]), 7, 0, 7); ctx.stroke();
+      }
+    }
+    // spaghetti
+    const T1 = (E.truth.length - 1) * CDT;
+    const series = E.members.map(m => ({ pts: m.slice(0, t + 1).map((q, k) => [k * CDT, q[0]]), color: tok("--s1"), width: 1, alpha: 0.35 }));
+    const meanPts = [];
+    for (let k = 0; k <= t; k++) { let s = 0; for (const m of E.members) s += m[k][0]; meanPts.push([k * CDT, s / E.members.length]); }
+    series.push({ pts: meanPts, color: tok("--gold"), width: 3.2, label: "average" });
+    if (C.reveal) series.push({ pts: E.truth.slice(0, t + 1).map((q, k) => [k * CDT, q[0]]), color: tok("--truth"), width: 2, label: "what happened" });
+    chart($("c-spag"), { x0: 0, x1: T1, y0: -22, y1: 22, xt: [0, 4, 8, 12, 16], yt: [-20, -10, 0, 10, 20],
+      yf: v => (v === 0 ? "0" : v), xl: "lead time (model units)", yl: "position across the wings", right: 96,
+      hlines: [{ y: 0, color: tok("--muted"), dash: [2, 3] }], vlines: [{ x: t * CDT, color: tok("--line"), width: 2 }], series });
+    // readouts
+    const xs = E.members.map(m => m[t][0]), n = xs.length, mu = xs.reduce((a, b) => a + b, 0) / n;
+    const sd = Math.sqrt(xs.reduce((a, b) => a + (b - mu) ** 2, 0) / n), wet = xs.filter(v => v > 0).length;
+    $("c-p").textContent = Math.round(100 * wet / n) + "%";
+    $("c-pd").textContent = C.reveal ? ("Actually: " + (E.truth[t][0] > 0 ? "wet wing" : "dry wing")) : "share of members on the right";
+    $("c-sd").textContent = fmt(sd);
+    $("c-wing").textContent = wet + " of " + n + " on the wet wing";
+    const k0 = Math.max(0, t - 40); let sw = 0, swm = 0, c = 0;
+    for (let k = k0; k <= t; k++) { let s = 0, a = 0; for (const m of E.members) { s += m[k][0]; a += Math.abs(m[k][0]); } sw += a / n; swm += Math.abs(s / n); c++; }
+    $("c-sw").textContent = "±" + fmt(sw / c) + "  vs  ±" + fmt(swm / c);
+    $("c-swd").textContent = "members vs their average, recent stretch";
+    $("c-t-o").textContent = fmt(t * CDT);
+    $("c-fly").setAttribute("aria-label", `${wet} of ${n} members on the wet wing at lead ${fmt(t * CDT)}`);
+  }
+  function chaosInit() {
+    $("c-n").addEventListener("input", e => { C.n = +e.target.value; $("c-n-o").textContent = C.n; chaosCompute(); chaosDraw(); });
+    $("c-eps").addEventListener("input", e => { C.epsI = +e.target.value; $("c-eps-o").textContent = EPS[C.epsI]; chaosCompute(); chaosDraw(); });
+    $("c-t").addEventListener("input", e => { C.lead = +e.target.value; chaosDraw(); });
+    $("c-reveal").addEventListener("click", e => { C.reveal = !C.reveal; e.currentTarget.setAttribute("aria-pressed", C.reveal); e.currentTarget.textContent = C.reveal ? "Hide what happened" : "Reveal what happened"; chaosDraw(); });
+    $("c-new").addEventListener("click", () => { C.seed = (C.seed * 7 + 13) % 997; C.lead = 260; $("c-t").value = 260; C.paused = false; C.reveal = false; $("c-reveal").setAttribute("aria-pressed", "false"); $("c-reveal").textContent = "Reveal what happened"; chaosCompute(); chaosDraw(); });
+    $("c-play").addEventListener("click", () => {
+      if (C.playing) { C.playing = false; C.paused = true; $("c-play").textContent = "Play"; return; }
+      if (!C.paused || C.lead >= 400) C.lead = 0;
+      C.playing = true; C.paused = false; $("c-play").textContent = "Pause";
+      const step = () => {
+        if (!C.playing) return;
+        C.lead = Math.min(400, C.lead + 2); $("c-t").value = C.lead; chaosDraw();
+        if (C.lead >= 400) { C.playing = false; $("c-play").textContent = "Play"; return; }
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    });
+    $("c-t").addEventListener("pointerdown", () => { C.playing = false; C.paused = false; $("c-play").textContent = "Play"; });
+    $("c-t").max = 400;
+    chaosCompute();
+  }
+
+  /* ═════════════════════════ 2 · Learning the weather ═════════════════════════ */
+  const ANA = [0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 0.85, 1.0];
+  const L = { sigI: 6, anaI: 2, day: 3, diff: false, models: {}, clim: null, case: null, skill: null };
+  function lModel() { const s = L.sigI / 10; return L.models[s] || (L.models[s] = W.trainEmulator(8, 365, s, 11)); }
+  function lClim() {
+    if (!L.clim) L.clim = W.stats(W.l96run(W.l96spin(8, 3, 500), 8, 1600));
+    return L.clim;
+  }
+  function lCase() {
+    const m = lModel(), a = ANA[L.anaI], r = W.rng(900 + L.day);
+    const base = W.l96spin(8, 300 + L.day, 500);
+    const truth = W.l96run(base, 8, 40), ana = Float64Array.from(base, v => v + a * W.gauss(r));
+    L.case = { truth, emu: W.emuRun(m, ana, 40), phys: W.l96run(ana, 8, 40) };
+  }
+  function lSkill() {
+    const m = lModel(), a = ANA[L.anaI], r = W.rng(9), N = 24;
+    const e = new Float64Array(41), p = new Float64Array(41), s = new Float64Array(41);
+    let base = W.l96spin(8, 2024, 500);
+    for (let c = 0; c < N; c++) {
+      for (let k = 0; k < 37; k++) W.l96step(base, 8);
+      const tr = W.l96run(base, 8, 40), an = Float64Array.from(base, v => v + a * W.gauss(r));
+      const em = W.emuRun(m, an, 40), ph = W.l96run(an, 8, 40);
+      for (let k = 0; k <= 40; k++) {
+        e[k] += em[k] ? W.rmse(em[k], tr[k]) : 12; p[k] += W.rmse(ph[k], tr[k]); s[k] += W.rmse(an, tr[k]);
+      }
+    }
+    L.skill = { e: Array.from(e, v => v / N), p: Array.from(p, v => v / N), s: Array.from(s, v => v / N) };
+  }
+  function usefulDays(arr, line) {
+    for (let k = 1; k < arr.length; k++) if (arr[k] >= line) {
+      const f = (line - arr[k - 1]) / (arr[k] - arr[k - 1]); return (k - 1 + f) / 4;
+    }
+    return null;
+  }
+  function lDraw() {
+    const cl = lClim(), div = DIV();
+    const hov = (cv, states) => field(cv, 40, 41, (x, y) => {
+      const st = states[y]; if (!st) return rgb(tok("--sunk"));
+      return div(0.5 + (st[x] - cl.mean) / cl.sd / 4.4);
+    });
+    const err = (cv, states) => field(cv, 40, 41, (x, y) => {
+      const st = states[y]; if (!st) return rgb(tok("--sunk"));
+      return div(0.5 + (st[x] - L.case.truth[y][x]) / cl.sd / 4.4);
+    });
+    hov($("l-h-true"), L.case.truth);
+    (L.diff ? err : hov)($("l-h-emu"), L.case.emu); (L.diff ? err : hov)($("l-h-phys"), L.case.phys);
+    $("l-cap-emu").textContent = L.diff ? "Learned model: its error" : "Learned model";
+    $("l-cap-phys").textContent = L.diff ? "Physics model: its error" : "Physics model";
+    $("l-lo").textContent = L.diff ? "colder · too cold" : "colder than usual";
+    $("l-hi").textContent = L.diff ? "warmer · too warm" : "warmer than usual";
+    const sk = L.skill, line = cl.sd, days = k => k / 4;
+    const mk = (arr, color, label) => ({ pts: arr.map((v, k) => [days(k), v]), color, label, width: 2.2 });
+    const geo = chart($("l-err"), { x0: 0, x1: 10, y0: 0, y1: 6, xt: [0, 2, 4, 6, 8, 10], yt: [0, 1, 2, 3, 4, 5, 6],
+      xf: v => v + " d", xl: "days ahead", yl: "typical error",
+      hlines: [{ y: line, color: tok("--muted") }],
+      series: [mk(sk.s, tok("--s2"), "same as today"), mk(sk.p, tok("--s3"), "physics"), mk(sk.e, tok("--s1"), "learned")] });
+    L.geo = geo;
+    const u = (arr) => { const d = usefulDays(arr, line); return d == null ? "10+ days" : fmt(d) + " days"; };
+    $("l-u-emu").textContent = u(sk.e); $("l-u-phys").textContent = u(sk.p); $("l-u-pers").textContent = u(sk.s);
+    $("l-err").setAttribute("aria-label", `Learned model useful for ${u(sk.e)}, physics ${u(sk.p)}, same-as-today ${u(sk.s)}`);
+    // look inside
+    const w = lModel().w, others = [];
+    for (let i = 1; i < w.length; i++) if (![3, 7, 13].includes(i)) others.push(Math.abs(i >= 6 ? w[i] / 10 : w[i]));
+    const rows = [
+      ["Forcing: the steady energy input", w[0], 8],
+      ["Damping: each point relaxes", w[3], -1],
+      ["Upstream × downstream neighbours", w[13] / 10, 1],
+      ["Two upstream neighbours", w[7] / 10, -1],
+      ["Largest of the other 17 terms", Math.max(...others), 0],
+    ];
+    $("l-coef").innerHTML = rows.map(r => `<tr><td>${r[0]}</td><td class="n">${fmt(r[1], 2)}</td><td class="n">${fmt(r[2], 2)}</td></tr>`).join("");
+  }
+  function lHover(e) {
+    if (!L.geo || !L.skill) return;
+    const cv = $("l-err"), r = cv.getBoundingClientRect(), x = e.clientX - r.left;
+    const d = (x - L.geo.P.l) / (L.geo.w - L.geo.P.l - L.geo.P.r) * 10;
+    if (d < 0 || d > 10) { $("l-tip").hidden = true; return; }
+    const k = Math.round(d * 4), sk = L.skill;
+    tipAt($("l-tip"), cv, L.geo.X(k / 4), L.geo.Y(Math.max(sk.e[k], sk.p[k], sk.s[k])) - 6,
+      `day ${fmt(k / 4, 2)}<br>learned ${fmt(sk.e[k], 2)}<br>physics ${fmt(sk.p[k], 2)}<br>same as today ${fmt(sk.s[k], 2)}`);
+  }
+  let lTimer = 0;
+  function lUpdate(full) {
+    $("l-busy").textContent = "computing…";
+    clearTimeout(lTimer);
+    lTimer = setTimeout(() => { if (full) lSkill(); lCase(); lDraw(); $("l-busy").textContent = ""; }, 30);
+  }
+  function learnInit() {
+    $("l-sig").addEventListener("input", e => { L.sigI = +e.target.value; $("l-sig-o").textContent = fmt(L.sigI / 10); lUpdate(true); });
+    $("l-ana").addEventListener("input", e => { L.anaI = +e.target.value; $("l-ana-o").textContent = ANA[L.anaI].toFixed(2); lUpdate(true); });
+    $("l-new").addEventListener("click", () => { L.day++; lCase(); lDraw(); });
+    $("l-diff").addEventListener("click", e => { L.diff = !L.diff; e.currentTarget.setAttribute("aria-pressed", String(L.diff)); e.currentTarget.textContent = L.diff ? "Show the weather" : "Show the errors"; lDraw(); });
+    $("l-err").addEventListener("pointermove", lHover);
+    $("l-err").addEventListener("pointerleave", () => { $("l-tip").hidden = true; });
+    lSkill(); lCase();
+  }
+
+  /* ═════════════════════════ 3 · Weather is not climate ═════════════════════════ */
+  const K = { F: 11, model: null, curve: {}, ts: {}, job: 0 };
+  const FGRID = []; for (let f = 5; f <= 13.001; f += 0.5) FGRID.push(+f.toFixed(1));
+  function kModel() { return K.model || (K.model = W.trainEmulator(8, 365, 0.3, 21)); }
+  function kPoint(F) {
+    if (K.curve[F]) return K.curve[F];
+    const x0 = W.l96spin(F, 77, 300), tr = W.l96run(x0, F, 700), em = W.emuRun(kModel(), x0, 700);
+    return (K.curve[F] = { t: W.stats(tr.slice(150)).sd, e: em.unstable ? null : W.stats(em.slice(150)).sd });
+  }
+  function kSeries(F) {
+    if (K.ts[F]) return K.ts[F];
+    const x0 = W.l96spin(F, 77, 300), tr = W.l96run(x0, F, 480), em = W.emuRun(kModel(), x0, 480);
+    const daily = run => { const out = []; for (let d = 0; d <= 120; d++) { const s = run[d * 4]; if (!s) break; out.push(W.stats([s]).sd); } return out; };
+    const smooth = a => a.map((_, i) => { const j0 = Math.max(0, i - 5), j1 = Math.min(a.length - 1, i + 5); let s = 0; for (let j = j0; j <= j1; j++) s += a[j]; return s / (j1 - j0 + 1); });
+    return (K.ts[F] = { t: smooth(daily(tr)), e: smooth(daily(em)) });
+  }
+  function kDraw() {
+    const F = K.F, here = kPoint(F), ref = kPoint(8), done = FGRID.filter(f => K.curve[f]);
+    const geo = chart($("k-curve"), { x0: 5, x1: 13, y0: 2, y1: 6, xt: [5, 6, 7, 8, 9, 10, 11, 12, 13], yt: [2, 3, 4, 5, 6],
+      xl: "energy input", yl: "storminess", right: 104,
+      bands: [{ x0: 7.75, x1: 8.25, color: tok("--gold"), alpha: 0.35, label: "trained here" }],
+      vlines: [{ x: F, color: tok("--line"), width: 2 }],
+      series: [
+        { pts: done.map(f => [f, K.curve[f].t]), color: tok("--truth"), width: 2.4, label: "real system" },
+        { pts: done.filter(f => K.curve[f].e != null).map(f => [f, K.curve[f].e]), color: tok("--s1"), width: 2.4, label: "learned" }],
+      dots: [{ x: F, y: here.t, color: tok("--truth") }].concat(here.e != null ? [{ x: F, y: here.e, color: tok("--s1") }] : []) });
+    K.geo = geo;
+    const ts = kSeries(F), n = ts.t.length;
+    chart($("k-ts"), { x0: 0, x1: 120, y0: 2, y1: 6.5, xt: [0, 30, 60, 90, 120], yt: [2, 3, 4, 5, 6], xf: v => v + " d",
+      xl: "days", yl: "storminess (10-day average)", right: 104,
+      hlines: [{ y: ref.t, color: tok("--gold-ink"), dash: [6, 4] }],
+      series: [{ pts: ts.t.map((v, d) => [d, v]), color: tok("--truth"), width: 2.2, label: "real system" },
+               { pts: ts.e.map((v, d) => [d, v]), color: tok("--s1"), width: 2.2, label: "learned" }] });
+    $("k-days").textContent = "dashed: the trained climate";
+    $("k-true").textContent = fmt(here.t, 2);
+    $("k-emu").textContent = here.e == null ? "unstable" : fmt(here.e, 2);
+    const real = here.t - ref.t, got = (here.e == null ? NaN : here.e - ref.t);
+    if (Math.abs(F - 8) < 0.01) {
+      $("k-miss").textContent = "none"; $("k-missd").textContent = "this is the climate it learned";
+      $("k-call").innerHTML = "At energy input 8 the learned model reproduces the climate well: <b>" + fmt(here.e, 2) + "</b> against <b>" + fmt(here.t, 2) + "</b>. Inside its training data it is a good model.";
+    } else {
+      const miss = Math.max(0, Math.min(100, Math.round(100 * (1 - got / real))));
+      $("k-miss").textContent = miss + "%";
+      $("k-missd").textContent = "of the real change since energy input 8";
+      $("k-call").innerHTML = (F > 8 ? "The real system grew " : "The real system calmed ") + (F > 8 ? "stormier" : "down") +
+        " by <b>" + fmt(Math.abs(real), 2) + "</b>. The learned model moved by <b>" + fmt(Math.abs(got), 2) +
+        "</b>. It keeps producing the weather of the climate it was trained in, because nothing in its rule knows the energy input changed.";
+    }
+    $("k-curve").setAttribute("aria-label", `At energy input ${F}, real storminess ${fmt(here.t, 2)}, learned ${here.e == null ? "unstable" : fmt(here.e, 2)}`);
+  }
+  function kSweep() {
+    const job = ++K.job, todo = FGRID.filter(f => !K.curve[f]);
+    const next = () => {
+      if (job !== K.job) return;
+      if (!todo.length) { $("k-busy").textContent = ""; return; }
+      const f = todo.shift(); kPoint(f);
+      $("k-busy").textContent = `computing ${FGRID.length - todo.length} of ${FGRID.length}`;
+      if (isShown("climate")) kDraw();
+      setTimeout(next, 0);
+    };
+    setTimeout(next, 0);
+  }
+  function climateInit() {
+    $("k-F").addEventListener("input", e => { K.F = +e.target.value; $("k-F-o").textContent = fmt(K.F); kDraw(); });
+    $("k-curve").addEventListener("pointermove", e => {
+      if (!K.geo) return;
+      const r = $("k-curve").getBoundingClientRect(), x = e.clientX - r.left;
+      const F = Math.round(((x - K.geo.P.l) / (K.geo.w - K.geo.P.l - K.geo.P.r) * 8 + 5) * 2) / 2;
+      const p = K.curve[F]; if (!p || F < 5 || F > 13) { $("k-tip").hidden = true; return; }
+      tipAt($("k-tip"), $("k-curve"), K.geo.X(F), K.geo.Y(Math.max(p.t, p.e || 0)) - 8,
+        `energy ${fmt(F)}<br>real ${fmt(p.t, 2)}<br>learned ${p.e == null ? "unstable" : fmt(p.e, 2)}`);
+    });
+    $("k-curve").addEventListener("pointerleave", () => { $("k-tip").hidden = true; });
+    kPoint(8); kPoint(K.F); kSweep();
+  }
+
+  /* ═════════════════════════ 4 · Downscaling ═════════════════════════ */
+  const D = { N: 128, f: 8, day: 0, E: null, train: null, models: {}, cur: null };
+  function dCompute() {
+    const N = D.N;
+    if (!D.E) { D.E = W.terrain(N, 5); D.train = [101, 102, 103].map(s => ({ T: W.trueTemp(N, D.E, s, false), E: D.E })); }
+    const m = D.models[D.f] || (D.models[D.f] = W.fitDownscaler(D.train, N, D.f));
+    const T = W.trueTemp(N, D.E, D.day ? 909 : 404, !!D.day);
+    const Tc = W.coarsen(T, N, D.f), Ec = W.coarsen(D.E, N, D.f);
+    const R = W.downscale(m, Tc, Ec, D.E, N, D.f);
+    let mean = 0; for (const v of T) mean += v; mean /= T.length;
+    let span = 0; for (const v of T) span = Math.max(span, Math.abs(v - mean));
+    const add = R.learned.map((v, k) => v - R.bilin[k]); let aspan = 0; for (const v of add) aspan = Math.max(aspan, Math.abs(v));
+    D.cur = { m, T, Tc, R, mean, span: Math.ceil(span), add, aspan: Math.max(0.5, Math.ceil(aspan * 2) / 2) };
+  }
+  function dDraw() {
+    const N = D.N, c = D.cur, f = D.f, M = N / f, div = DIV(), land = LAND();
+    let emin = 1e9, emax = -1e9; for (const v of D.E) { emin = Math.min(emin, v); emax = Math.max(emax, v); }
+    field($("d-elev"), N, N, (x, y) => {
+      const k = y * N + x, e = D.E[k];
+      const ex = D.E[y * N + Math.min(N - 1, x + 1)] - D.E[y * N + Math.max(0, x - 1)];
+      const ey = D.E[Math.min(N - 1, y + 1) * N + x] - D.E[Math.max(0, y - 1) * N + x];
+      const shade = Math.max(0.55, Math.min(1.15, 0.9 - (ex - ey) / 260));
+      const col = land((e - emin) / (emax - emin));
+      return [col[0] * shade, col[1] * shade, col[2] * shade];
+    });
+    const tcol = v => div(0.5 + (v - c.mean) / (2 * c.span));
+    field($("d-coarse"), N, N, (x, y) => tcol(c.Tc[Math.floor(y / f) * M + Math.floor(x / f)]));
+    field($("d-true"), N, N, (x, y) => tcol(c.T[y * N + x]));
+    field($("d-bil"), N, N, (x, y) => tcol(c.R.bilin[y * N + x]));
+    field($("d-lrn"), N, N, (x, y) => tcol(c.R.learned[y * N + x]));
+    field($("d-add"), N, N, (x, y) => div(0.5 + c.add[y * N + x] / (2 * c.aspan)));
+    const eb = W.rmse(c.R.bilin, c.T), el = W.rmse(c.R.learned, c.T);
+    $("d-e-bil").textContent = "error " + fmt(eb, 2) + " °C";
+    $("d-e-lrn").textContent = "error " + fmt(el, 2) + " °C";
+    $("d-r-bil").textContent = fmt(eb, 2); $("d-r-lrn").textContent = fmt(el, 2);
+    $("d-r-d").textContent = el < eb ? (fmt(eb / el) + "× smaller than stretching") : ("worse than stretching by " + Math.round(100 * (el / eb - 1)) + "%");
+    $("d-lapse").textContent = fmt(c.m.a * 1000);
+    $("d-lo").textContent = fmt(c.mean - c.span, 0) + " °C"; $("d-hi").textContent = fmt(c.mean + c.span, 0) + " °C";
+    document.querySelector("#d-add").closest("figure").querySelector("figcaption").innerHTML =
+      `Detail the model invented <span class="v">±${fmt(c.aspan)} °C</span>`;
+  }
+  function dHover(e) {
+    const cv = e.currentTarget, r = cv.getBoundingClientRect(), N = D.N, c = D.cur;
+    const x = Math.floor((e.clientX - r.left) / r.width * N), y = Math.floor((e.clientY - r.top) / r.height * N);
+    if (x < 0 || y < 0 || x >= N || y >= N) return;
+    const k = y * N + x;
+    $("d-hover").textContent = `height ${fmt(D.E[k], 0)} m · truth ${fmt(c.T[k])} °C · stretched ${fmt(c.R.bilin[k])} °C · learned ${fmt(c.R.learned[k])} °C`;
+  }
+  function downInit() {
+    const seg = (id, key) => $(id).querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+      $(id).querySelectorAll("button").forEach(o => o.setAttribute("aria-pressed", String(o === b)));
+      D[key] = +b.dataset.v; dCompute(); dDraw();
+    }));
+    seg("d-f", "f"); seg("d-day", "day");
+    ["d-elev", "d-coarse", "d-true", "d-bil", "d-lrn", "d-add"].forEach(id => $(id).addEventListener("pointermove", dHover));
+    dCompute();
+  }
+
+  /* ═════════════════════════ 5 · Filling the gaps ═════════════════════════ */
+  const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const MONTH = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const G = { N: 96, m: 6, cover: 45, flood: false, peek: false, L: null, cur: null };
+  function gCompute() {
+    const N = G.N;
+    if (!G.L) G.L = W.landscape(N, 3);
+    const fl = G.flood ? W.applyFlood(G.L, G.m) : null;
+    const img = fl ? fl.img : G.L.cube[G.m];
+    const mask = W.clouds(N, G.cover / 100, 50 + G.m);
+    const A = W.fillSpatial(img, mask, N), B = W.fillTemporal(G.L, G.m, img, mask);
+    const flooded = fl ? fl.flooded : null, edge = new Uint8Array(N * N);
+    if (flooded) for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const k = y * N + x; if (!flooded[k]) continue;
+      if (x === 0 || y === 0 || x === N - 1 || y === N - 1 || !flooded[k - 1] || !flooded[k + 1] || !flooded[k - N] || !flooded[k + N]) edge[k] = 1;
+    }
+    G.cur = { img, mask, A, B, flooded, edge };
+  }
+  function gDraw() {
+    const N = G.N, c = G.cur, veg = VEG(), cloud = rgb(tok("--cloud")), flood = rgb(tok("--flood"));
+    const vcol = v => veg(v / 0.9);
+    const withEdge = fn => (x, y) => (c.edge[y * N + x] ? flood : fn(x, y));
+    field($("g-obs"), N, N, withEdge((x, y) => {
+      const k = y * N + x;
+      if (c.mask[k] && !G.peek) { const hatch = ((x + y) % 6 < 2) ? 0.86 : 1; return [cloud[0] * hatch, cloud[1] * hatch, cloud[2] * hatch]; }
+      return vcol(c.img[k]);
+    }));
+    field($("g-sp"), N, N, withEdge((x, y) => vcol(c.A[y * N + x])));
+    field($("g-tm"), N, N, withEdge((x, y) => vcol(c.B[y * N + x])));
+    // the year, as twelve small tiles in two rows of six
+    { const yc = $("g-year"), cols = yc.getBoundingClientRect().width >= 700 ? 12 : 6;
+      yc.dataset.aspect = String((12 / cols) / cols);
+      const S = size(yc), { ctx, w } = S, tw = w / cols, sub = 2, n = N / sub;
+      off.width = n; off.height = n;
+      const oc = off.getContext("2d");
+      ctx.font = "600 11.5px " + tok("--font-ui");
+      for (let m = 0; m < 12; m++) {
+        const X = (m % cols) * tw, Y = Math.floor(m / cols) * tw;
+        if (m === G.m) {
+          ctx.fillStyle = tok("--sunk"); ctx.fillRect(X + 3, Y + 3, tw - 6, tw - 6);
+          ctx.strokeStyle = tok("--gold"); ctx.lineWidth = 2.5; ctx.strokeRect(X + 3, Y + 3, tw - 6, tw - 6);
+          ctx.fillStyle = tok("--gold-ink"); ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(tw >= 90 ? MON[m] + ": cloudy" : MON[m], X + tw / 2, Y + tw / 2);
+          continue;
+        }
+        const im = oc.createImageData(n, n), d = im.data, cube = G.L.cube[m];
+        for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+          const col = vcol(cube[(y * sub) * N + x * sub]), k = (y * n + x) * 4;
+          d[k] = col[0]; d[k + 1] = col[1]; d[k + 2] = col[2]; d[k + 3] = 255;
+        }
+        oc.putImageData(im, 0, 0);
+        ctx.imageSmoothingEnabled = false; ctx.drawImage(off, X + 3, Y + 3, tw - 6, tw - 6);
+        ctx.fillStyle = tok("--surface"); ctx.globalAlpha = 0.9; ctx.fillRect(X + 6, Y + 6, 30, 17); ctx.globalAlpha = 1;
+        ctx.fillStyle = tok("--ink"); ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText(MON[m], X + 9, Y + 9);
+      }
+    }
+    const eA = W.maskedRmse(c.A, c.img, c.mask), eB = W.maskedRmse(c.B, c.img, c.mask);
+    $("g-e-sp").textContent = "error " + fmt(eA, 3); $("g-e-tm").textContent = "error " + fmt(eB, 3);
+    $("g-r-sp").textContent = fmt(eA, 3); $("g-r-tm").textContent = fmt(eB, 3);
+    let cov = 0; for (const v of c.mask) cov += v; $("g-cov").textContent = Math.round(100 * cov / c.mask.length) + "% under cloud";
+    if (c.flooded) {
+      let hid = 0, a = 0, b = 0;
+      for (let k = 0; k < c.img.length; k++) if (c.mask[k] && c.flooded[k]) { hid++; if (c.A[k] < 0.15) a++; if (c.B[k] < 0.15) b++; }
+      const pa = hid ? Math.round(100 * a / hid) : 0, pb = hid ? Math.round(100 * b / hid) : 0;
+      $("g-r-fk").textContent = "Hidden flood found"; $("g-r-fl").textContent = pb + "% vs " + pa + "%";
+      $("g-r-fd").textContent = "using the year vs looking sideways";
+      $("g-call").innerHTML = hid
+        ? `Clouds hide <b>${hid}</b> flooded pixels. Using this place's year shows only <b>${pb}%</b> of them as water: it filled in what these fields usually look like in ${MONTH[G.m]}. Looking sideways finds <b>${pa}%</b>, because it copies this month's own clear pixels next door. The best method on an ordinary month misses the event that matters.`
+        : "The clouds happen to miss the flooded fields this time. Raise the cloud cover.";
+    } else {
+      $("g-r-fk").textContent = "Hidden flood found"; $("g-r-fl").textContent = "—"; $("g-r-fd").textContent = "turn on the flood";
+      $("g-call").innerHTML = `On an ordinary ${MONTH[G.m]}, using this place's year is <b>${fmt(eA / eB)}×</b> more accurate than looking sideways. Knowing <i>when</i> it is looking lets the model use the season, which is the idea behind Prithvi EO 2.0's time and location inputs.`;
+    }
+  }
+  function gHover(e) {
+    const cv = e.currentTarget, r = cv.getBoundingClientRect(), N = G.N, c = G.cur;
+    const x = Math.floor((e.clientX - r.left) / r.width * N), y = Math.floor((e.clientY - r.top) / r.height * N);
+    if (x < 0 || y < 0 || x >= N || y >= N) return;
+    const k = y * N + x, p = G.L.parcel[k], cls = p < 0 ? "River" : W.CLASSES[G.L.pts[p].cls].name;
+    $("g-hover").textContent = `${cls}${c.flooded && c.flooded[k] ? " (flooded)" : ""} · ${c.mask[k] ? "under cloud" : "clear"} · truth ${fmt(c.img[k], 2)} · sideways ${fmt(c.A[k], 2)} · year ${fmt(c.B[k], 2)}`;
+  }
+  function gapsInit() {
+    $("g-m").addEventListener("input", e => { G.m = +e.target.value; $("g-m-o").textContent = MON[G.m]; gCompute(); gDraw(); });
+    $("g-c").addEventListener("input", e => { G.cover = +e.target.value; $("g-c-o").textContent = G.cover + "%"; gCompute(); gDraw(); });
+    $("g-flood").addEventListener("click", e => { G.flood = !G.flood; e.currentTarget.setAttribute("aria-pressed", String(G.flood)); e.currentTarget.textContent = G.flood ? "Remove the flood" : "A flood this month"; gCompute(); gDraw(); });
+    const peek = v => () => { G.peek = v; gDraw(); };
+    $("g-peek").addEventListener("pointerdown", peek(true));
+    ["pointerup", "pointerleave", "pointercancel"].forEach(ev => $("g-peek").addEventListener(ev, peek(false)));
+    $("g-peek").addEventListener("keydown", e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); G.peek = true; gDraw(); } });
+    $("g-peek").addEventListener("keyup", () => { G.peek = false; gDraw(); });
+    ["g-obs", "g-sp", "g-tm"].forEach(id => $(id).addEventListener("pointermove", gHover));
+    gCompute();
+  }
+
+  /* ═════════════════════════ tabs, lazy start, theme & resize ═════════════════════════ */
+  const DEMOS = {
+    chaos:   { init: chaosInit,   draw: chaosDraw, ok: false },
+    learn:   { init: learnInit,   draw: lDraw,     ok: false },
+    climate: { init: climateInit, draw: kDraw,     ok: false },
+    down:    { init: downInit,    draw: dDraw,     ok: false },
+    gaps:    { init: gapsInit,    draw: gDraw,     ok: false },
+  };
+  function isShown(id) { return !$(id).hidden; }
+  function show(id) {
+    if (!DEMOS[id]) id = "chaos";
+    document.querySelectorAll(".exp").forEach(s => { s.hidden = s.id !== id; });
+    document.querySelectorAll(".rail button").forEach(b => b.setAttribute("aria-selected", String(b.getAttribute("aria-controls") === id)));
+    const d = DEMOS[id];
+    if (!d.ok) { d.init(); d.ok = true; }
+    requestAnimationFrame(() => d.draw());
+    try { history.replaceState(null, "", "#" + id); } catch (e) { /* sandboxed */ }
+  }
+  document.querySelectorAll(".rail button").forEach(b => b.addEventListener("click", () => show(b.getAttribute("aria-controls"))));
+  document.querySelector(".rail").addEventListener("keydown", e => {
+    const tabs = [...document.querySelectorAll(".rail button")], i = tabs.indexOf(document.activeElement);
+    if (i < 0) return;
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+      const j = (i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+      tabs[j].focus(); show(tabs[j].getAttribute("aria-controls"));
+    }
+  });
+  const redraw = () => { for (const id in DEMOS) if (DEMOS[id].ok && isShown(id)) DEMOS[id].draw(); };
+  let rz = 0;
+  new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(redraw); }).observe(document.querySelector(".wrap"));
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redraw);
+  new MutationObserver(redraw).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(redraw);
+  show((location.hash || "#chaos").slice(1));
+})();
+</script>
+</body>
+</html>
