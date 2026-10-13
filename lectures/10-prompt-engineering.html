@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prompt Engineering</title><meta name="description" content="Interactive 40-slide lecture on prompting GPT and Claude models."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,600;1,8..60,500&display=swap"><style>*,*::before,*::after{box-sizing:border-box}
+:root{
+  --ground:#EFEBE3; --stage:#FFFDF8; --ink:#1E1B17; --body:#433E37; --muted:#6E675D;
+  --line:#D8D1C4; --hair:#E9E3D8; --chip:#F4EFE6;
+  --terra:#B04E2F; --gold:#8C640E; --sage:#4C7044; --slate:#3F617A; --plum:#7A4A6A;
+  --tterra:#F8E7DF; --tgold:#F7EED9; --tsage:#E6EFE3; --tslate:#E3ECF2; --tplum:#F2E6EE; --tneutral:#F1ECE3;
+  --ok:#2F7A4F; --tok:#E1F1E7; --bad:#B0402F; --tbad:#F8E2DD;
+  --shadow:0 1px 2px rgba(30,27,23,.06),0 14px 44px rgba(30,27,23,.12);
+  --scrim:rgba(255,253,248,.93); --codebg:#F3EEE4;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0E0D0C; --stage:#191715; --ink:#FCF7EA; --body:#D8D1C2; --muted:#A39B8E;
+  --line:#3A3631; --hair:#2A2724; --chip:#24211E;
+  --terra:#E07A57; --gold:#E2B55A; --sage:#97B88E; --slate:#8FB0C8; --plum:#C995B8;
+  --tterra:#33221B; --tgold:#30281A; --tsage:#1F2A1D; --tslate:#1C2730; --tplum:#2C1F28; --tneutral:#23201D;
+  --ok:#7CC995; --tok:#18291E; --bad:#F08A76; --tbad:#33201C;
+  --shadow:0 1px 2px rgba(0,0,0,.45),0 18px 50px rgba(0,0,0,.5);
+  --scrim:rgba(25,23,21,.92); --codebg:#221F1C;
+}}
+:root[data-theme="dark"]{
+  --ground:#0E0D0C; --stage:#191715; --ink:#FCF7EA; --body:#D8D1C2; --muted:#A39B8E;
+  --line:#3A3631; --hair:#2A2724; --chip:#24211E;
+  --terra:#E07A57; --gold:#E2B55A; --sage:#97B88E; --slate:#8FB0C8; --plum:#C995B8;
+  --tterra:#33221B; --tgold:#30281A; --tsage:#1F2A1D; --tslate:#1C2730; --tplum:#2C1F28; --tneutral:#23201D;
+  --ok:#7CC995; --tok:#18291E; --bad:#F08A76; --tbad:#33201C;
+  --shadow:0 1px 2px rgba(0,0,0,.45),0 18px 50px rgba(0,0,0,.5);
+  --scrim:rgba(25,23,21,.92); --codebg:#221F1C;
+}
+html,body{height:100%}
+body{margin:0;background:var(--ground);color:var(--ink);overflow:hidden;
+  font-family:"Source Sans 3","Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+.wrap{position:fixed;inset:0 0 40px 0;display:grid;place-items:center}
+.stage{width:1280px;height:720px;flex:none;background:var(--stage);border-radius:10px;box-shadow:var(--shadow);
+  position:relative;overflow:hidden;transform-origin:center center}
+.slide{position:absolute;inset:0;padding:50px 64px 58px;display:none;flex-direction:column}
+.slide.on{display:flex}
+.eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--acc,var(--terra));font-weight:600;margin:0 0 12px}
+h1{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:40px;line-height:1.12;margin:0;color:var(--ink);
+  letter-spacing:-.012em;text-wrap:balance;max-width:24ch}
+h1.wide{max-width:none}
+.sub{font-size:18px;color:var(--muted);margin:10px 0 0;max-width:64ch;line-height:1.45}
+.body{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:16px;padding-top:14px}
+.foot{position:absolute;left:64px;right:64px;bottom:20px;display:flex;justify-content:space-between;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.kick{font-size:17px;color:var(--muted);line-height:1.45;margin:0;max-width:80ch}
+.kick b{color:var(--ink)}
+.note-line{font-size:15.5px;line-height:1.45;color:var(--acc,var(--gold));margin:0;font-weight:600}
+b,strong{font-weight:700;color:var(--ink)}
+a{color:var(--slate)}
+
+/* section + title slides */
+.title-slide .body,.section-slide .body{justify-content:center}
+.title-slide h1{font-size:60px;max-width:13ch;line-height:1.04}
+.tmeta{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc,var(--terra));margin:0 0 18px;font-weight:600}
+.tnote{font-size:14.5px;color:var(--muted);margin:26px 0 0;line-height:1.6;max-width:52ch}
+.tnote b{color:var(--ink)}
+.secnum{font-family:"Source Serif 4",Georgia,serif;font-size:120px;font-weight:600;line-height:.9;color:var(--acc,var(--terra));margin:0 0 10px}
+.section-slide h1{font-size:54px;max-width:16ch}
+
+/* photographs */
+.bleed{position:absolute;inset:0;overflow:hidden}
+.bleed img{width:100%;height:100%;object-fit:cover;display:block}
+.bleed::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg,var(--scrim) 0%,var(--scrim) 40%,color-mix(in srgb,var(--scrim) 60%,transparent) 60%,color-mix(in srgb,var(--scrim) 8%,transparent) 100%)}
+.onphoto{position:relative;z-index:2;max-width:640px}
+.split{display:grid;grid-template-columns:1.1fr .9fr;gap:34px;align-items:center;flex:1;min-height:0}
+.split.even{grid-template-columns:1fr 1fr}
+.split.wideL{grid-template-columns:1.35fr .65fr}
+.col{min-width:0;display:flex;flex-direction:column;gap:16px;justify-content:center}
+.shot{border-radius:10px;overflow:hidden;background:var(--tneutral);width:100%;box-shadow:0 1px 2px rgba(0,0,0,.08),0 10px 30px rgba(0,0,0,.14)}
+.shot img{width:100%;height:100%;max-height:440px;object-fit:cover;display:block}
+.cap{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:8px 0 0;text-align:right}
+.bleed-cap{position:absolute;right:22px;bottom:20px;z-index:3;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:#fff;background:rgba(0,0,0,.45);padding:4px 8px;border-radius:4px}
+
+/* labelled blocks */
+.lab{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:600;color:var(--acc,var(--terra));margin:0 0 7px}
+.blk p{margin:0;font-size:19px;line-height:1.45;color:var(--body)}
+.blk{border-left:3px solid var(--acc,var(--terra));padding:2px 0 2px 16px}
+.rows{display:flex;flex-direction:column;gap:0}
+.row{display:grid;grid-template-columns:230px 1fr;gap:24px;align-items:baseline;padding:20px 0;border-bottom:1px solid var(--hair)}
+.row:last-child{border-bottom:0}
+.row .k{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--acc,var(--terra));
+  border-left:3px solid var(--acc,var(--terra));padding-left:12px}
+.row .v{font-size:21px;line-height:1.42;color:var(--body)}
+
+/* cards */
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)} .g5{grid-template-columns:repeat(5,1fr)}
+.card{background:var(--tint,var(--tneutral));border-radius:10px;padding:20px 22px;min-width:0}
+.card .ct{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:600;color:var(--acc,var(--terra));margin:0 0 9px}
+.card h3{font-family:"Source Serif 4",Georgia,serif;font-size:23px;font-weight:600;margin:0 0 8px;color:var(--ink);line-height:1.15}
+.card p{margin:0;font-size:17px;line-height:1.45;color:var(--body)}
+.card .big{font-family:"Source Serif 4",Georgia,serif;font-size:44px;font-weight:600;line-height:1;color:var(--acc,var(--terra));margin:2px 0 10px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.t-terra{--tint:var(--tterra);--acc:var(--terra)} .t-gold{--tint:var(--tgold);--acc:var(--gold)} .t-sage{--tint:var(--tsage);--acc:var(--sage)}
+.t-slate{--tint:var(--tslate);--acc:var(--slate)} .t-plum{--tint:var(--tplum);--acc:var(--plum)} .t-neutral{--tint:var(--tneutral);--acc:var(--muted)}
+.a-terra{--acc:var(--terra)} .a-gold{--acc:var(--gold)} .a-sage{--acc:var(--sage)} .a-slate{--acc:var(--slate)} .a-plum{--acc:var(--plum)}
+
+/* quote */
+.quote{border-left:4px solid var(--acc,var(--gold));padding:6px 0 6px 20px;margin:0}
+.quote p{font-family:"Source Serif 4",Georgia,serif;font-size:24px;line-height:1.35;margin:0;color:var(--ink);font-style:italic}
+.quote .by{font-size:14px;color:var(--muted);margin-top:8px;font-style:normal;font-family:"Source Sans 3",sans-serif}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:16.5px}
+.tbl th{text-align:left;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--acc,var(--gold));
+  font-weight:600;padding:10px 14px;border-bottom:2px solid var(--line)}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--hair);color:var(--body);line-height:1.38;vertical-align:top}
+.tbl td:first-child{color:var(--ink);font-weight:600}
+.tbl tr.hl td{background:var(--tgold)}
+.tbl tbody tr{transition:background .15s}
+.tbl tbody tr:hover td{background:var(--tneutral)}
+.chip{display:inline-block;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.06em;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.c-ok{background:var(--tok);color:var(--ok)} .c-mid{background:var(--tgold);color:var(--gold)} .c-no{background:var(--tbad);color:var(--bad)} .c-n{background:var(--tneutral);color:var(--muted)}
+
+/* code */
+.code{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:21px;line-height:1.55;background:var(--codebg);border:1px solid var(--hair);
+  border-radius:10px;padding:20px 24px;color:var(--ink);white-space:pre;margin:0}
+.code .kw{color:var(--terra);font-weight:600} .code .ty{color:var(--slate)} .code .tac{color:var(--sage);font-weight:600} .code .bad{color:var(--bad);font-weight:600}
+.math{font-family:"Source Serif 4",Georgia,serif;font-size:44px;color:var(--gold);font-weight:600;letter-spacing:.01em}
+
+/* ask / reveal */
+.ask{background:var(--tgold);border-radius:12px;padding:20px 24px;border:1px solid color-mix(in srgb,var(--gold) 30%,transparent);display:flex;flex-direction:column;gap:12px}
+.ask .lbl{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.ask .q{font-size:21px;font-weight:600;line-height:1.32;color:var(--ink);font-family:"Source Serif 4",Georgia,serif;margin:0}
+.btn{border:0;background:var(--ink);color:var(--stage);font-size:14px;font-weight:600;padding:9px 16px;border-radius:7px;cursor:pointer;align-self:flex-start;letter-spacing:.01em}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn:hover{opacity:.86}
+.btn:focus-visible,.opt:focus-visible,.tog:focus-visible{outline:3px solid var(--slate);outline-offset:2px}
+.ans{display:none;font-size:16.5px;line-height:1.5;color:var(--body);border-top:1px solid color-mix(in srgb,var(--gold) 35%,transparent);padding-top:12px}
+.ans.show{display:block}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* clickable options (polls, votes, quizzes) */
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:grid;grid-template-columns:42px 1fr auto;gap:14px;align-items:center;text-align:left;cursor:pointer;
+  background:var(--tneutral);border:1.5px solid transparent;border-radius:10px;padding:13px 16px;position:relative;overflow:hidden}
+.opt:hover{border-color:var(--line)}
+.opt .L{font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;font-size:18px;color:var(--acc,var(--terra));text-align:center;position:relative;z-index:1}
+.opt .T{font-size:18px;line-height:1.35;color:var(--ink);position:relative;z-index:1}
+.opt .N{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:15px;font-weight:600;color:var(--muted);min-width:36px;text-align:right;position:relative;z-index:1}
+.opt .fill{position:absolute;left:0;top:0;bottom:0;background:color-mix(in srgb,var(--acc,var(--terra)) 16%,transparent);width:0;transition:width .25s}
+.opt.right{border-color:var(--ok);background:var(--tok)} .opt.wrong{border-color:var(--bad);background:var(--tbad)}
+.opt .why{grid-column:2/4;font-size:15px;color:var(--body);display:none;line-height:1.4;position:relative;z-index:1}
+.opt.right .why,.opt.wrong .why{display:block}
+.fb{font-size:16px;line-height:1.45;color:var(--body);min-height:24px;margin:0}
+.fb b{color:var(--ink)}
+
+/* flow */
+.flow{display:grid;gap:12px;align-items:stretch}
+.step{background:var(--tint,var(--tneutral));border-radius:10px;padding:18px 18px;position:relative;cursor:default}
+.step .sn{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--acc,var(--terra));display:block;margin-bottom:8px}
+.step h3{font-family:"Source Serif 4",Georgia,serif;font-size:22px;margin:0 0 6px;color:var(--ink);font-weight:600}
+.step p{margin:0;font-size:15.5px;line-height:1.42;color:var(--body)}
+.step.dim{opacity:.38}
+.step.lit{outline:2px solid var(--acc,var(--terra));outline-offset:0}
+.arrow{align-self:center;color:var(--muted);font-size:22px;text-align:center}
+
+/* timeline */
+.tl{display:grid;gap:0;position:relative;margin-top:6px}
+.tl::before{content:"";position:absolute;left:0;right:0;top:27px;height:2px;background:var(--line)}
+.tli{position:relative;padding:44px 12px 0 0;cursor:pointer;border:0;background:none;text-align:left;display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start}
+.tli::before{content:"";position:absolute;left:0;top:20px;width:16px;height:16px;border-radius:50%;background:var(--stage);border:3px solid var(--acc,var(--terra))}
+.tli.on::before{background:var(--acc,var(--terra))}
+.tli .y{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;font-weight:600;letter-spacing:.08em;color:var(--acc,var(--terra))}
+.tli .h{font-family:"Source Serif 4",Georgia,serif;font-size:19px;font-weight:600;color:var(--ink);margin:4px 0 4px;line-height:1.2}
+.tli .d{font-size:14.5px;line-height:1.4;color:var(--body)}
+.tldetail{background:var(--tneutral);border-radius:10px;padding:16px 20px;font-size:16.5px;line-height:1.48;color:var(--body);min-height:84px}
+.tldetail b{color:var(--ink)}
+
+/* toggles */
+.tog{border:1px solid var(--line);background:var(--stage);color:var(--body);border-radius:999px;padding:7px 14px;font-size:14px;cursor:pointer;font-weight:600}
+.tog.on{background:var(--ink);color:var(--stage);border-color:var(--ink)}
+.panel{background:var(--tneutral);border-radius:12px;padding:16px 18px}
+.readout{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:15px;color:var(--body);line-height:1.6}
+.readout b{color:var(--ink)}
+.big-read{font-family:"Source Serif 4",Georgia,serif;font-size:34px;font-weight:600;color:var(--ink);line-height:1.15;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--terra)}
+input[type=number],input[type=text],select{font:inherit;font-size:17px;padding:7px 10px;border-radius:7px;border:1px solid var(--line);background:var(--stage);color:var(--ink)}
+svg text{font-family:"Source Sans 3","Segoe UI",Arial,sans-serif}
+.ok{color:var(--ok)} .no{color:var(--bad)}
+
+/* chrome */
+.bar{position:fixed;left:0;right:0;bottom:0;height:3px;z-index:20}
+.bar i{display:block;height:100%;background:var(--terra);transition:width .22s ease}
+.hud{position:fixed;right:14px;bottom:12px;display:flex;gap:6px;z-index:21}
+.hud button{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.08em;border:1px solid var(--line);background:var(--stage);color:var(--muted);
+  border-radius:6px;padding:6px 10px;cursor:pointer}
+.hud button:hover{color:var(--ink);border-color:var(--muted)}
+.ov{position:fixed;inset:0;background:var(--ground);z-index:30;display:none;overflow:auto;padding:28px}
+.ov.on{display:block}
+.ov h2{font-family:"Source Serif 4",Georgia,serif;font-size:22px;margin:0 0 4px;color:var(--ink);max-width:1180px;margin-inline:auto}
+.ov .hint{font-size:13px;color:var(--muted);margin:0 auto 20px;max-width:1180px}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-width:1180px;margin:0 auto}
+.th{background:var(--stage);border:1px solid var(--hair);border-left:3px solid var(--tacc,var(--line));border-radius:7px;padding:11px 13px;cursor:pointer;text-align:left;min-height:76px}
+.th:hover{border-color:var(--terra)}
+.th .tn{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;color:var(--muted);letter-spacing:.1em}
+.th .tt{font-size:13px;line-height:1.3;color:var(--ink);margin-top:5px;font-weight:600}
+.th.cur{border-color:var(--terra);box-shadow:0 0 0 2px var(--terra)}
+.notes{display:none}
+.np{position:fixed;left:14px;bottom:52px;width:min(520px,calc(100vw - 28px));max-height:46vh;overflow:auto;z-index:25;background:var(--stage);border:1px solid var(--line);
+  border-radius:10px;box-shadow:var(--shadow);padding:16px 18px;display:none;font-size:14.5px;line-height:1.5;color:var(--body)}
+.np.on{display:block}
+.np h4{margin:0 0 8px;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.np p{margin:0 0 8px} .np a{word-break:break-all}
+.help{position:fixed;left:14px;bottom:13px;z-index:21;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted)}
+@media (max-width:700px){.help{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* widget pieces */
+.pstrip{display:grid;grid-template-columns:repeat(14,1fr);gap:5px}
+.pc{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;text-align:center;padding:6px 0;border-radius:5px;background:var(--tneutral);color:var(--muted)}
+.pc.yes{background:var(--tok);color:var(--ok);font-weight:600} .pc.no{background:var(--bad);color:var(--stage);font-weight:700}
+.card.flip{cursor:pointer;position:relative}
+.card.flip .back{display:none}
+.card.flip.show .back{display:block} .card.flip.show .front{display:none}
+.card.flip .front{font-size:15px;color:var(--muted);font-style:italic}
+.sitem{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:10px 14px;border-radius:9px;background:var(--tneutral);border:1.5px solid transparent}
+.sitem .st{font-size:17px;line-height:1.35;color:var(--ink)}
+.sitem .sw{grid-column:1/3;font-size:14.5px;color:var(--body);display:none}
+.sitem.right{border-color:var(--ok);background:var(--tok)} .sitem.wrong{border-color:var(--bad);background:var(--tbad)}
+.sitem.right .sw,.sitem.wrong .sw{display:block}
+.sitem .btnrow{gap:6px}
+.mrow{display:grid;grid-template-columns:34px 1fr 270px;gap:14px;align-items:center;padding:11px 14px;border-radius:9px;background:var(--tneutral);border:1.5px solid transparent}
+.mrow .mn{font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;font-size:18px;color:var(--terra);text-align:center}
+.mrow .mt{font-size:17px;line-height:1.35;color:var(--ink)}
+.mrow .mwhy{grid-column:2/4;font-size:14.5px;color:var(--body);display:none;line-height:1.4}
+.mrow.right{border-color:var(--ok);background:var(--tok)} .mrow.wrong{border-color:var(--bad);background:var(--tbad)}
+.door{cursor:pointer;border:2px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--stage);text-align:left;display:flex;flex-direction:column;gap:6px}
+.door:hover{border-color:var(--muted)}
+.door .dl{font-family:"Source Serif 4",Georgia,serif;font-size:34px;font-weight:600;color:var(--acc,var(--slate));line-height:1}
+.door .dt{font-size:16.5px;color:var(--ink);font-weight:600;line-height:1.3}
+.door.claim{background:var(--tterra);border-color:var(--terra)}
+.door.sel{box-shadow:0 0 0 3px var(--gold)}
+.rung{display:grid;grid-template-columns:30px 220px 1fr 140px;gap:14px;align-items:center;padding:11px 16px;border-radius:9px;background:var(--tneutral);cursor:pointer;border:1.5px solid transparent;text-align:left;width:100%}
+.rung:hover{border-color:var(--line)} .rung.sel{border-color:var(--gold);background:var(--tgold)}
+.rung .rn{font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;color:var(--muted);font-size:14px}
+.rung .rk{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.rung .rq{font-size:16.5px;color:var(--body);line-height:1.35}
+.rung .chip{justify-self:end}
+.ccarow{display:grid;grid-template-columns:1fr auto;gap:10px 16px;align-items:center;padding:12px 16px;border-radius:9px;background:var(--tneutral)}
+.ccarow .ct2{font-size:17.5px;color:var(--ink);line-height:1.35} .ccarow .ct2 small{display:block;font-size:12px;color:var(--muted);font-family:"IBM Plex Mono",ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.ccarow .ccawhy{grid-column:1/3;font-size:14.5px;color:var(--body);display:none;line-height:1.4}
+.tog.sugg{box-shadow:0 0 0 3px var(--ok)}
+.eq{font-family:"Source Serif 4",Georgia,serif;font-size:34px;color:var(--ink);display:flex;flex-wrap:wrap;align-items:center;gap:6px;justify-content:center}
+.eq [data-t]{padding:4px 10px;border-radius:8px;cursor:pointer;transition:background .15s}
+.eq [data-t].on{background:var(--tgold);box-shadow:inset 0 -3px 0 var(--gold)}
+.eq .op{color:var(--muted)}
+.card.lit{outline:2px solid var(--acc,var(--terra))} .card.dim{opacity:.4}
+.bars .bl{display:grid;grid-template-columns:260px 1fr 70px;gap:14px;align-items:center;margin:10px 0}
+.bars .bn{font-size:16px;color:var(--ink);line-height:1.3} .bars .bn small{display:block;color:var(--muted);font-size:13px}
+.bars .bb{height:26px;border-radius:5px;background:var(--acc,var(--slate))}
+.bars .bv{font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;font-size:17px;color:var(--ink)}
+.chk{display:flex;flex-direction:column;gap:8px}
+.chk label{display:flex;gap:12px;align-items:flex-start;font-size:17px;line-height:1.35;color:var(--ink);background:var(--tneutral);padding:10px 14px;border-radius:9px;cursor:pointer}
+.chk input{width:20px;height:20px;margin-top:2px;accent-color:var(--sage);flex:none}
+.links a{display:block;font-size:14px;line-height:1.5;color:var(--slate);text-decoration:none;word-break:break-all}
+.links a:hover{text-decoration:underline}
+.rows.compact .row{padding:8px 0;grid-template-columns:185px 1fr;gap:14px}
+.rows.compact .row .v{font-size:16.5px}
+.rows.compact .row .k{font-size:11.5px}
+.door{min-height:190px}
+.door .dt{font-size:19px}
+.mrow{padding:9px 14px}
+.mrow .mwhy{font-size:14px}
+
+/* week 10 additions */
+textarea{font:inherit;font-size:16px;line-height:1.45;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--stage);color:var(--ink);width:100%;resize:none}
+.tab{border:1px solid var(--line);background:var(--stage);color:var(--body);border-radius:999px;padding:7px 14px;font-size:14px;cursor:pointer;font-weight:600}
+.tab.on{background:var(--ink);color:var(--stage);border-color:var(--ink)}
+.cstack{display:flex;flex-direction:column;gap:5px;max-height:330px;overflow:auto;padding-right:4px}
+.cb{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;padding:7px 12px;border-radius:7px;flex:none}
+.cb.sys{background:var(--tslate);color:var(--slate);font-weight:600} .cb.usr{background:var(--tgold);color:var(--gold);margin-left:40px} .cb.ast{background:var(--tterra);color:var(--terra);margin-right:40px}
+.pcard{background:var(--stage);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+.prow{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:5px 0;border-bottom:1px solid var(--hair);font-size:15px}
+.prow:last-child{border-bottom:0}
+.pk{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--terra);font-weight:600;padding-top:2px}
+.pv{color:var(--ink)} .pv.empty{color:var(--muted)}
+.pform{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.pform label{display:flex;flex-direction:column;gap:3px;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.pform input{font-family:"Source Sans 3",sans-serif;font-size:15px;padding:6px 9px;letter-spacing:0;text-transform:none}
+mark{background:var(--tgold);color:var(--ink);padding:1px 3px;border-radius:3px}
+.prompt{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:16.5px;line-height:1.55;background:var(--codebg);border:1px solid var(--hair);border-left:4px solid var(--acc,var(--terra));
+  border-radius:9px;padding:14px 18px;color:var(--ink);white-space:pre-wrap;margin:0}
+.prompt.bad{--acc:var(--bad)} .prompt.good{--acc:var(--ok)}
+.plab{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;margin:0 0 6px;color:var(--acc,var(--muted))}
+.vend{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.vcol{background:var(--tneutral);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;border-top:4px solid var(--acc)}
+.vcol .vh{display:flex;gap:12px;align-items:center}
+.vcol .vg{width:36px;height:36px;border-radius:50%;background:var(--acc);color:var(--stage);display:grid;place-items:center;font-weight:700;font-family:"IBM Plex Mono",monospace;font-size:16px;flex:none}
+.vcol .vt{font-family:"Source Serif 4",Georgia,serif;font-size:22px;font-weight:600;color:var(--ink)}
+.vcol .vl{font-size:16px;color:var(--body);font-style:italic;margin:0}
+.vcol ul{margin:0;padding-left:20px} .vcol li{font-size:16.5px;line-height:1.4;color:var(--body);margin:0 0 6px}
+.vcol .prompt{font-size:14.5px;padding:10px 14px}
+.v-g{--acc:var(--terra)} .v-c{--acc:var(--slate)}
+.rw{display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:center;padding:7px 12px;border-radius:8px;background:var(--tneutral);font-size:15.5px;color:var(--body)}
+.rw .mk{font-weight:700;color:var(--muted);text-align:center} .rw.hit{background:var(--tok);color:var(--ink)} .rw.hit .mk{color:var(--ok)}
+.erow{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:8px 14px;border-radius:8px;background:var(--tneutral);font-size:16px;color:var(--ink)}
+.chat{display:flex;flex-direction:column;gap:8px}
+.msg{max-width:84%;padding:10px 14px;border-radius:12px;font-size:16.5px;line-height:1.4}
+.msg.u{align-self:flex-end;background:var(--tgold);color:var(--ink)} .msg.a{align-self:flex-start;background:var(--tslate);color:var(--ink)}
+.msg .who{display:block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.bigline{font-family:"Source Serif 4",Georgia,serif;font-size:38px;line-height:1.22;font-weight:600;color:var(--ink);margin:0;max-width:30ch}
+.bigline em{color:var(--terra);font-style:normal}
+.zlab{font-size:13px;font-weight:700;fill:var(--ink);pointer-events:none}
+.pyr{display:flex;flex-direction:column;gap:7px;align-items:flex-start}
+.pyr .pb{border-radius:8px;padding:11px 16px;display:flex;gap:16px;align-items:baseline;background:var(--tint)}
+.pyr .pb b{font-family:"Source Serif 4",Georgia,serif;font-size:21px;min-width:150px} .pyr .pb span{font-size:16px;color:var(--body)}
+</style></head>
+<body>
+<div class="wrap"><div class="stage"><section class="slide title-slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 1"><div class="body" style=""><p class="tmeta">AI for All · Week 10 · Part B</p><h1 style="font-size:64px;max-width:14ch;line-height:1.02">Prompt Engineering</h1><p class="sub" style="font-size:22px">Getting useful work out of GPT and Claude.</p><pre class="prompt" style="max-width:640px;margin-top:22px;font-size:15px">Summarize this paper in 5 bullets for a classmate
+who has not taken statistics. If something is not
+in the paper, write "not in the source".</pre><p class="tnote">CSI 235 · AI for All · Xin Li · Fall 2026<br><b>← →</b> move · <b>O</b> all slides · <b>N</b> speaker notes · <b>R</b> reveal · <b>T</b> theme · <b>F</b> fullscreen</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>01 / 40</span></div><aside class="notes"><p>Frame the hour: this is not a list of magic words. It is the skill of saying exactly what you want to a system that cannot ask you what you meant. Everything here transfers between vendors; the last part shows where they genuinely differ.</p></aside></section><section class="slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 2"><p class="eyebrow">The route</p><h1>Four parts, two polls, one hands-on fix</h1><div class="body" style=""><div class="grid g4"><button class="card t-slate" type="button" style="text-align:left;cursor:pointer;border:0;min-height:240px" onclick="goSlide(2)"><div class="big">01</div><h3>What a prompt actually is</h3><p>The context window, the three roles, and why the same question twice gives two answers.</p></button><button class="card t-terra" type="button" style="text-align:left;cursor:pointer;border:0;min-height:240px" onclick="goSlide(9)"><div class="big">02</div><h3>The moves that always work</h3><p>Eight techniques that help on every model, in the order they pay off.</p></button><button class="card t-gold" type="button" style="text-align:left;cursor:pointer;border:0;min-height:240px" onclick="goSlide(22)"><div class="big">03</div><h3>GPT and Claude, side by side</h3><p>Where the two families genuinely differ, and where the difference is folklore.</p></button><button class="card t-sage" type="button" style="text-align:left;cursor:pointer;border:0;min-height:240px" onclick="goSlide(32)"><div class="big">04</div><h3>Working like a scientist</h3><p>Iterating, testing, the failure modes, and what you still have to check yourself.</p></button></div><p class="kick">Click a part to jump to it.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>02 / 40</span></div><aside class="notes"><p>Signpost. Parts 1 and 2 are transferable. Part 3 is the dated part - it will need updating next year, and saying so out loud is itself a lesson.</p></aside></section><section class="slide section-slide" data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 3"><div class="body" style=""><div class="secnum">01</div><h1>What a prompt actually is</h1><p class="sub" style="font-size:21px">Before the tips: what is on the other side of the text box.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>03 / 40</span></div><aside class="notes"><p>Students arrive believing prompting is a collection of incantations. The goal of Part 1 is to replace that with a mental model, because a mental model generalises and a list of tricks does not.</p></aside></section><section class="slide" data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 4"><p class="eyebrow">The core idea</p><h1>The skill is not knowing magic words</h1><div class="body" style=""><p class="bigline">It is being able to say what you want <em>clearly enough that a stranger could do it.</em></p><p class="kick" style="font-size:19px;max-width:70ch">Every technique in this lecture removes an ambiguity you did not notice you had left in. That is why the advice keeps working as models change — and why the clever phrasings traded online keep expiring.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>04 / 40</span></div><aside class="notes"><p>Worth dwelling on. The half-life of a prompting trick is about a year. The half-life of &#x27;say what you actually want&#x27; is the length of the field.</p></aside></section><section class="slide" data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 5"><p class="eyebrow">What the model actually sees</p><h1>One block of text, re-read every time</h1><div class="body" style=""><div class="split even"><div class="col" style="gap:8px"><div class="rows compact"><div class="row" style="--acc:var(--slate)"><div class="k">01 · System prompt</div><div class="v">Standing instructions. Often you do not write this.</div></div><div class="row" style="--acc:var(--terra)"><div class="k">02 · Conversation so far</div><div class="v">Every earlier turn, re-read from scratch on every message.</div></div><div class="row" style="--acc:var(--gold)"><div class="k">03 · Your new message</div><div class="v">The only part most people think about.</div></div><div class="row" style="--acc:var(--sage)"><div class="k">04 · Its reply</div><div class="v">Generated one token at a time, then appended for next time.</div></div></div></div><div class="panel" data-w="ctx" style="display:flex;flex-direction:column;gap:10px"><div class="btnrow"><button class="btn cadd" type="button">Send a message</button><button class="btn ghost cnew" type="button">New chat</button></div><div class="cstack"></div><div class="cout3 readout"></div></div></div><p class="kick">No memory between messages: it re-reads the whole conversation, which is why long chats slow down and drift — and why a fresh chat often fixes a stuck one.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>05 / 40</span></div><aside class="notes"><p><b>Interactive:</b> Press “Send a message” a few times: the pile the model must re-read grows with every turn.</p><p>The &#x27;no memory&#x27; point surprises people and explains a lot of observed behaviour: why it forgets an instruction from forty messages ago, why starting a fresh chat often fixes a stuck conversation.</p></aside></section><section class="slide" data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 6"><p class="eyebrow">Three roles, two vocabularies</p><h1>Same three slots, different names</h1><div class="body" style=""><div class="vend"><div class="vcol v-g"><div class="vh"><span class="vg">G</span><span class="vt">OpenAI / GPT</span></div><p class="vl">Calls the standing instruction a developer message.</p><pre class="prompt">developer  standing rules for the app
+user       what the person typed
+assistant  what the model said</pre><ul><li>In ChatGPT: Custom Instructions or a Project</li></ul></div><div class="vcol v-c"><div class="vh"><span class="vg">C</span><span class="vt">Anthropic / Claude</span></div><p class="vl">Calls the standing instruction a system prompt.</p><pre class="prompt">system     standing rules for the app
+user       what the person typed
+assistant  what the model said</pre><ul><li>In the Claude app: Project instructions or a Skill</li></ul></div></div><p class="note-line">Instructions in the standing slot persist; instructions typed mid-chat decay.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>06 / 40</span></div><aside class="notes"><p>The practical takeaway: if you find yourself re-typing the same instruction every session, it belongs in the standing slot, not in the chat.</p></aside></section><section class="slide" data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 7"><p class="eyebrow">Why the wording changes the answer</p><h1>Steering, not searching</h1><div class="body" style=""><div class="split even"><div class="col" style="gap:8px"><div class="rows compact"><div class="row" style="--acc:var(--slate)"><div class="k">01 · Your words set the odds</div><div class="v">“For a physician” and “for a patient” move the model into different neighbourhoods. Nothing was looked up.</div></div><div class="row" style="--acc:var(--terra)"><div class="k">02 · There is no retrieval step</div><div class="v">Unless a tool is actually called, a plausible citation is a plausible guess.</div></div><div class="row" style="--acc:var(--gold)"><div class="k">03 · Specific beats polite</div><div class="v">“Please” changes little. “In exactly three sentences, for a reader with no statistics” changes a lot.</div></div></div></div><div class="panel" data-w="odds" data-d="{&quot;physician&quot;: [[&quot;statistically significant&quot;, 0.34], [&quot;reduction in mortality&quot;, 0.22], [&quot;hazard ratio of&quot;, 0.17], [&quot;dose-dependent&quot;, 0.11]], &quot;patient&quot;: [[&quot;good news for&quot;, 0.31], [&quot;that this treatment&quot;, 0.24], [&quot;fewer side effects&quot;, 0.18], [&quot;you may feel&quot;, 0.12]]}" style="display:flex;flex-direction:column;gap:10px"><p class="lab" style="margin:0">“Summarize for a … ” — likely next words after “The results show …”</p><div class="btnrow"><button class="tog" data-k="physician" type="button">… physician</button><button class="tog" data-k="patient" type="button">… patient</button></div><div class="bars obars" style="--acc:var(--slate)"></div><p class="cap" style="text-align:left;margin:0">Illustrative numbers, not real model output</p></div></div></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>07 / 40</span></div><aside class="notes"><p><b>Interactive:</b> Toggle the audience: the same request lands on different likely continuations.</p><p>Keep this non-mathematical. The one idea to land: steering, not searching. It explains both why prompting works and why hallucination is not a bug that will be patched out.</p></aside></section><section class="slide" data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 8"><p class="eyebrow">Sampling</p><h1>The same prompt twice gives two answers</h1><div class="body" style=""><div class="split even"><div class="col" style="gap:8px"><div class="rows compact"><div class="row" style="--acc:var(--slate)"><div class="k">01 · Sampling is deliberate</div><div class="v">Picking among likely tokens, not always the top one, is what makes it fluent.</div></div><div class="row" style="--acc:var(--terra)"><div class="k">02 · One good answer is not evidence</div><div class="v">A sample of size one. Judge a prompt over repeated trials, like a forecast.</div></div><div class="row" style="--acc:var(--gold)"><div class="k">03 · Nor is one bad answer</div><div class="v">Run it again before rewriting. Many “it got dumber” reports are a bad draw.</div></div></div></div><div class="panel" data-w="sampler" data-d="[[&quot;Iris&quot;, 0.3], [&quot;MNIST&quot;, 0.26], [&quot;Titanic&quot;, 0.18], [&quot;CIFAR-10&quot;, 0.12], [&quot;Boston housing&quot;, 0.08], [&quot;Wine quality&quot;, 0.06]]" style="display:flex;flex-direction:column;gap:9px"><p class="lab" style="margin:0">“Name a good dataset for a first machine learning project.”</p><label class="readout">randomness (temperature) <b class="tv"></b><input type="range" class="int" min="2" max="20" value="10"></label><div class="bars sbars" style="--acc:var(--gold)"></div><div class="btnrow"><button class="btn sask" type="button">Ask again</button><button class="btn ghost sclr" type="button">Clear</button></div><div class="slog btnrow" style="gap:5px;min-height:28px"></div><p class="cap" style="text-align:left;margin:0">Illustrative probabilities</p></div></div></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>08 / 40</span></div><aside class="notes"><p><b>Interactive:</b> Press “Ask again” repeatedly; then slide temperature low (answers repeat) and high (answers spread out).</p><p>Direct callback to the calibration idea from the weather lecture: a single outcome cannot falsify a probabilistic system. Same logic, new setting.</p></aside></section><section class="slide" data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 9"><p class="eyebrow">Poll · vote before the reveal</p><h1>Which prompt will do better?</h1><div class="body" style="justify-content:flex-start;padding-top:18px"><div class="grid g2"><div><p class="plab" style="--acc:var(--terra)">A</p><pre class="prompt " style="--acc:var(--terra)">You are a world-class expert editor with 30 years
+of experience. Take a deep breath and work step
+by step. Please improve my essay.</pre></div><div><p class="plab" style="--acc:var(--slate)">B</p><pre class="prompt " style="--acc:var(--slate)">Tighten the paragraph below to under 150 words.
+Keep both statistics. Do not add claims I have
+not made. Flag any sentence you think is unclear.</pre></div></div><div class="split even" style="align-items:start"><div class="col"><div class="opts" data-w="poll"><button class="opt" type="button"><span class="fill"></span><span class="L">A</span><span class="T">Prompt A</span><span class="N"></span></button><button class="opt" type="button"><span class="fill"></span><span class="L">B</span><span class="T">Prompt B</span><span class="N"></span></button></div><div class="btnrow"><button class="btn ghost reset" type="button">Reset tally</button></div></div><div class="col"><div class="ask"><span class="lbl">Reveal after the vote</span><p class="q">Which one, and why?</p><button class="btn reveal" type="button">Reveal the answer</button><div class="ans"><b>B, and it is not close.</b> A is flattery and ritual that give the model nothing to aim at. B names the length, the constraints, what must survive, what is forbidden — and asks for a specific signal back.</div></div></div></div></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>09 / 40</span></div><aside class="notes"><p>Run the poll before revealing. Expect a real split - A looks like what prompting is supposed to sound like. &#x27;Take a deep breath&#x27; had a brief research moment on older models and does essentially nothing now. Hide the reveal until votes are in.</p></aside></section><section class="slide section-slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 10"><div class="body" style=""><div class="secnum">02</div><h1>The moves that always work</h1><p class="sub" style="font-size:21px">Eight techniques, in the order they pay off.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>10 / 40</span></div><aside class="notes"><p>These are vendor-neutral. If students remember only this part, the lecture has done its job.</p></aside></section><section class="slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 11"><p class="eyebrow">Priorities</p><h1>Spend your effort in this order</h1><div class="body" style=""><div class="pyr"><div class="pb" style="--tint:var(--tterra);width:100%"><b>1. Clarity</b><span>Say exactly what you want</span></div><div class="pb" style="--tint:var(--tgold);width:86%"><b>2. Context</b><span>Say why you want it</span></div><div class="pb" style="--tint:var(--tsage);width:72%"><b>3. Examples</b><span>Show two or three</span></div><div class="pb" style="--tint:var(--tslate);width:58%"><b>4. Structure</b><span>Separate the parts</span></div><div class="pb" style="--tint:var(--tneutral);width:44%"><b>5. Everything else</b><span>Roles, chaining, clever phrasings</span></div></div><p class="note-line">Most bad output is a clarity problem wearing an advanced-technique costume.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>11 / 40</span></div><aside class="notes"><p>Both vendors&#x27; current documentation says a version of this. The advanced tricks are real but they are the last 10 percent, and people reach for them first.</p></aside></section><section class="slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 12"><p class="eyebrow">Move 1</p><h1>Be explicit about what you want</h1><div class="body" style=""><div class="split even"><div class="panel" data-w="builder" data-base="Summarize this paper." style="display:flex;flex-direction:column;gap:12px"><p class="lab" style="margin:0">Build the prompt · tick each clause</p><div class="chk"><label><input type="checkbox" data-add="Use 5 bullets."> Name the length</label><label><input type="checkbox" data-add="Write for a classmate who has not taken statistics."> Name the reader</label><label><input type="checkbox" data-add="One bullet must state what the authors could NOT show."> Name what must appear</label></div><pre class="prompt bout2"></pre></div><div class="col" style="gap:8px"><div class="rows compact"><div class="row" style="--acc:var(--slate)"><div class="k">01 · Name the length</div><div class="v">Unspecified length is the most common reason output feels wrong.</div></div><div class="row" style="--acc:var(--terra)"><div class="k">02 · Name the reader</div><div class="v">The audience does more work than any adjective about tone.</div></div><div class="row" style="--acc:var(--gold)"><div class="k">03 · Name what must appear</div><div class="v">If something has to be in there, say so. The model is not holding out on you.</div></div></div></div></div></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>12 / 40</span></div><aside class="notes"><p><b>Interactive:</b> Tick the three clauses one at a time and read the prompt aloud each time.</p><p>Do this live if there is time. Take the vague version, run it, then add one constraint at a time and show the output converging on what you wanted.</p></aside></section><section class="slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 13"><p class="eyebrow">A portable test</p><h1>The colleague test</h1><div class="body" style=""><p class="bigline" style="font-size:25px;max-width:none">Show your prompt to a classmate who knows nothing about the task. <em>If they would have to ask you a question, so would the model.</em></p><div class="split even"><div class="panel"><div><p class="plab">The prompt</p><pre class="prompt bad">Make a chart from my data.</pre></div><p class="lab" style="margin:10px 0 4px">What would a classmate ask?</p><ol data-w="revlist" style="margin:0;padding-left:22px;font-size:16px;line-height:1.5;color:var(--ink)"><li>How long — one chart or several?</li><li>For whom?</li><li>What format?</li><li>Which parts of the file?</li></ol><button class="btn revnext" type="button" style="margin-top:8px">Reveal</button></div><div class="col"><div class="blk" style="--acc:var(--terra)"><p class="lab">The model will not ask</p><p>It answers whatever it guesses you meant, confidently and immediately. A person would stop and check.</p></div><div class="blk" style="--acc:var(--slate)"><p class="lab">That is the whole asymmetry</p><p>You are briefing a capable assistant who never pushes back. The specification has to be front-loaded.</p></div></div></div></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>13 / 40</span></div><aside class="notes"><p>Anthropic&#x27;s documentation states this test almost word for word. It is the most portable single piece of advice in the lecture.</p></aside></section><section class="slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 14"><p class="eyebrow">Move 2</p><h1>Give the reason, not just the rule</h1><div class="body" style=""><div class="grid g2"><div><p class="plab">Rule only</p><pre class="prompt bad">Never use ellipses.</pre></div><div><p class="plab">Rule plus reason</p><pre class="prompt good">Never use ellipses - this text will be read aloud
+by a speech synthesizer that cannot pronounce them.</pre></div></div><div class="ask"><span class="lbl">Generalize</span><p class="q">Told why, what else should the model now avoid — without being told?</p><button class="btn reveal" type="button">Reveal the answer</button><div class="ans">Mid-sentence dashes, parenthetical asides, symbols, URLs — anything a speech synthesizer will mangle. <b>A rule covers the cases you anticipated. A reason covers the ones you did not.</b></div></div></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>14 / 40</span></div><aside class="notes"><p>This example is lifted from Anthropic&#x27;s docs because it is unusually clean. Ask the class what else a speech synthesizer would struggle with - they generate the generalisation themselves.</p></aside></section><section class="slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 15"><p class="eyebrow">Move 3</p><h1>Describe the shape of the output</h1><div class="body" style=""><div class="split even"><div class="col"><div><p class="plab" style="--acc:var(--slate)">Specify the container</p><pre class="prompt " style="--acc:var(--slate)">For each paper, give me:
+Title | Year | Claim | Weakness
+One row per paper. Keep the weakness under 12 words.
+<mark>If a field is missing, write "not stated" - do not guess.</mark></pre></div><div data-w="tabs" class="panel" style="display:flex;flex-direction:column;gap:8px"><div class="btnrow"><span class="lab" style="margin:0">Sample output</span><button class="tab" data-k="no" type="button">Without the gap rule</button><button class="tab" data-k="yes" type="button">With it</button></div><div class="tpane" data-k="no"><table class="tbl" style="font-size:14.5px"><thead><tr><th>Title</th><th>Year</th><th>Claim</th><th>Weakness</th></tr></thead><tbody><tr><td>Paper A</td><td>2024</td><td>Tutoring raises scores</td><td>Small sample</td></tr><tr><td>Paper B</td><td><mark>2021</mark></td><td>No effect on attendance</td><td><mark>Selection bias</mark></td></tr></tbody></table><p class="kick" style="font-size:14px">Paper B never states a year or weakness — these were guessed and look exactly like real data.</p></div><div class="tpane" data-k="yes"><table class="tbl" style="font-size:14.5px"><thead><tr><th>Title</th><th>Year</th><th>Claim</th><th>Weakness</th></tr></thead><tbody><tr><td>Paper A</td><td>2024</td><td>Tutoring raises scores</td><td>Small sample</td></tr><tr><td>Paper B</td><td>not stated</td><td>No effect on attendance</td><td>not stated</td></tr></tbody></table><p class="kick" style="font-size:14px">The gaps are visible, so you know what to check.</p></div><p class="cap" style="text-align:left;margin:0">Illustrative example</p></div></div><div class="col" style="gap:8px"><div class="rows compact"><div class="row" style="--acc:var(--slate)"><div class="k">01 · A named format removes a decision</div><div class="v">Left unsaid, the model picks — usually prose, usually too long.</div></div><div class="row" style="--acc:var(--terra)"><div class="k">02 · Say what to do with gaps</div><div class="v">“Write not stated” is the highest-value sentence in an extraction task.</div></div><div class="row" style="--acc:var(--gold)"><div class="k">03 · Ask for the shape you will use</div><div class="v">Spreadsheet → rows. Email → prose. Reformatting later is wasted work.</div></div></div></div></div></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>15 / 40</span></div><aside class="notes"><p>The &#x27;not stated&#x27; rule is worth emphasising for the research-assistant use case, which is what most of them will actually do with these tools.</p></aside></section><section class="slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 16"><p class="eyebrow">Move 4</p><h1>Examples beat adjectives</h1><div class="body" style=""><div class="grid g2"><div><p class="plab">Adjectives</p><pre class="prompt bad">Write in a concise, professional, engaging tone.</pre></div><div><p class="plab">One example</p><pre class="prompt good">Match this style:
+"Enrollment fell 8% this fall. Two causes, one fixable."</pre></div></div><div class="grid g3"><div class="card t-sage"><div class="ct">Sweet spot</div><div class="big">3 to 5</div><p>examples — the strongest steering tool short of fine-tuning</p></div><div class="card t-terra"><div class="ct">Adjectives</div><div class="big">0</div><p>needed once you have shown the pattern you want</p></div><div class="card t-gold"><div class="ct">Minimum</div><div class="big">1</div><p>example still beats a paragraph of description</p></div></div><p class="kick">“Concise” means something different to you than to the model. A sample of your actual writing does not.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>16 / 40</span></div><aside class="notes"><p>Ask for a show of hands: who has argued with a chatbot about tone? That argument is almost always solvable by pasting two sentences you like.</p></aside></section><section class="slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 17"><p class="eyebrow">Move 4, continued</p><h1>Make the examples cover the hard cases</h1><div class="body" style=""><div class="rows"><div class="row" style="--acc:var(--slate)"><div class="k">01 · Three easy examples teach the easy case</div><div class="v">Clean, typical items teach clean, typical items — the model improvises on everything else.</div></div><div class="row" style="--acc:var(--terra)"><div class="k">02 · Include the awkward ones on purpose</div><div class="v">The paper with no sample size. The sarcastic review. The row where two fields contradict.</div></div><div class="row" style="--acc:var(--gold)"><div class="k">03 · Show the refusal too</div><div class="v">One example whose correct output is “cannot determine from this text” teaches the boundary.</div></div><div class="row" style="--acc:var(--sage)"><div class="k">04 · Keep them in the format you want back</div><div class="v">The examples are the format specification. If they drift, the output drifts.</div></div></div></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>17 / 40</span></div><aside class="notes"><p>This is the slide that separates students who get few-shot prompting from those who merely know the term. Edge cases in, edge cases handled.</p></aside></section><section class="slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 18"><p class="eyebrow">Move 5</p><h1>Roles help less than people think</h1><div class="body" style=""><div class="grid g2"><div class="card t-sage"><div class="ct">What a role does</div><p>Sets vocabulary and register<br>Picks a default level of detail<br>Useful in a standing system prompt</p></div><div class="card t-terra"><div class="ct">What it does not do</div><p>Add knowledge it does not have<br>Make it more accurate<br>Justify five sentences of preamble</p></div></div><p class="bigline" style="font-size:30px">“You are a cardiologist” does not give it a medical degree. <em>It gives it a vocabulary.</em></p><p class="kick">Current vendor guidance says heavy role-play matters less on recent models. One sentence is plenty.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>18 / 40</span></div><aside class="notes"><p>Push back gently on the internet&#x27;s favourite technique. A role is a cheap, mild steering tool - keep it to a sentence and spend the words saved on the task description.</p></aside></section><section class="slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 19"><p class="eyebrow">Move 6</p><h1>Give it permission to not know</h1><div class="body" style=""><div><pre class="prompt good">If the answer is not in the document I gave you, say "not in the source"
+rather than answering from general knowledge.</pre></div><div class="split even" style="align-items:start"><div data-w="tabs" class="panel" style="display:flex;flex-direction:column;gap:9px"><p class="readout" style="margin:0;font-size:14px">Source: "We surveyed students at three campuses about study habits. Most reported studying in the evening."<br><b>Question:</b> What was the sample size?</p><div class="btnrow"><button class="tab" data-k="a" type="button">Without permission</button><button class="tab" data-k="b" type="button">With permission</button></div><div class="tpane chat" data-k="a"><div class="msg a"><span class="who">Model</span>The study surveyed <mark>about 240 students</mark> across three campuses.</div></div><div class="tpane chat" data-k="b"><div class="msg a"><span class="who">Model</span>Not in the source. The text says three campuses but gives no number of students.</div></div><p class="cap" style="text-align:left;margin:0">Illustrative replies</p></div><div class="col" style="gap:8px"><div class="rows compact"><div class="row" style="--acc:var(--slate)"><div class="k">01 · The default is an answer</div><div class="v">Fluent text is always available, so fluent text is what you get.</div></div><div class="row" style="--acc:var(--terra)"><div class="k">02 · An explicit out helps</div><div class="v">One sentence measurably reduces invention on document tasks.</div></div><div class="row" style="--acc:var(--gold)"><div class="k">03 · Name the boundary</div><div class="v">“Not in the source” is checkable. “Be accurate” is not.</div></div></div></div></div></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>19 / 40</span></div><aside class="notes"><p>This is the highest-leverage single sentence for anyone using these tools on readings, and it is the one students have never heard of.</p></aside></section><section class="slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 20"><p class="eyebrow">Move 7</p><h1>Long document first, question last</h1><div class="body" style=""><div class="split even"><div class="grid g2" style="gap:12px"><div class="card t-terra"><div class="ct">Worse</div><p style="font-family:IBM Plex Mono,monospace;font-size:15px">Question<br>↓<br>40 pages of document</p></div><div class="card t-sage"><div class="ct">Better</div><p style="font-family:IBM Plex Mono,monospace;font-size:15px">40 pages of document<br>↓<br>Question</p></div></div><div class="grid g2" style="gap:12px"><div class="card t-gold"><div class="ct">Reported gain</div><div class="big">~30%</div><p>better responses from moving the query to the end on long inputs</p></div><div class="card t-slate"><div class="ct">When it matters</div><div class="big">20k+</div><p>tokens and up — roughly 30 pages</p></div></div></div><p class="kick">Paste the reading first, then ask. Most people do the opposite because it feels conversational.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>20 / 40</span></div><aside class="notes"><p>Practical framing: paste the reading first, then ask. Most students do the opposite because it feels conversational.</p></aside></section><section class="slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 21"><p class="eyebrow">Move 8</p><h1>Make it quote before it concludes</h1><div class="body" style=""><div><pre class="prompt good">First, pull the exact sentences from the document that bear on my question.
+Then answer, using only those sentences.
+If the sentences do not settle it, say so.</pre></div><div class="grid g4"><div class="card t-slate"><div class="ct">Evidence first</div><p>Quoting forces a pass over the source before the answer is composed.</p></div><div class="card t-terra"><div class="ct">You can check it</div><p>A quote is verifiable in seconds; a confident synthesis is not.</p></div><div class="card t-gold"><div class="ct">Gaps become visible</div><p>No supporting sentence → an empty quote list, not a smooth answer.</p></div><div class="card t-sage"><div class="ct">The habit scales</div><p>Court filing, lab protocol, 200-page report — same move.</p></div></div></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>21 / 40</span></div><aside class="notes"><p>Tie back to the research-paper workflow. This is how you use a chatbot on a reading without outsourcing your judgement to it.</p></aside></section><section class="slide" data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 22"><p class="eyebrow">Your turn · pairs, 4 minutes</p><h1>Fix this prompt</h1><div class="body" style=""><div class="split even" data-w="rewrite" style="align-items:start"><div class="col" style="gap:10px"><div><p class="plab">As written</p><pre class="prompt bad">Can you help me understand this article and write
+something good about it for my class?</pre></div><textarea rows="6" placeholder="Type your pair’s rewrite here…" aria-label="Your rewrite"></textarea><div class="btnrow"><button class="btn ghost rex" type="button" data-v="Explain the main argument of the article below in 150 words for a classmate who missed the reading. Use one paragraph, then 3 bullets of evidence. Do not add facts that are not in the article. If the article does not say something, write &quot;not in the article&quot;.">Show one rewrite</button></div></div><div class="col" style="gap:7px"><p class="lab" style="margin:0">Rough self-check</p><div class="rw" data-re="\d+\s*(words|sentences|bullets|paragraphs?)|one paragraph|short paragraph"><span class="mk">○</span><span>Names a length</span></div><div class="rw" data-re="for (a|my|an) |audience|classmate|reader"><span class="mk">○</span><span>Names the reader</span></div><div class="rw" data-re="bullet|table|paragraph|list|outline"><span class="mk">○</span><span>Names a format</span></div><div class="rw" data-re="do not|don&#x27;t|never|avoid|without"><span class="mk">○</span><span>Says what it must not do</span></div><div class="rw" data-re="not in the|don.t know|unsure|cannot tell|say so|not stated"><span class="mk">○</span><span>Lets it say “I don’t know”</span></div><p class="kick" style="font-size:15px">Push on the last two: the forbidden action and the permission to decline separate a prompt that works from one that works reliably.</p></div></div></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>22 / 40</span></div><aside class="notes"><p><b>Interactive:</b> Pairs type their rewrite into the box; the checklist ticks when it spots each move (a rough keyword check, not a grader).</p><p>Four minutes in pairs, three minutes reporting out. If the room is quiet, seed it by asking what the word &#x27;good&#x27; is doing in the original.</p></aside></section><section class="slide section-slide" data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 23"><div class="body" style=""><div class="secnum">03</div><h1>GPT and Claude, side by side</h1><p class="sub" style="font-size:21px">Where the two families genuinely differ — as of October 2026. This part expires first.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>23 / 40</span></div><aside class="notes"><p>Flag the expiry date explicitly. This is the part of the lecture that will be wrong soonest, and saying so models the right relationship to fast-moving technical claims.</p></aside></section><section class="slide" data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 24"><p class="eyebrow">The lineups, October 2026</p><h1>Both vendors now ship a tiered family</h1><div class="body" style=""><div class="vend"><div class="vcol v-g"><div class="vh"><span class="vg">G</span><span class="vt">OpenAI</span></div><p class="vl">GPT-6 generation, released September 2026.</p><ul><li>GPT-6 Astra — the frontier model</li><li>GPT-6 Sol — faster and cheaper</li><li>GPT-6 Luna — most cost-efficient</li><li>GPT-5.6 remains the previous generation</li></ul></div><div class="vcol v-c"><div class="vh"><span class="vg">C</span><span class="vt">Anthropic</span></div><p class="vl">Claude 5 generation, released September 2026.</p><ul><li>Claude Fable 5.1 — hardest reasoning and analysis</li><li>Claude Opus 5.5 — long-horizon agentic work</li><li>Claude Sonnet 5.5 — the default for most tasks</li><li>Claude Mythos 5.1 — limited trusted access only</li></ul></div></div><p class="note-line">Same habit on either side: start on the cheap fast tier, and escalate only the steps that actually fail.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>24 / 40</span></div><aside class="notes"><p>Do not ask them to memorise names - these will have changed by spring. The transferable idea is the tiering and the escalate-only-on-failure habit.</p></aside></section><section class="slide" data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 25"><p class="eyebrow">Reasoning models</p><h1 class=wide>Both families think before answering now</h1><div class="body" style=""><div class="split even"><div class="col"><p class="bigline" style="font-size:30px">The most famous prompting trick is now <em>mostly obsolete.</em></p><div><p class="plab">Used to help a lot</p><pre class="prompt bad">Let's think step by step.</pre></div><p class="kick">On a reasoning model this is redundant at best, and can make output worse by overriding a better internal plan.</p></div><div class="col" style="gap:8px"><div class="rows"><div class="row" style="--acc:var(--slate)"><div class="k">01 · Say what good looks like</div><div class="v">Describe the standard the answer must meet — evidence, checks, acceptance criteria.</div></div><div class="row" style="--acc:var(--terra)"><div class="k">02 · Ask it to verify, not narrate</div><div class="v">“Check your answer against the source” still helps. “Explain your reasoning first” mostly costs tokens.</div></div></div></div></div></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>25 / 40</span></div><aside class="notes"><p>Nice historical note: chain-of-thought prompting was a genuine 2022 research result that is now built into the models. The trick did not stop being true - it got absorbed.</p></aside></section><section class="slide" data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 26"><p class="eyebrow">Thinking effort</p><h1>Controlling how hard it thinks</h1><div class="body" style=""><div class="vend"><div class="vcol v-g"><div class="vh"><span class="vg">G</span><span class="vt">GPT</span></div><p class="vl">A reasoning_effort dial you set per request.</p><pre class="prompt">reasoning_effort:
+  none | low | medium | high</pre><ul><li>Medium or high: sensible default for coding and research</li><li>Top setting for high-stakes work where waiting is fine</li><li>Newer models can be steered mid-request</li></ul></div><div class="vcol v-c"><div class="vh"><span class="vg">C</span><span class="vt">Claude</span></div><p class="vl">Adaptive thinking decides for itself, with an effort hint.</p><pre class="prompt">thinking: { type: "adaptive" }
+effort: ...</pre><ul><li>The model judges when a problem needs more thought</li><li>effort replaced the older budget_tokens setting</li><li>Prefer “think thoroughly” over a prescribed procedure</li></ul></div></div><p class="kick">In the chat apps this shows up as a model picker or a thinking toggle. You can trade time and money for care.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>26 / 40</span></div><aside class="notes"><p>For non-majors, land the concept not the syntax: you can now trade time and money for care, and most people leave it on the wrong setting in both directions.</p></aside></section><section class="slide" data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 27"><p class="eyebrow">Structure</p><h1>How to separate the parts of a prompt</h1><div class="body" style=""><div class="split even" style="align-items:start"><div class="col" style="gap:10px"><div class="vcol v-g"><div class="vh"><span class="vg">G</span><span class="vt">GPT</span></div><p class="vl">Markdown headers, and schemas for anything structured.</p><ul><li>A JSON schema when another system reads the output</li><li>“Only what I asked, no extras”</li></ul></div><div class="vcol v-c"><div class="vh"><span class="vg">C</span><span class="vt">Claude</span></div><p class="vl">XML-style tags, a long-standing Claude convention.</p><ul><li>Unambiguous boundaries in long prompts</li><li>Current guidance: less necessary than it used to be</li></ul></div></div><div data-w="tabs" class="panel" style="display:flex;flex-direction:column;gap:8px"><div class="btnrow"><span class="lab" style="margin:0">Same prompt</span><button class="tab" data-k="md" type="button">Markdown</button><button class="tab" data-k="xml" type="button">XML tags</button></div><pre class="prompt tpane" data-k="md">## Task
+Summarize the reading for a first-year student.
+
+## Source material
+[paste the reading]
+
+## Output format
+5 bullets, under 120 words.</pre><pre class="prompt tpane" data-k="xml">&lt;instructions&gt;
+Summarize the reading for a first-year student.
+&lt;/instructions&gt;
+&lt;document&gt;
+[paste the reading]
+&lt;/document&gt;
+&lt;format&gt;5 bullets, under 120 words.&lt;/format&gt;</pre></div></div><p class="note-line">Either works on either model. What matters: the instruction and its material are visibly separate.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>27 / 40</span></div><aside class="notes"><p>The honest version: XML tags on Claude are a real convention with real history, but Anthropic&#x27;s own current docs say modern models need less of this scaffolding. Teach the principle - mark your boundaries - not the syntax.</p></aside></section><section class="slide" data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 28"><p class="eyebrow">Length</p><h1>Stopping it from writing an essay</h1><div class="body" style=""><div class="vend"><div class="vcol v-g"><div class="vh"><span class="vg">G</span><span class="vt">GPT</span></div><p class="vl">Responds well to an explicit length policy.</p><pre class="prompt">Default: 3-6 sentences or <= 5 bullets.
+Yes/no questions: 2 sentences maximum.</pre><ul><li>Give a rule, not an adjective</li><li>Add a scope limit for code tasks</li><li>Verbosity is also an API setting</li></ul></div><div class="vcol v-c"><div class="vh"><span class="vg">C</span><span class="vt">Claude</span></div><p class="vl">Responds well to a stated format preference.</p><pre class="prompt">Answer in prose, no headers or bullet
+lists, under 150 words.</pre><ul><li>Say explicitly if you do not want markdown</li><li>Naming the reader also controls length</li><li>Repeat the constraint if a long chat drifts</li></ul></div></div><p class="note-line">Both default to more structure and more words than most people want. Neither will shorten unless told.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>28 / 40</span></div><aside class="notes"><p>Very practical slide. The complaint &#x27;it writes too much&#x27; is universal and entirely fixable in one sentence.</p></aside></section><section class="slide" data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 29"><p class="eyebrow">Long documents</p><h1>Working with long documents</h1><div class="body" style=""><div class="split" style="grid-template-columns:1.3fr .7fr;align-items:start"><div class="vend"><div class="vcol v-g"><div class="vh"><span class="vg">G</span><span class="vt">GPT</span></div><p class="vl">Treat a big context as an evidence base to search.</p><ul><li>Say which parts matter, in what priority</li><li>Supply the minimum decision-relevant material</li><li>State what to do when sources disagree</li></ul></div><div class="vcol v-c"><div class="vh"><span class="vg">C</span><span class="vt">Claude</span></div><p class="vl">Context windows now reach a million tokens.</p><ul><li>Put the documents above the question</li><li>Wrap each one so its boundaries are clear</li><li>Ask for supporting quotes before the answer</li></ul></div></div><div class="panel"><p class="lab" style="margin:0 0 8px">“Lost in the middle”</p><svg viewBox="0 0 300 170" width="100%"><rect x="12" y="30" width="22" height="120" rx="3" style="fill:var(--terra);opacity:0.95"/><rect x="40" y="58" width="22" height="92" rx="3" style="fill:var(--slate);opacity:0.55"/><rect x="68" y="80" width="22" height="70" rx="3" style="fill:var(--slate);opacity:0.55"/><rect x="96" y="94" width="22" height="56" rx="3" style="fill:var(--slate);opacity:0.55"/><rect x="124" y="100" width="22" height="50" rx="3" style="fill:var(--slate);opacity:0.55"/><rect x="152" y="100" width="22" height="50" rx="3" style="fill:var(--slate);opacity:0.55"/><rect x="180" y="92" width="22" height="58" rx="3" style="fill:var(--slate);opacity:0.55"/><rect x="208" y="78" width="22" height="72" rx="3" style="fill:var(--slate);opacity:0.55"/><rect x="236" y="54" width="22" height="96" rx="3" style="fill:var(--slate);opacity:0.55"/><rect x="264" y="24" width="22" height="126" rx="3" style="fill:var(--terra);opacity:0.95"/><text x="12" y="166" style="fill:var(--muted);font-size:11px">start of context</text><text x="210" y="166" style="fill:var(--muted);font-size:11px">end</text></svg><p class="kick" style="font-size:14.5px">How well a buried fact gets used, by position. Illustrative shape of a well-known effect.</p></div></div><p class="kick">A model that can accept a million tokens does not attend to them equally. Bury the key page in the middle and expect it to be ignored.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>29 / 40</span></div><aside class="notes"><p>The &#x27;lost in the middle&#x27; effect. Counter it by putting the critical material at the start or end, and by asking for quotes so you can tell whether it actually read the relevant part.</p></aside></section><section class="slide" data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 30"><p class="eyebrow">Expiry dates</p><h1>Still works, or expired?</h1><div class="body" style=""><div class="grid g2" data-w="sort2" style="gap:8px"><div class="sitem" data-cat="x" style="padding:9px 12px"><span class="st" style="font-size:16px">“Let’s think step by step” on a reasoning model</span><span class="btnrow"><button class="tog" data-v="k" type="button">Still works</button><button class="tog" data-v="x" type="button">Expired</button></span><span class="sw">Built in now. Redundant, sometimes harmful.</span></div><div class="sitem" data-cat="k" style="padding:9px 12px"><span class="st" style="font-size:16px">Name the length and the reader</span><span class="btnrow"><button class="tog" data-v="k" type="button">Still works</button><button class="tog" data-v="x" type="button">Expired</button></span><span class="sw">Still the top of the priority list.</span></div><div class="sitem" data-cat="x" style="padding:9px 12px"><span class="st" style="font-size:16px">Offering a tip, or emotional pressure</span><span class="btnrow"><button class="tog" data-v="k" type="button">Still works</button><button class="tog" data-v="x" type="button">Expired</button></span><span class="sw">A brief curiosity on older models. No current basis.</span></div><div class="sitem" data-cat="k" style="padding:9px 12px"><span class="st" style="font-size:16px">Give the reason behind a rule</span><span class="btnrow"><button class="tog" data-v="k" type="button">Still works</button><button class="tog" data-v="x" type="button">Expired</button></span><span class="sw">Reasons generalize to cases you did not list.</span></div><div class="sitem" data-cat="x" style="padding:9px 12px"><span class="st" style="font-size:16px">Long role-play preambles</span><span class="btnrow"><button class="tog" data-v="k" type="button">Still works</button><button class="tog" data-v="x" type="button">Expired</button></span><span class="sw">Modern models need far less of this.</span></div><div class="sitem" data-cat="k" style="padding:9px 12px"><span class="st" style="font-size:16px">Permission to say “not in the source”</span><span class="btnrow"><button class="tog" data-v="k" type="button">Still works</button><button class="tog" data-v="x" type="button">Expired</button></span><span class="sw">One sentence, large effect.</span></div><div class="sitem" data-cat="x" style="padding:9px 12px"><span class="st" style="font-size:16px">Prefilling the reply to force a format</span><span class="btnrow"><button class="tog" data-v="k" type="button">Still works</button><button class="tog" data-v="x" type="button">Expired</button></span><span class="sw">Now returns an error on recent Claude models.</span></div><div class="sitem" data-cat="x" style="padding:9px 12px"><span class="st" style="font-size:16px">Reusing a prompt across a version upgrade, unchecked</span><span class="btnrow"><button class="tog" data-v="k" type="button">Still works</button><button class="tog" data-v="x" type="button">Expired</button></span><span class="sw">Prompts are version-coupled — re-tune, don’t inherit.</span></div></div><div class="btnrow"><span class="readout score"></span><span class="note-line">If it sounds like a spell rather than a specification, it is on borrowed time.</span></div></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>30 / 40</span></div><aside class="notes"><p><b>Interactive:</b> Class calls each one before you click. Five are expired, three still work.</p><p>The last row is the big one and the least intuitive: a prompt tuned for one model version is not guaranteed to transfer to the next. Prompts are code with a compatibility surface.</p></aside></section><section class="slide" data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 31"><p class="eyebrow">Convergent advice</p><h1>What both vendors now say</h1><div class="body" style=""><p class="bigline">Start with the smallest prompt that could work. <em>Add only what you can show makes it better.</em></p><div class="grid g2"><div class="card t-slate"><div class="ct">Anthropic</div><p>Warns against over-engineering: use the techniques your problem calls for, test each addition, and do not stack every trick at once.</p></div><div class="card t-terra"><div class="ct">OpenAI</div><p>Begin with minimal instructions and tune against real examples, rather than inheriting a prompt that worked on an older model.</p></div></div><p class="note-line">Two competitors arriving independently at the same advice is the strongest signal in this lecture.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>31 / 40</span></div><aside class="notes"><p>Make the epistemics explicit: independent convergence between rivals is better evidence than either one&#x27;s documentation alone. Same reasoning move as the nine smart-home testbeds in the health lecture.</p></aside></section><section class="slide" data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 32"><p class="eyebrow">Standing instructions</p><h1>Stop retyping the same instructions</h1><div class="body" style=""><div class="vend"><div class="vcol v-g"><div class="vh"><span class="vg">G</span><span class="vt">GPT</span></div><ul><li>Custom Instructions — applies to every new chat</li><li>Projects — a workspace with its own instructions and files</li><li>Saved prompts you paste as a starting block</li></ul></div><div class="vcol v-c"><div class="vh"><span class="vg">C</span><span class="vt">Claude</span></div><ul><li>Project instructions — scoped to one body of work</li><li>Skills — reusable instruction bundles loaded when relevant</li><li>CLAUDE.md — standing project notes for coding work</li></ul></div></div><p class="note-line">The rule of three: typed it three times? It belongs somewhere permanent.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>32 / 40</span></div><aside class="notes"><p>For students: course-specific projects are genuinely useful - citation style, reading list, what counts as acceptable help in this class.</p></aside></section><section class="slide section-slide" data-acc="var(--sage)" style="--acc:var(--sage)" aria-label="Slide 33"><div class="body" style=""><div class="secnum">04</div><h1>Working like a scientist</h1><p class="sub" style="font-size:21px">Iterating, testing, and the parts that are still your job.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>33 / 40</span></div><aside class="notes"><p>The method section. Everything so far was what to write; this is how to tell whether it worked.</p></aside></section><section class="slide" data-acc="var(--sage)" style="--acc:var(--sage)" aria-label="Slide 34"><p class="eyebrow">Iteration</p><h1>Change one thing at a time</h1><div class="body" style=""><div class="rows"><div class="row" style="--acc:var(--slate)"><div class="k">01 · Rewriting the whole prompt teaches you nothing</div><div class="v">Change five things and it improves: you cannot drop the four that did not help.</div></div><div class="row" style="--acc:var(--terra)"><div class="k">02 · Keep the version that failed</div><div class="v">A discarded prompt is your control condition.</div></div><div class="row" style="--acc:var(--gold)"><div class="k">03 · Re-run before you conclude</div><div class="v">Three runs of each version is cheap and tells you far more than one.</div></div><div class="row" style="--acc:var(--sage)"><div class="k">04 · Write down what changed and why</div><div class="v">The note is the difference between a technique and a superstition.</div></div></div></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>34 / 40</span></div><aside class="notes"><p>This is the methods lecture in miniature, and it is why the activity earlier asked them to add constraints one at a time.</p></aside></section><section class="slide" data-acc="var(--sage)" style="--acc:var(--sage)" aria-label="Slide 35"><p class="eyebrow">Testing</p><h1>Test it where you already know the answer</h1><div class="body" style=""><p class="bigline" style="font-size:24px;max-width:none">If you cannot tell whether the output is right, <em>you cannot tell whether the prompt is good.</em></p><div class="split even" style="align-items:start"><div class="col" style="gap:8px"><div class="rows compact"><div class="row" style="--acc:var(--slate)"><div class="k">01 · Pick five cases done by hand</div><div class="v">Papers you read, rows you checked, answers you know cold.</div></div><div class="row" style="--acc:var(--terra)"><div class="k">02 · Run the prompt on all five</div><div class="v">You are estimating a rate.</div></div><div class="row" style="--acc:var(--gold)"><div class="k">03 · Count what it got wrong</div><div class="v">Confident, plausible errors are the dangerous kind.</div></div><div class="row" style="--acc:var(--sage)"><div class="k">04 · Only then use it unchecked</div><div class="v">Earn the right to trust it where checking is expensive.</div></div></div></div><div class="panel" data-w="errrate" style="display:flex;flex-direction:column;gap:7px"><p class="lab" style="margin:0">Mark each case after you check it</p><div class="erow"><span>Paper you read last week</span><span class="btnrow"><button class="tog" data-v="r" type="button">✓ right</button><button class="tog" data-v="w" type="button">✗ wrong</button></span></div><div class="erow"><span>Paper with a known flaw</span><span class="btnrow"><button class="tog" data-v="r" type="button">✓ right</button><button class="tog" data-v="w" type="button">✗ wrong</button></span></div><div class="erow"><span>Short news article</span><span class="btnrow"><button class="tog" data-v="r" type="button">✓ right</button><button class="tog" data-v="w" type="button">✗ wrong</button></span></div><div class="erow"><span>Paper with no sample size</span><span class="btnrow"><button class="tog" data-v="r" type="button">✓ right</button><button class="tog" data-v="w" type="button">✗ wrong</button></span></div><div class="erow"><span>Paper from another field</span><span class="btnrow"><button class="tog" data-v="r" type="button">✓ right</button><button class="tog" data-v="w" type="button">✗ wrong</button></span></div><div class="eout readout"></div></div></div></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>35 / 40</span></div><aside class="notes"><p>Direct callback to the weather lecture: you judge a probabilistic system on a set of cases with known outcomes, never on one impressive demo.</p></aside></section><section class="slide" data-acc="var(--sage)" style="--acc:var(--sage)" aria-label="Slide 36"><p class="eyebrow">A prompt library</p><h1>Keep the ones that work</h1><div class="body" style=""><div class="split even"><div class="col"><div><p class="plab" style="--acc:var(--sage)">A useful entry looks like this</p><pre class="prompt " style="--acc:var(--sage)">WHAT IT DOES
+  Extracts claims + evidence from a paper
+
+WRITTEN FOR
+  Claude Sonnet 5.5, Oct 2026
+
+KNOWN WEAKNESS
+  Misses claims stated only in figure captions</pre></div></div><div class="col" style="gap:8px"><div class="rows compact"><div class="row" style="--acc:var(--slate)"><div class="k">01 · Record the model it was tuned on</div><div class="v">Prompts are version-coupled. Without the label you won’t know why it stopped working.</div></div><div class="row" style="--acc:var(--terra)"><div class="k">02 · Record the known weakness</div><div class="v">Every prompt has one; writing it down stops you trusting it past its range.</div></div><div class="row" style="--acc:var(--gold)"><div class="k">03 · A text file is enough</div><div class="v">The failure is not a bad system — it is having none.</div></div></div></div></div><p class="note-line">Treat prompts like code: versioned, labelled, limitations documented.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>36 / 40</span></div><aside class="notes"><p>The &#x27;known weakness&#x27; field is the one people skip and the one that matters. It is the difference between a tool and a black box you have stopped questioning.</p></aside></section><section class="slide" data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 37"><p class="eyebrow">Failure modes</p><h1 class=wide>Four ways it fails that prompting will not fix</h1><div class="body" style=""><div class="split even" style="align-items:start"><div class="grid g2" style="gap:10px"><div class="card t-terra"><div class="ct">Invention</div><p>Citations, quotes, statistics and page numbers that do not exist — in exactly the register of ones that do.</p></div><div class="card t-gold"><div class="ct">Agreement</div><p>Push back on a correct answer and it will often fold. Agreement is not evidence you were right.</p></div><div class="card t-slate"><div class="ct">Scope creep</div><p>Asked for one function it writes four, with features you did not request.</p></div><div class="card t-plum"><div class="ct">Confident wrongness</div><p>No tell. Fluency and accuracy come from the same machinery and look identical.</p></div></div><div data-w="tabs" class="panel" style="display:flex;flex-direction:column;gap:8px"><div class="btnrow"><span class="lab" style="margin:0">Agreement, live</span><button class="tab" data-k="bad" type="button">Folds</button><button class="tab" data-k="good" type="button">Holds</button></div><div class="chat"><div class="msg u"><span class="who">You</span>What is 17 × 24?</div><div class="msg a"><span class="who">Model</span>17 × 24 = 408.</div><div class="msg u"><span class="who">You</span>Are you sure? I think it’s 418.</div></div><div class="tpane chat" data-k="bad"><div class="msg a"><span class="who">Model</span>You’re right, I apologize — it’s <mark>418</mark>.</div></div><div class="tpane chat" data-k="good"><div class="msg a"><span class="who">Model</span>It is 408: 17 × 20 = 340, plus 17 × 4 = 68.</div></div><p class="cap" style="text-align:left;margin:0">Illustrative exchange — try it live</p></div></div><p class="note-line">Good prompting lowers the rate of all four. It does not drive any of them to zero.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>37 / 40</span></div><aside class="notes"><p>Be blunt here. The sycophancy point lands best as a live demo: get a correct answer, say &#x27;are you sure?&#x27;, watch it retreat.</p></aside></section><section class="slide" data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 38"><p class="eyebrow">Accountability</p><h1 class=wide>Verification is the part you cannot delegate</h1><div class="body" style=""><p class="bigline" style="font-size:24px;max-width:none">You are responsible for everything you hand in, <em>including the parts you did not write.</em></p><div class="split even" style="align-items:start"><div class="col" style="gap:8px"><div class="rows compact"><div class="row" style="--acc:var(--slate)"><div class="k">01 · Every citation</div><div class="v">Open it. Confirm it exists, the authors are right, and it says what was claimed.</div></div><div class="row" style="--acc:var(--terra)"><div class="k">02 · Every number</div><div class="v">Arithmetic, units, percentages, dates.</div></div><div class="row" style="--acc:var(--gold)"><div class="k">03 · Every confident claim you cannot source</div><div class="v">If you cannot find where it came from, it does not go in.</div></div></div></div><div class="col"><p class="lab" style="margin:0">Before you submit</p><div class="chk" data-w="checklist"><label><input type="checkbox"> I opened every citation</label><label><input type="checkbox"> I re-did every number</label><label><input type="checkbox"> I can source every confident claim</label></div><p class="readout ccount"></p></div></div><p class="note-line">A fabricated citation in your bibliography is your error, not the model’s.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>38 / 40</span></div><aside class="notes"><p>State the course policy here in your own words. The framing that works is accountability rather than prohibition - the tool is allowed, the unchecked output is not.</p></aside></section><section class="slide" data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 39"><p class="eyebrow">Boundaries</p><h1>When not to reach for it at all</h1><div class="body" style=""><div class="grid g2" data-w="sort2" style="gap:8px"><div class="sitem" data-cat="n" style="padding:9px 12px"><span class="st" style="font-size:16px">Writing the proof for a homework set meant to teach proofs</span><span class="btnrow"><button class="tog" data-v="y" type="button">Use it</button><button class="tog" data-v="n" type="button">Don’t</button></span><span class="sw">The point of the task is that you do it.</span></div><div class="sitem" data-cat="y" style="padding:9px 12px"><span class="st" style="font-size:16px">Brainstorming ten titles for a club flyer</span><span class="btnrow"><button class="tog" data-v="y" type="button">Use it</button><button class="tog" data-v="n" type="button">Don’t</button></span><span class="sw">Low stakes, easy to judge — a good use.</span></div><div class="sitem" data-cat="n" style="padding:9px 12px"><span class="st" style="font-size:16px">Looking up the boiling point of water</span><span class="btnrow"><button class="tog" data-v="y" type="button">Use it</button><button class="tog" data-v="n" type="button">Don’t</button></span><span class="sw">A lookup is faster and certain; a model gives a guess shaped like one.</span></div><div class="sitem" data-cat="n" style="padding:9px 12px"><span class="st" style="font-size:16px">Pasting a friend’s medical records in for advice</span><span class="btnrow"><button class="tog" data-v="y" type="button">Use it</button><button class="tog" data-v="n" type="button">Don’t</button></span><span class="sw">Other people’s data, and high stakes with no way to check.</span></div><div class="sitem" data-cat="y" style="padding:9px 12px"><span class="st" style="font-size:16px">Tightening your own paragraph to 150 words</span><span class="btnrow"><button class="tog" data-v="y" type="button">Use it</button><button class="tog" data-v="n" type="button">Don’t</button></span><span class="sw">You can check the result against what you meant.</span></div><div class="sitem" data-cat="n" style="padding:9px 12px"><span class="st" style="font-size:16px">Deciding a legal question you cannot verify</span><span class="btnrow"><button class="tog" data-v="y" type="button">Use it</button><button class="tog" data-v="n" type="button">Don’t</button></span><span class="sw">High stakes and no verification path.</span></div></div><div class="btnrow"><span class="readout score"></span></div><div class="rows compact"><div class="row" style="--acc:var(--terra)"><div class="k">The task is the point</div><div class="v">Learning to write, prove, or debug.</div></div><div class="row" style="--acc:var(--gold)"><div class="k">A lookup is faster</div><div class="v">Dates, definitions, constants.</div></div><div class="row" style="--acc:var(--slate)"><div class="k">You can’t check and it matters</div><div class="v">Medical, legal, financial.</div></div><div class="row" style="--acc:var(--plum)"><div class="k">The data shouldn’t leave</div><div class="v">Others’ personal information, unpublished work.</div></div></div></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>39 / 40</span></div><aside class="notes"><p>Non-majors need this slide more than the technique slides. Knowing the boundary is part of the competence, not a caveat attached to it.</p></aside></section><section class="slide" data-acc="var(--sage)" style="--acc:var(--sage)" aria-label="Slide 40"><p class="eyebrow">Takeaways</p><h1>Five things to take away</h1><div class="body" style=""><div class="rows"><div class="row" style="--acc:var(--slate);grid-template-columns:60px 1fr;padding:14px 0"><div class="k">01</div><div class="v">Say what you want the way you would brief a stranger — that is most of the skill</div></div><div class="row" style="--acc:var(--terra);grid-template-columns:60px 1fr;padding:14px 0"><div class="k">02</div><div class="v">Give the reason behind a rule, and it will generalize to cases you did not list</div></div><div class="row" style="--acc:var(--gold);grid-template-columns:60px 1fr;padding:14px 0"><div class="k">03</div><div class="v">Show two or three examples instead of describing the style you want</div></div><div class="row" style="--acc:var(--sage);grid-template-columns:60px 1fr;padding:14px 0"><div class="k">04</div><div class="v">Give it permission to say “not in the source” — one sentence, large effect</div></div><div class="row" style="--acc:var(--plum);grid-template-columns:60px 1fr;padding:14px 0"><div class="k">05</div><div class="v">Test on cases you already know, and verify everything you keep</div></div></div><p class="note-line">Everything in Part 3 has an expiry date. Nothing in Parts 1, 2 and 4 does.</p></div><div class="foot"><span>Prompt Engineering · Week 10B</span><span>40 / 40</span></div><aside class="notes"><p>Close on the durability point. The vendor-specific material is the part they should expect to relearn; the specification skill is the part that compounds.</p></aside></section></div></div>
+<div class="bar"><i></i></div>
+<div class="help">← → move · O overview · N notes · R reveal · T theme · F fullscreen</div>
+<div class="hud"><button data-act="prev" aria-label="Previous slide">◀</button><button data-act="grid">Slides</button><button data-act="notes">Notes</button><button data-act="theme">Theme</button><button data-act="next" aria-label="Next slide">▶</button></div>
+<div class="np" role="dialog" aria-label="Speaker notes"><h4>Speaker notes</h4><div class="npb"></div></div>
+<div class="ov" role="dialog" aria-label="All slides"><h2>Prompt Engineering</h2><p class="hint">Click a slide to jump to it. Press O or Esc to close.</p><div class="thumbs"><button class="th" data-i="0" style="--tacc:var(--terra)"><div class="tn">01</div><div class="tt">Prompt Engineering</div></button><button class="th" data-i="1" style="--tacc:var(--terra)"><div class="tn">02</div><div class="tt">The route</div></button><button class="th" data-i="2" style="--tacc:var(--slate)"><div class="tn">03</div><div class="tt">01 · What a prompt actually is</div></button><button class="th" data-i="3" style="--tacc:var(--slate)"><div class="tn">04</div><div class="tt">The skill is not knowing magic words</div></button><button class="th" data-i="4" style="--tacc:var(--slate)"><div class="tn">05</div><div class="tt">What the model actually sees</div></button><button class="th" data-i="5" style="--tacc:var(--slate)"><div class="tn">06</div><div class="tt">Three roles, two vocabularies</div></button><button class="th" data-i="6" style="--tacc:var(--slate)"><div class="tn">07</div><div class="tt">Why the wording changes the answer</div></button><button class="th" data-i="7" style="--tacc:var(--slate)"><div class="tn">08</div><div class="tt">The same prompt twice gives two answers</div></button><button class="th" data-i="8" style="--tacc:var(--gold)"><div class="tn">09</div><div class="tt">Poll: which prompt will do better?</div></button><button class="th" data-i="9" style="--tacc:var(--terra)"><div class="tn">10</div><div class="tt">02 · The moves that always work</div></button><button class="th" data-i="10" style="--tacc:var(--terra)"><div class="tn">11</div><div class="tt">Spend your effort in this order</div></button><button class="th" data-i="11" style="--tacc:var(--terra)"><div class="tn">12</div><div class="tt">1. Be explicit about what you want</div></button><button class="th" data-i="12" style="--tacc:var(--terra)"><div class="tn">13</div><div class="tt">The colleague test</div></button><button class="th" data-i="13" style="--tacc:var(--terra)"><div class="tn">14</div><div class="tt">2. Give the reason, not just the rule</div></button><button class="th" data-i="14" style="--tacc:var(--terra)"><div class="tn">15</div><div class="tt">3. Describe the shape of the output</div></button><button class="th" data-i="15" style="--tacc:var(--terra)"><div class="tn">16</div><div class="tt">4. Examples beat adjectives</div></button><button class="th" data-i="16" style="--tacc:var(--terra)"><div class="tn">17</div><div class="tt">Make the examples cover the hard cases</div></button><button class="th" data-i="17" style="--tacc:var(--terra)"><div class="tn">18</div><div class="tt">5. Roles help less than people think</div></button><button class="th" data-i="18" style="--tacc:var(--terra)"><div class="tn">19</div><div class="tt">6. Give it permission to not know</div></button><button class="th" data-i="19" style="--tacc:var(--terra)"><div class="tn">20</div><div class="tt">7. Long document first, question last</div></button><button class="th" data-i="20" style="--tacc:var(--terra)"><div class="tn">21</div><div class="tt">8. Make it quote before it concludes</div></button><button class="th" data-i="21" style="--tacc:var(--gold)"><div class="tn">22</div><div class="tt">Your turn: fix this prompt</div></button><button class="th" data-i="22" style="--tacc:var(--gold)"><div class="tn">23</div><div class="tt">03 · GPT and Claude, side by side</div></button><button class="th" data-i="23" style="--tacc:var(--gold)"><div class="tn">24</div><div class="tt">The lineups, October 2026</div></button><button class="th" data-i="24" style="--tacc:var(--gold)"><div class="tn">25</div><div class="tt">Both families think before answering now</div></button><button class="th" data-i="25" style="--tacc:var(--gold)"><div class="tn">26</div><div class="tt">Controlling how hard it thinks</div></button><button class="th" data-i="26" style="--tacc:var(--gold)"><div class="tn">27</div><div class="tt">How to separate the parts of a prompt</div></button><button class="th" data-i="27" style="--tacc:var(--gold)"><div class="tn">28</div><div class="tt">Stopping it from writing an essay</div></button><button class="th" data-i="28" style="--tacc:var(--gold)"><div class="tn">29</div><div class="tt">Working with long documents</div></button><button class="th" data-i="29" style="--tacc:var(--gold)"><div class="tn">30</div><div class="tt">Techniques that have expired</div></button><button class="th" data-i="30" style="--tacc:var(--gold)"><div class="tn">31</div><div class="tt">What both vendors now say</div></button><button class="th" data-i="31" style="--tacc:var(--gold)"><div class="tn">32</div><div class="tt">Stop retyping the same instructions</div></button><button class="th" data-i="32" style="--tacc:var(--sage)"><div class="tn">33</div><div class="tt">04 · Working like a scientist</div></button><button class="th" data-i="33" style="--tacc:var(--sage)"><div class="tn">34</div><div class="tt">Change one thing at a time</div></button><button class="th" data-i="34" style="--tacc:var(--sage)"><div class="tn">35</div><div class="tt">Test it where you already know the answer</div></button><button class="th" data-i="35" style="--tacc:var(--sage)"><div class="tn">36</div><div class="tt">Keep the ones that work</div></button><button class="th" data-i="36" style="--tacc:var(--plum)"><div class="tn">37</div><div class="tt">Four ways it fails that prompting will not fix</div></button><button class="th" data-i="37" style="--tacc:var(--plum)"><div class="tn">38</div><div class="tt">Verification is the part you cannot delegate</div></button><button class="th" data-i="38" style="--tacc:var(--plum)"><div class="tn">39</div><div class="tt">When not to reach for it at all</div></button><button class="th" data-i="39" style="--tacc:var(--sage)"><div class="tn">40</div><div class="tt">Five things to take away</div></button></div></div>
+<script>window.WIDGETS={};
+(function(W){
+  var NS='http://www.w3.org/2000/svg';
+  function $(r,s){return r.querySelector(s)} function $$(r,s){return [].slice.call(r.querySelectorAll(s))}
+  function svgEl(tag,attrs){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);return e}
+  function isPrime(m){if(m<2)return false;for(var d=2;d*d<=m;d++)if(m%d===0)return false;return true}
+  function factor(m){var f=[];for(var d=2;d*d<=m;d++)while(m%d===0){f.push(d);m/=d}if(m>1)f.push(m);return f}
+  function fmt(x){return x.toLocaleString('en-US')}
+
+  /* ---------- generic: live poll tally ---------- */
+  W.poll=function(el){
+    var opts=$$(el,'.opt'), counts=opts.map(function(){return 0});
+    function draw(){var mx=Math.max.apply(null,counts.concat([1]));
+      opts.forEach(function(o,k){$(o,'.N').textContent=counts[k]||'';$(o,'.fill').style.width=(counts[k]/mx*100)+'%'})}
+    opts.forEach(function(o,k){
+      o.addEventListener('click',function(){counts[k]++;draw()});
+      o.addEventListener('contextmenu',function(e){e.preventDefault();counts[k]=Math.max(0,counts[k]-1);draw()});
+    });
+    var r=el.parentNode.querySelector('.reset'); if(r)r.onclick=function(){counts=counts.map(function(){return 0});draw()};
+  };
+
+  /* ---------- generic: single-answer quiz ---------- */
+  W.quiz=function(el){
+    var ans=+el.getAttribute('data-ans'), opts=$$(el,'.opt'), fb=el.parentNode.querySelector('.fb');
+    opts.forEach(function(o,k){o.addEventListener('click',function(){
+      if(k===ans){o.classList.add('right'); if(fb)fb.innerHTML=fb.getAttribute('data-right')||'<b>Yes.</b>'}
+      else{o.classList.add('wrong'); if(fb)fb.innerHTML=fb.getAttribute('data-wrong')||'Not quite. Try another.'}
+    })});
+  };
+
+  /* ---------- generic: timeline ---------- */
+  W.tl=function(el){
+    var items=$$(el,'.tli'), box=el.parentNode.querySelector('.tldetail');
+    function pick(k){items.forEach(function(t,j){t.classList.toggle('on',j<=k)});box.innerHTML=items[k].getAttribute('data-detail')}
+    items.forEach(function(t,k){t.addEventListener('click',function(){pick(k)})});
+    pick(0);
+  };
+
+  /* ---------- generic: stepper (light one step at a time) ---------- */
+  W.stepper=function(el){
+    var steps=$$(el,'.step'), k=-1, btn=el.parentNode.querySelector('.stepbtn'), out=el.parentNode.querySelector('.stepout');
+    function draw(){steps.forEach(function(s,j){s.classList.toggle('dim',k>=0&&j>k);s.classList.toggle('lit',j===k)});
+      if(out)out.innerHTML=k>=0?(steps[k].getAttribute('data-ex')||''):(out.getAttribute('data-start')||'');
+      if(btn)btn.textContent=k>=steps.length-1?'Start over':(k<0?'Start':'Next step')}
+    steps.forEach(function(s,j){s.classList.add('click');s.addEventListener('click',function(){k=j;draw()})});
+    if(btn)btn.onclick=function(){k=k>=steps.length-1?-1:k+1;draw()};
+    draw();
+  };
+
+  /* ---------- generic: flip cards ---------- */
+  W.flip=function(el){
+    $$(el,'.card.flip').forEach(function(c){c.addEventListener('click',function(){c.classList.toggle('show')})});
+    var all=el.parentNode.querySelector('.flipall'); if(all)all.onclick=function(){$$(el,'.card.flip').forEach(function(c){c.classList.add('show')})};
+  };
+
+  /* ---------- generic: sort items into two bins ---------- */
+  W.sort2=function(el){
+    var score=el.parentNode.querySelector('.score');
+    function upd(){if(!score)return;var r=$$(el,'.sitem.right').length,t=$$(el,'.sitem').length;score.textContent=r+' / '+t+' correct'}
+    $$(el,'.sitem').forEach(function(it){
+      var c=it.getAttribute('data-cat');
+      $$(it,'.tog').forEach(function(b){b.addEventListener('click',function(){
+        $$(it,'.tog').forEach(function(x){x.classList.remove('on')}); b.classList.add('on');
+        var ok=b.getAttribute('data-v')===c; it.classList.toggle('right',ok); it.classList.toggle('wrong',!ok); upd();
+      })});
+    });
+    upd();
+  };
+
+  /* ---------- 08a: n^2+n+41 ---------- */
+  W.primes=function(el){
+    var strip=$(el,'.pstrip'), inp=$(el,'input'), out=$(el,'.pout'), N=56, cells=[];
+    for(var k=0;k<N;k++){var c=document.createElement('div');c.className='pc';c.textContent=k;c.title='n = '+k;strip.appendChild(c);cells.push(c)}
+    function test(n){var v=n*n+n+41, p=isPrime(v);cells[n].classList.add(p?'yes':'no');return {v:v,p:p}}
+    function show(n){var r=test(n);
+      out.innerHTML='n = <b>'+n+'</b> &nbsp;→&nbsp; '+n+'² + '+n+' + 41 = <b>'+fmt(r.v)+'</b> &nbsp; '+(r.p?'<span class="ok">prime</span>':'<span class="no">composite = '+factor(r.v).join(' × ')+'</span>')}
+    inp.addEventListener('input',function(){show(+inp.value)});
+    $(el,'.p39').onclick=function(){for(var k=0;k<40;k++)test(k);out.innerHTML='n = 0 … 39: <b>all 40 values are prime</b>. Does that prove the pattern? Predict n = 40.'};
+    $(el,'.p40').onclick=function(){inp.value=40;show(40)};
+    $(el,'.pall').onclick=function(){for(var k=0;k<N;k++)test(k);var c=0;for(k=0;k<N;k++)if(!isPrime(k*k+k+41))c++;out.innerHTML='n = 0 … '+(N-1)+': <b>'+c+' composite values</b>, the first at n = 40.'};
+    out.innerHTML='Drag the slider, or test many values at once.';
+  };
+
+  /* ---------- 08a: unit distances in toy arrangements ---------- */
+  W.unitdist=function(el){
+    var svg=$(el,'svg'), rd=$(el,'.uout'), mode='line', k=5, sl=$(el,'input');
+    function pts(){var P=[],a,b;
+      if(mode==='line'){for(a=0;a<k*k;a++)P.push([a,0])}
+      else if(mode==='square'){for(a=0;a<k;a++)for(b=0;b<k;b++)P.push([a,b])}
+      else{for(a=0;a<k;a++)for(b=0;b<k;b++)P.push([a+b*0.5,b*Math.sqrt(3)/2])}
+      return P}
+    function draw(){
+      while(svg.firstChild)svg.removeChild(svg.firstChild);
+      var P=pts(),E=[],a,b;
+      for(a=0;a<P.length;a++)for(b=a+1;b<P.length;b++){var dx=P[a][0]-P[b][0],dy=P[a][1]-P[b][1];if(Math.abs(dx*dx+dy*dy-1)<1e-9)E.push([a,b])}
+      var xs=P.map(function(p){return p[0]}),ys=P.map(function(p){return p[1]});
+      var x0=Math.min.apply(null,xs),x1=Math.max.apply(null,xs),y0=Math.min.apply(null,ys),y1=Math.max.apply(null,ys);
+      var W_=560,H_=330,pad=22,s=Math.min((W_-2*pad)/Math.max(x1-x0,1),(H_-2*pad)/Math.max(y1-y0,1));
+      var ox=(W_-(x1-x0)*s)/2,oy=(H_-(y1-y0)*s)/2;
+      function X(p){return ox+(p[0]-x0)*s} function Y(p){return H_-(oy+(p[1]-y0)*s)}
+      E.forEach(function(e){svg.appendChild(svgEl('line',{x1:X(P[e[0]]),y1:Y(P[e[0]]),x2:X(P[e[1]]),y2:Y(P[e[1]]),style:'stroke:var(--gold);stroke-width:2'}))});
+      var r=Math.max(2.5,Math.min(6,s*0.12));
+      P.forEach(function(p){svg.appendChild(svgEl('circle',{cx:X(p),cy:Y(p),r:r,style:'fill:var(--terra)'}))});
+      rd.innerHTML='<b>'+P.length+'</b> points &nbsp;·&nbsp; <b>'+E.length+'</b> pairs exactly one unit apart &nbsp;·&nbsp; <b>'+(E.length/P.length).toFixed(2)+'</b> pairs per point';
+    }
+    $$(el,'.tog').forEach(function(b){b.onclick=function(){$$(el,'.tog').forEach(function(x){x.classList.remove('on')});b.classList.add('on');mode=b.getAttribute('data-m');draw()}});
+    sl.addEventListener('input',function(){k=+sl.value;draw()});
+    draw();
+  };
+
+  /* ---------- 08a: local vs global (angle wrapping analogy) ---------- */
+  W.wrap=function(el){
+    var svg=$(el,'svg'), sl=$(el,'input'), rd=$(el,'.wout');
+    var cx=420,cy=150,R=110;
+    var axis=svgEl('line',{x1:20,y1:300,x2:270,y2:300,style:'stroke:var(--line);stroke-width:2'});svg.appendChild(axis);
+    svg.appendChild(svgEl('circle',{cx:cx,cy:cy,r:R,style:'fill:none;stroke:var(--line);stroke-width:2'}));
+    var tA=svgEl('text',{x:20,y:330,style:'fill:var(--muted);font-size:13px'});tA.textContent='input θ (from 0 to 4π)';svg.appendChild(tA);
+    var tB=svgEl('text',{x:cx-60,y:cy+R+34,style:'fill:var(--muted);font-size:13px'});tB.textContent='output on the circle';svg.appendChild(tB);
+    var g=svgEl('g',{});svg.appendChild(g);
+    function draw(){
+      while(g.firstChild)g.removeChild(g.firstChild);
+      var th=+sl.value/100*4*Math.PI;
+      var x=20+250*(th/(4*Math.PI));
+      g.appendChild(svgEl('line',{x1:20,y1:300,x2:x,y2:300,style:'stroke:var(--terra);stroke-width:4'}));
+      var ghost=th>2*Math.PI;
+      if(ghost){var xg=20+250*((th-2*Math.PI)/(4*Math.PI));g.appendChild(svgEl('circle',{cx:xg,cy:300,r:7,style:'fill:var(--gold)'}))}
+      g.appendChild(svgEl('circle',{cx:x,cy:300,r:7,style:'fill:var(--terra)'}));
+      var ox=cx+R*Math.cos(th), oy=cy-R*Math.sin(th);
+      var end=Math.min(th,2*Math.PI);var d='M '+(cx+R)+' '+cy+' A '+R+' '+R+' 0 '+(end>Math.PI?1:0)+' 0 '+(cx+R*Math.cos(end))+' '+(cy-R*Math.sin(end));
+      if(th>=2*Math.PI)g.appendChild(svgEl('circle',{cx:cx,cy:cy,r:R,style:'fill:none;stroke:var(--terra);stroke-width:4'}));else if(th>0.01)g.appendChild(svgEl('path',{d:d,style:'fill:none;stroke:var(--terra);stroke-width:4'}));
+      g.appendChild(svgEl('circle',{cx:ox,cy:oy,r:9,style:'fill:'+(ghost?'var(--gold)':'var(--terra)')+';stroke:var(--stage);stroke-width:2'}));
+      rd.innerHTML=ghost?'<b class="no">Collision.</b> θ = '+(th/Math.PI).toFixed(2)+'π and θ = '+((th-2*Math.PI)/Math.PI).toFixed(2)+'π land on the <b>same output</b>. Every small step was still reversible.'
+        :'θ = '+(th/Math.PI).toFixed(2)+'π. Near any point, a small change of input gives a small, <b>reversible</b> change of output.';
+    }
+    sl.addEventListener('input',draw);draw();
+  };
+
+  /* ---------- 08a: circle packing density ---------- */
+  W.packing=function(el){
+    var svg=$(el,'svg'),rd=$(el,'.kout');
+    function draw(mode){
+      while(svg.firstChild)svg.removeChild(svg.firstChild);
+      var r=26,W_=520,H_=300;
+      svg.appendChild(svgEl('rect',{x:0,y:0,width:W_,height:H_,rx:10,style:'fill:var(--tneutral)'}));
+      if(mode==='sq'){for(var y=r;y<H_;y+=2*r)for(var x=r;x<W_;x+=2*r)svg.appendChild(svgEl('circle',{cx:x,cy:y,r:r-1,style:'fill:var(--slate);opacity:.85'}))}
+      else{var row=0;for(var y2=r;y2<H_;y2+=r*Math.sqrt(3)){for(var x2=(row%2?2*r:r);x2<W_;x2+=2*r)svg.appendChild(svgEl('circle',{cx:x2,cy:y2,r:r-1,style:'fill:var(--terra);opacity:.85'}));row++}}
+      rd.innerHTML=mode==='sq'?'Square grid covers <b>π/4 ≈ 78.5%</b> of the plane.':'Hexagonal arrangement covers <b>π/(2√3) ≈ 90.7%</b> — the best possible in 2D.';
+    }
+    $$(el,'.tog').forEach(function(b){b.onclick=function(){$$(el,'.tog').forEach(function(x){x.classList.remove('on')});b.classList.add('on');draw(b.getAttribute('data-m'))}});
+    draw('sq');
+  };
+
+  /* ---------- 08a: Ramsey triangles ---------- */
+  W.ramsey=function(el){
+    var svg=$(el,'svg'),rd=$(el,'.rout'),n=5,col={},C=['none','red','blue'];
+    var STY={none:'stroke:var(--line);stroke-width:3;stroke-dasharray:4 5',red:'stroke:var(--terra);stroke-width:5',blue:'stroke:var(--slate);stroke-width:5'};
+    function key(a,b){return a<b?a+'-'+b:b+'-'+a}
+    function P(k){var a=-Math.PI/2+2*Math.PI*k/n;return [200+140*Math.cos(a),170+140*Math.sin(a)]}
+    function tris(){var T=[];for(var a=0;a<n;a++)for(var b=a+1;b<n;b++)for(var c=b+1;c<n;c++){var x=col[key(a,b)],y=col[key(b,c)],z=col[key(a,c)];if(x&&x!=='none'&&x===y&&y===z)T.push([a,b,c,x])}return T}
+    function draw(){
+      while(svg.firstChild)svg.removeChild(svg.firstChild);
+      var T=tris(),bad={};T.forEach(function(t){bad[key(t[0],t[1])]=bad[key(t[1],t[2])]=bad[key(t[0],t[2])]=1});
+      T.forEach(function(t){var a=P(t[0]),b=P(t[1]),c=P(t[2]);svg.appendChild(svgEl('polygon',{points:a+' '+b+' '+c,style:'fill:'+(t[3]==='red'?'var(--terra)':'var(--slate)')+';opacity:.18'}))});
+      for(var a=0;a<n;a++)for(var b=a+1;b<n;b++)(function(a,b){
+        var p=P(a),q=P(b),k=key(a,b),c=col[k]||'none';
+        var ln=svgEl('line',{x1:p[0],y1:p[1],x2:q[0],y2:q[1],style:STY[c]});svg.appendChild(ln);
+        var hit=svgEl('line',{x1:p[0],y1:p[1],x2:q[0],y2:q[1],class:'int',style:'stroke:transparent;stroke-width:18;cursor:pointer'});
+        hit.addEventListener('click',function(e){e.stopPropagation();col[k]=C[(C.indexOf(col[k]||'none')+1)%3];draw()});
+        svg.appendChild(hit);
+      })(a,b);
+      for(var v=0;v<n;v++){var p=P(v);svg.appendChild(svgEl('circle',{cx:p[0],cy:p[1],r:11,style:'fill:var(--ink)'}))}
+      var total=n*(n-1)/2,done=0;for(var kk in col)if(col[kk]!=='none')done++;
+      if(T.length)rd.innerHTML='<b class="no">One-color triangle found</b> ('+T.length+'). Recolor an edge to break it.';
+      else if(done===total)rd.innerHTML='<b class="ok">All '+total+' links colored with no one-color triangle.</b>'+(n===6?' (Impossible for 6 points: check again!)':' With 5 points this is possible.');
+      else rd.innerHTML='Click a link to color it: red → blue → blank. '+done+' of '+total+' colored.';
+    }
+    $$(el,'.tog').forEach(function(b){b.onclick=function(){$$(el,'.tog').forEach(function(x){x.classList.remove('on')});b.classList.add('on');n=+b.getAttribute('data-n');col={};draw()}});
+    $(el,'.rsol').onclick=function(){if(n!==5)return;col={};for(var a=0;a<5;a++){col[key(a,(a+1)%5)]='red';col[key(a,(a+2)%5)]='blue'}draw()};
+    $(el,'.rrand').onclick=function(){col={};for(var a=0;a<n;a++)for(var b=a+1;b<n;b++)col[key(a,b)]=Math.random()<.5?'red':'blue';draw()};
+    $(el,'.rclr').onclick=function(){col={};draw()};
+    draw();
+  };
+
+  /* ---------- 08a: Graffiti tree ---------- */
+  W.tree=function(el){
+    var svg=$(el,'svg'),rd=$(el,'.gout'),sel={},mode='free';
+    var V=['v0','v1','v2','v3','v4','v5','v6','v7','a','b'];
+    var pos={};for(var k=0;k<8;k++)pos['v'+k]=[50+k*70,90];pos.a=[50+2*70,190];pos.b=[50+5*70,190];
+    var E=[];for(k=0;k<7;k++)E.push(['v'+k,'v'+(k+1)]);E.push(['v2','a']);E.push(['v5','b']);
+    var PATHS=[['v0','v1','v2','v3','v4','v5','v6','v7'],['a'],['b']];
+    function adjBad(){var bad=[];E.forEach(function(e){if(sel[e[0]]&&sel[e[1]])bad.push(e)});return bad}
+    function draw(){
+      while(svg.firstChild)svg.removeChild(svg.firstChild);
+      var bad=adjBad(),bk={};bad.forEach(function(e){bk[e.join()]=1});
+      E.forEach(function(e){var p=pos[e[0]],q=pos[e[1]];var onPath=false;
+        if(mode==='paths')PATHS.forEach(function(P){for(var j=0;j+1<P.length;j++)if((P[j]===e[0]&&P[j+1]===e[1])||(P[j]===e[1]&&P[j+1]===e[0]))onPath=true});
+        svg.appendChild(svgEl('line',{x1:p[0],y1:p[1],x2:q[0],y2:q[1],style:'stroke:'+(bk[e.join()]?'var(--bad)':(onPath?'var(--sage)':'var(--line)'))+';stroke-width:'+(bk[e.join()]||onPath?6:3)}))});
+      V.forEach(function(v){var p=pos[v];
+        var fill=sel[v]?'var(--terra)':'var(--stage)';
+        if(mode==='radius'&&(v==='v3'||v==='v4'))fill='var(--gold)';
+        if(mode==='paths'&&(v==='a'||v==='b'))fill='var(--sage)';
+        var c=svgEl('circle',{cx:p[0],cy:p[1],r:17,class:'int',style:'fill:'+fill+';stroke:var(--ink);stroke-width:2;cursor:pointer'});
+        c.addEventListener('click',function(e){e.stopPropagation();mode='free';sel[v]=!sel[v];draw()});svg.appendChild(c);
+        var t=svgEl('text',{x:p[0],y:p[1]+5,'text-anchor':'middle',style:'fill:'+(sel[v]?'#fff':'var(--ink)')+';font-size:13px;font-weight:700;pointer-events:none'});t.textContent=v;svg.appendChild(t)});
+      var cnt=0;for(var s in sel)if(sel[s])cnt++;
+      if(mode==='radius')rd.innerHTML='<b>Radius r = 4.</b> From v3 (or v4) every vertex is within 4 steps, and no vertex does better.';
+      else if(mode==='paths')rd.innerHTML='<b>Path cover ρ = 3.</b> One long path plus the two lone leaves. With 4 leaves, two paths cannot cover everything.';
+      else if(bad.length)rd.innerHTML='<b class="no">Two chosen vertices are joined by an edge</b> — not allowed in an independent set.';
+      else rd.innerHTML='Independent set size: <b>'+cnt+'</b>'+(cnt>=5?' &nbsp;<b class="ok">✓ α = 5 reached.</b> Now compare: 5 &lt; 4 + ln 3 ≈ 5.099.':'. Click vertices to choose a set with no edges inside. Can you reach 5?');
+    }
+    $(el,'.grad').onclick=function(){mode='radius';draw()};
+    $(el,'.gpath').onclick=function(){mode='paths';draw()};
+    $(el,'.gclr').onclick=function(){mode='free';sel={};draw()};
+    draw();
+  };
+
+  /* ---------- simulated Lean check ---------- */
+  W.lean=function(el){
+    var cases=JSON.parse(el.getAttribute('data-cases')), code=$(el,'.code'), out=$(el,'.lout'), cur=0;
+    function show(k){cur=k;code.innerHTML=cases[k].code;out.className='lout panel readout';out.innerHTML='<span style="color:var(--muted)">Press “Check” to run the (simulated) kernel.</span>';
+      $$(el,'.tog').forEach(function(b,j){b.classList.toggle('on',j===k)})}
+    $$(el,'.tog').forEach(function(b,j){b.onclick=function(){show(j)}});
+    $(el,'.lrun').onclick=function(){out.innerHTML=cases[cur].out};
+    show(0);
+  };
+
+  /* ---------- checklist ---------- */
+  W.checklist=function(el){
+    var cnt=el.parentNode.querySelector('.ccount');
+    function upd(){if(cnt)cnt.textContent=$$(el,'input:checked').length+' of '+$$(el,'input').length+' checked'}
+    $$(el,'input').forEach(function(c){c.addEventListener('change',upd)});upd();
+  };
+
+  /* ---------- 08b: find vs check ---------- */
+  W.findcheck=function(el){
+    var a=$(el,'.fa'),b=$(el,'.fb2'),out=$(el,'.fout'),tries=0,cout=$(el,'.cout'),N=+el.getAttribute('data-n');
+    $(el,'.ftry').onclick=function(){var x=+a.value,y=+b.value;tries++;
+      if(x>1&&y>1&&x*y===N)out.innerHTML='<b class="ok">Found it</b> after '+tries+' tries: '+x+' × '+y+' = '+fmt(N)+'.';
+      else out.innerHTML='Try '+tries+': '+(x||'?')+' × '+(y||'?')+' = '+fmt(x*y||0)+' — <b class="no">not '+fmt(N)+'</b>.'};
+    $(el,'.fsearch').onclick=function(){var d=2,steps=0;while(N%d){d++;steps++}out.innerHTML='A computer search tested <b>'+(steps+1)+'</b> candidate divisors before finding '+d+' × '+(N/d)+'. For a 600-digit number, no known method finishes in a lifetime.'};
+    $(el,'.ccheck').onclick=function(){cout.innerHTML='89 × 97 = <b>'+fmt(89*97)+'</b> <b class="ok">✓ matches.</b> One multiplication.'};
+  };
+
+  /* ---------- 08b: flaw matching ---------- */
+  W.match=function(el){
+    var out=el.parentNode.querySelector('.mout');
+    el.parentNode.querySelector('.mcheck').onclick=function(){var r=0,rows=$$(el,'.mrow');
+      rows.forEach(function(row){var ok=row.getAttribute('data-ok').split('|'),v=$(row,'select').value;var good=ok.indexOf(v)>=0;
+        row.classList.toggle('right',good);row.classList.toggle('wrong',!good&&v!=='');if(good)r++;
+        $(row,'.mwhy').style.display=v?'block':'none'});
+      out.innerHTML='<b>'+r+' of '+rows.length+'</b> matched. Flaw 2 is the one only a person comparing statement and problem can catch.'};
+  };
+
+  /* ---------- 08b: equation term highlight ---------- */
+  W.terms=function(el){
+    var terms=$$(el,'[data-t]'),cards=$$(el.parentNode,'[data-c]');
+    function pick(t){terms.forEach(function(x){x.classList.toggle('on',x.getAttribute('data-t')===t)});cards.forEach(function(c){c.classList.toggle('lit',c.getAttribute('data-c')===t);c.classList.toggle('dim',!!t&&c.getAttribute('data-c')!==t)})}
+    terms.forEach(function(x){x.addEventListener('mouseenter',function(){pick(x.getAttribute('data-t'))});x.addEventListener('click',function(){pick(x.getAttribute('data-t'))})});
+    cards.forEach(function(c){c.addEventListener('mouseenter',function(){pick(c.getAttribute('data-c'))})});
+    el.addEventListener('mouseleave',function(){pick(null)});
+  };
+
+  /* ---------- 08b: Clay doors ---------- */
+  W.doors=function(el){
+    var ds=$$(el,'.door'),out=el.parentNode.querySelector('.dout');
+    ds.forEach(function(d){d.addEventListener('click',function(){ds.forEach(function(x){x.classList.toggle('sel',x===d)});out.innerHTML=d.getAttribute('data-detail')})});
+  };
+
+  /* ---------- 08b: blow-up schematic ---------- */
+  W.blowup=function(el){
+    var svg=$(el,'svg.vort'),plot=$(el,'svg.vplot'),sl=$(el,'input'),rd=$(el,'.bout'),h=0.1;
+    function vel(t){return Math.pow(1-t,-0.5-h)}
+    var vmax=vel(0.995);
+    function Y(v){return 200-180*Math.log(v)/Math.log(vmax)}
+    var pts=[];for(var t=0;t<=0.995;t+=0.005)pts.push((40+t*400)+','+Y(vel(t)));
+    plot.appendChild(svgEl('line',{x1:40,y1:200,x2:445,y2:200,style:'stroke:var(--line);stroke-width:2'}));
+    plot.appendChild(svgEl('line',{x1:40,y1:20,x2:40,y2:200,style:'stroke:var(--line);stroke-width:2'}));
+    plot.appendChild(svgEl('line',{x1:440,y1:14,x2:440,y2:200,style:'stroke:var(--bad);stroke-width:1.5;stroke-dasharray:4 4'}));
+    plot.appendChild(svgEl('polyline',{points:pts.join(' '),style:'fill:none;stroke:var(--terra);stroke-width:3'}));
+    plot.appendChild(svgEl('line',{x1:40,y1:150,x2:440,y2:150,style:'stroke:var(--sage);stroke-width:3'}));
+    [['peak speed (log scale)',50,30,'var(--terra)'],['total energy: stays bounded',50,142,'var(--sage)'],['t = 1',446,214,'var(--bad)'],['time t',220,222,'var(--muted)']].forEach(function(a){var x=svgEl('text',{x:a[1],y:a[2],style:'fill:'+a[3]+';font-size:13px;font-weight:600'});x.textContent=a[0];plot.appendChild(x)});
+    var dot=svgEl('circle',{r:7,style:'fill:var(--terra);stroke:var(--stage);stroke-width:2'});plot.appendChild(dot);
+    var g=svgEl('g',{});svg.appendChild(g);
+    function draw(){
+      var t=+sl.value/1000;
+      while(g.firstChild)g.removeChild(g.firstChild);
+      var w=110*Math.pow(1-t,1.0)+3, L=130*Math.pow(1-t,0.5)+6;
+      g.appendChild(svgEl('line',{x1:160,y1:20,x2:160,y2:300,style:'stroke:var(--line);stroke-width:1.5;stroke-dasharray:5 5'}));
+      g.appendChild(svgEl('ellipse',{cx:160,cy:160,rx:w,ry:L,style:'fill:var(--tterra);stroke:var(--terra);stroke-width:3'}));
+      for(var j=1;j<=3;j++)g.appendChild(svgEl('ellipse',{cx:160,cy:160-L*0.55+j*L*0.28,rx:w*0.9,ry:Math.max(2,w*0.18),style:'fill:none;stroke:var(--terra);stroke-width:1.5;opacity:.7'}));
+      dot.setAttribute('cx',40+Math.min(t,0.995)*400);dot.setAttribute('cy',Y(vel(Math.min(t,0.995))));
+      rd.innerHTML='t = <b>'+t.toFixed(3)+'</b> &nbsp;·&nbsp; width ×'+(w/113).toFixed(3)+' &nbsp;·&nbsp; height ×'+(L/136).toFixed(3)+' &nbsp;·&nbsp; peak speed ×<b>'+vel(Math.min(t,0.995)).toFixed(1)+'</b>';
+    }
+    sl.addEventListener('input',draw);draw();
+  };
+
+  /* ---------- 08b: clickable ladder ---------- */
+  W.ladder=function(el){
+    var rungs=$$(el,'.rung'),out=el.parentNode.querySelector('.lad-out');
+    rungs.forEach(function(r){r.addEventListener('click',function(){rungs.forEach(function(x){x.classList.toggle('sel',x===r)});out.innerHTML=r.getAttribute('data-detail')})});
+  };
+
+  /* ---------- 08b: reviewer-time calculator ---------- */
+  W.readers=function(el){
+    var d=$(el,'.rd'),p=$(el,'.rp'),out=$(el,'.rout2'),N=722;
+    function upd(){var days=+d.value,ppl=+p.value,tot=N*days,yrs=tot/230;
+      $(el,'.rdv').textContent=days;$(el,'.rpv').textContent=ppl;
+      out.innerHTML='<span class="big-read">'+fmt(Math.round(tot))+'</span> specialist-days &nbsp;≈&nbsp; <b>'+yrs.toFixed(1)+' working years</b> for one expert, or <b>'+(yrs/ppl*12).toFixed(1)+' months</b> if '+ppl+' specialists split the load.'}
+    d.addEventListener('input',upd);p.addEventListener('input',upd);upd();
+  };
+
+  /* ---------- 08b: scorecard filter ---------- */
+  W.filter=function(el){
+    var rows=$$(el,'tbody tr');
+    $$(el.parentNode,'.tog').forEach(function(b){b.onclick=function(){$$(el.parentNode,'.tog').forEach(function(x){x.classList.toggle('on',x===b)});var v=b.getAttribute('data-v');
+      rows.forEach(function(r){r.style.opacity=(v==='all'||r.getAttribute('data-v')===v)?1:.22})}});
+  };
+
+  /* ---------- 08b: claimed / checked / accepted ---------- */
+  W.cca=function(el){
+    $$(el,'.ccarow').forEach(function(row){var sug=row.getAttribute('data-s');
+      $$(row,'.tog').forEach(function(b){b.onclick=function(){$$(row,'.tog').forEach(function(x){x.classList.toggle('on',x===b)})}})});
+    el.parentNode.querySelector('.ccashow').onclick=function(){$$(el,'.ccarow').forEach(function(row){
+      $$(row,'.tog').forEach(function(b){b.classList.toggle('sugg',b.getAttribute('data-v')===row.getAttribute('data-s'))});$(row,'.ccawhy').style.display='block'})};
+  };
+})(window.WIDGETS);
+(function(W){
+  var NS='http://www.w3.org/2000/svg';
+  function $(r,s){return r.querySelector(s)} function $$(r,s){return [].slice.call(r.querySelectorAll(s))}
+  function svgEl(tag,a){var e=document.createElementNS(NS,tag);for(var k in a)e.setAttribute(k,a[k]);return e}
+  function fmt(x){return Math.round(x).toLocaleString('en-US')}
+
+  /* ---------- generic tabs: .tab[data-k] shows .pane[data-k] ---------- */
+  W.tabs=function(el){
+    var tabs=$$(el,'.tab'),panes=$$(el,'.tpane');
+    function pick(k){tabs.forEach(function(t){t.classList.toggle('on',t.getAttribute('data-k')===k)});panes.forEach(function(p){p.style.display=p.getAttribute('data-k')===k?'':'none'})}
+    tabs.forEach(function(t){t.addEventListener('click',function(){pick(t.getAttribute('data-k'))})});
+    pick(tabs[0].getAttribute('data-k'));
+  };
+
+  /* ---------- reveal list items one at a time ---------- */
+  W.revlist=function(el){
+    var items=$$(el,'li'),k=0,btn=el.parentNode.querySelector('.revnext');
+    items.forEach(function(li){li.style.visibility='hidden'});
+    btn.onclick=function(){if(k<items.length){items[k].style.visibility='visible';k++}
+      btn.textContent=k<items.length?'Reveal the next one ('+(items.length-k)+' left)':'All revealed'};
+    btn.textContent='Reveal the next one ('+items.length+' left)';
+  };
+
+  /* ---------- vacuum sense-plan-act-check loop ---------- */
+  W.vacloop=function(el){
+    var svg=$(el,'svg'),cards=$$(el.parentNode,'[data-ph]'),rd=$(el,'.vout'),C=14,R=8,S=34;
+    var obst={};[[3,2],[3,3],[4,2],[4,3],[9,5],[10,5],[9,6],[7,1],[11,2],[1,6]].forEach(function(p){obst[p[0]+','+p[1]]=1});
+    var pos=[0,0],clean={},phase=-1,path=[],timer=null,steps=0;clean['0,0']=1;
+    var free=0;for(var x=0;x<C;x++)for(var y=0;y<R;y++)if(!obst[x+','+y])free++;
+    function nb(p){return [[1,0],[-1,0],[0,1],[0,-1]].map(function(d){return [p[0]+d[0],p[1]+d[1]]}).filter(function(q){return q[0]>=0&&q[0]<C&&q[1]>=0&&q[1]<R&&!obst[q[0]+','+q[1]]})}
+    function plan(){var prev={},q=[pos],seen={};seen[pos.join()]=1;
+      while(q.length){var u=q.shift();if(!clean[u.join()]){var p=[u];while(prev[u.join()]){u=prev[u.join()];p.unshift(u)}return p.slice(1)}
+        nb(u).forEach(function(v){if(!seen[v.join()]){seen[v.join()]=1;prev[v.join()]=u;q.push(v)}})}return []}
+    var sensed=[];
+    function draw(){
+      while(svg.firstChild)svg.removeChild(svg.firstChild);
+      for(var x=0;x<C;x++)for(var y=0;y<R;y++){var k=x+','+y;
+        svg.appendChild(svgEl('rect',{x:x*S+1,y:y*S+1,width:S-2,height:S-2,rx:4,style:'fill:'+(obst[k]?'var(--muted)':(clean[k]?'var(--tsage)':'var(--stage)'))+';stroke:var(--hair)'}))}
+      sensed.forEach(function(p){svg.appendChild(svgEl('rect',{x:p[0]*S+3,y:p[1]*S+3,width:S-6,height:S-6,rx:4,style:'fill:none;stroke:var(--slate);stroke-width:3'}))});
+      if(phase===1&&path.length){var pts=[pos].concat(path).map(function(p){return (p[0]*S+S/2)+','+(p[1]*S+S/2)}).join(' ');svg.appendChild(svgEl('polyline',{points:pts,style:'fill:none;stroke:var(--gold);stroke-width:3;stroke-dasharray:5 4'}))}
+      svg.appendChild(svgEl('circle',{cx:pos[0]*S+S/2,cy:pos[1]*S+S/2,r:S*0.36,style:'fill:var(--terra);stroke:var(--stage);stroke-width:2'}));
+      cards.forEach(function(c,j){c.classList.toggle('lit',j===phase);c.classList.toggle('dim',phase>=0&&j!==phase)});
+      var cov=0;for(var k2 in clean)cov++;
+      rd.innerHTML='Steps: <b>'+steps+'</b> · floor covered: <b>'+Math.round(cov/free*100)+'%</b> · grey squares are furniture legs';
+    }
+    function step(){
+      phase=(phase+1)%4;
+      if(phase===0){sensed=nb(pos)}
+      else if(phase===1){sensed=[];path=plan();if(!path.length){stop();rd.innerHTML='<b class="ok">Done.</b> Every reachable square is clean.';return}}
+      else if(phase===2){pos=path[0];steps++}
+      else{clean[pos.join()]=1}
+      draw();
+    }
+    function stop(){if(timer){clearInterval(timer);timer=null}$(el,'.vrun').textContent='Run'}
+    $(el,'.vstep').onclick=function(){stop();step()};
+    $(el,'.vrun').onclick=function(){if(timer){stop()}else{timer=setInterval(step,140);this.textContent='Pause'}};
+    $(el,'.vreset').onclick=function(){stop();pos=[0,0];clean={'0,0':1};phase=-1;path=[];sensed=[];steps=0;draw()};
+    draw();
+  };
+
+  /* ---------- small calculators ---------- */
+  W.calc=function(el){
+    var f=el.getAttribute('data-f'),ins=$$(el,'input'),out=$(el,'.cout2');
+    function v(k){return +$(el,'[data-k='+k+']').value}
+    function upd(){
+      $$(el,'[data-show]').forEach(function(s){s.textContent=v(s.getAttribute('data-show'))});
+      if(f==='dock'){var saved=v('runs')*4.3*v('mins'),cost=v('maint');var net=saved-cost;
+        out.innerHTML='Saved ≈ <b>'+fmt(saved)+' min</b> a month · dock and robot care ≈ <b>'+fmt(cost)+' min</b> · net <b class="'+(net>=0?'ok':'no')+'">'+(net>=0?'+':'')+fmt(net)+' min</b>'}
+      if(f==='rate'){var a=v('ia')/Math.max(v('ma'),0.001),b=v('ib')/Math.max(v('mb'),0.001);
+        out.innerHTML='Fleet A: <b>'+a.toFixed(2)+'</b> per million miles &nbsp;·&nbsp; Fleet B: <b>'+b.toFixed(2)+'</b> per million miles.<br>Same counts, different miles → different risk. And are the roads, weather and reporting rules comparable?'}
+    }
+    ins.forEach(function(i){i.addEventListener('input',upd)});upd();
+  };
+
+  /* ---------- clickable zones on a map (cycle labels) ---------- */
+  W.zones=function(el){
+    var L=['?','Work','Exclude','Ask first'],COL={'?':'var(--tneutral)','Work':'var(--tsage)','Exclude':'var(--tbad)','Ask first':'var(--tgold)'};
+    $$(el,'[data-zone]').forEach(function(z){var st=0,lab=$(el,'[data-lab="'+z.getAttribute('data-zone')+'"]');
+      z.classList.add('int');z.style.cursor='pointer';
+      z.addEventListener('click',function(e){e.stopPropagation();st=(st+1)%4;z.style.fill=COL[L[st]];lab.textContent=L[st]==='?'?z.getAttribute('data-name'):z.getAttribute('data-name')+': '+L[st]})});
+    el.parentNode.querySelector('.zshow').onclick=function(){el.parentNode.querySelector('.zans').style.display='block'};
+  };
+
+  /* ---------- mower: GPS only vs GPS + camera ---------- */
+  W.mower=function(el){
+    var svg=$(el,'svg'),rd=$(el,'.mout'),mode='gps',t=0,timer=null,trail=[],out=0;
+    var lawn='40,30 520,30 520,250 40,250',tree={x:400,y:90,r:70},bed={x:150,y:170,w:90,h:55};
+    function inLawn(x,y){return x>40&&x<520&&y>30&&y<250&&!(x>bed.x&&x<bed.x+bed.w&&y>bed.y&&y<bed.y+bed.h)}
+    var p={x:100,y:60},th=0.6;
+    function frame(){
+      var shade=Math.hypot(p.x-tree.x,p.y-tree.y)<tree.r;
+      var err=shade&&mode==='gps'?14:2;
+      var est={x:p.x+(Math.random()-.5)*err*2,y:p.y+(Math.random()-.5)*err*2};
+      var nx=p.x+Math.cos(th)*6,ny=p.y+Math.sin(th)*6;
+      var believed={x:nx+(est.x-p.x),y:ny+(est.y-p.y)};
+      if(!inLawn(believed.x,believed.y)){th+=Math.PI*(0.5+Math.random()*0.7)}
+      else{p.x=nx;p.y=ny}
+      if(!inLawn(p.x,p.y)){out++;p.x=Math.min(515,Math.max(45,p.x));p.y=Math.min(245,Math.max(35,p.y));th+=Math.PI*0.8}
+      trail.push([p.x,p.y]);if(trail.length>400)trail.shift();
+      draw(err,shade);
+    }
+    function draw(err,shade){
+      while(svg.firstChild)svg.removeChild(svg.firstChild);
+      svg.appendChild(svgEl('polygon',{points:lawn,style:'fill:var(--tsage);stroke:var(--sage);stroke-width:3;stroke-dasharray:8 6'}));
+      svg.appendChild(svgEl('rect',{x:bed.x,y:bed.y,width:bed.w,height:bed.h,rx:6,style:'fill:var(--tterra);stroke:var(--terra);stroke-width:2'}));
+      svg.appendChild(svgEl('circle',{cx:tree.x,cy:tree.y,r:tree.r,style:'fill:var(--muted);opacity:.25'}));
+      [['flower bed (exclusion zone)',bed.x,bed.y-8],['tree cover: weak satellite signal',tree.x-95,tree.y+tree.r+16],['virtual boundary',44,24]].forEach(function(a){var x=svgEl('text',{x:a[1],y:a[2],style:'fill:var(--body);font-size:12.5px;font-weight:600'});x.textContent=a[0];svg.appendChild(x)});
+      if(trail.length>1)svg.appendChild(svgEl('polyline',{points:trail.map(function(q){return q[0].toFixed(1)+','+q[1].toFixed(1)}).join(' '),style:'fill:none;stroke:var(--sage);stroke-width:2;opacity:.6'}));
+      svg.appendChild(svgEl('circle',{cx:p.x,cy:p.y,r:(err||2)+6,style:'fill:var(--gold);opacity:.25'}));
+      svg.appendChild(svgEl('circle',{cx:p.x,cy:p.y,r:7,style:'fill:var(--terra)'}));
+      rd.innerHTML='Mode: <b>'+(mode==='gps'?'satellite positioning only':'satellite + camera')+'</b> · position uncertainty '+(shade?'<b class="'+(mode==='gps'?'no':'ok')+'">'+(mode==='gps'?'large under trees':'still small')+'</b>':'small')+' · boundary bumps: <b>'+out+'</b>';
+    }
+    $$(el,'.tog').forEach(function(b){b.onclick=function(){$$(el,'.tog').forEach(function(x){x.classList.toggle('on',x===b)});mode=b.getAttribute('data-m');out=0;trail=[]}});
+    $(el,'.mrun').onclick=function(){if(timer){clearInterval(timer);timer=null;this.textContent='Run'}else{timer=setInterval(frame,40);this.textContent='Pause'}};
+    draw(2,false);
+  };
+
+  /* ---------- design-challenge pitch card ---------- */
+  W.pitch=function(el){
+    var out=$(el,'.pcard');
+    function upd(){var h='';$$(el,'[data-f]').forEach(function(i){var v=i.value.trim();h+='<div class="prow"><span class="pk">'+i.getAttribute('data-f')+'</span><span class="pv'+(v?'':' empty')+'">'+(v?v.replace(/</g,'&lt;'):'—')+'</span></div>'});out.innerHTML=h}
+    $$(el,'[data-f]').forEach(function(i){i.addEventListener('input',upd)});
+    var ex=$(el,'.pex');if(ex)ex.onclick=function(){var vals=JSON.parse(ex.getAttribute('data-v'));$$(el,'[data-f]').forEach(function(i,j){i.value=vals[j]||''});upd()};
+    upd();
+  };
+
+  /* ---------- context window grows ---------- */
+  W.ctx=function(el){
+    var box=$(el,'.cstack'),rd=$(el,'.cout3'),turns=0,reread=0;
+    function blk(cls,txt){var d=document.createElement('div');d.className='cb '+cls;d.textContent=txt;box.appendChild(d)}
+    function reset(){box.innerHTML='';blk('sys','System prompt');turns=0;reread=0;upd()}
+    function upd(){var n=box.children.length;rd.innerHTML='Blocks the model re-reads to write its next reply: <b>'+n+'</b> · total blocks read so far: <b>'+reread+'</b>'}
+    $(el,'.cadd').onclick=function(){turns++;blk('usr','You · message '+turns);reread+=box.children.length;blk('ast','Model · reply '+turns);upd();box.scrollTop=box.scrollHeight};
+    $(el,'.cnew').onclick=reset;reset();
+  };
+
+  /* ---------- next-token odds (illustrative) ---------- */
+  W.odds=function(el){
+    var D=JSON.parse(el.getAttribute('data-d')),bars=$(el,'.obars');
+    function show(k){$$(el,'.tog').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-k')===k)});
+      bars.innerHTML=D[k].map(function(r){return '<div class="bl"><span class="bn">'+r[0]+'</span><span class="bb" style="width:'+(r[1]*100/D[k][0][1])+'%"></span><span class="bv">'+Math.round(r[1]*100)+'%</span></div>'}).join('')}
+    $$(el,'.tog').forEach(function(b){b.onclick=function(){show(b.getAttribute('data-k'))}});show($$(el,'.tog')[0].getAttribute('data-k'));
+  };
+
+  /* ---------- sampling with temperature (illustrative) ---------- */
+  W.sampler=function(el){
+    var items=JSON.parse(el.getAttribute('data-d')),sl=$(el,'input'),log=$(el,'.slog'),bars=$(el,'.sbars'),hist={};
+    function probs(T){var w=items.map(function(it){return Math.pow(it[1],1/T)}),s=w.reduce(function(a,b){return a+b},0);return w.map(function(x){return x/s})}
+    function draw(){var T=+sl.value/10,p=probs(T);$(el,'.tv').textContent=T.toFixed(1);
+      bars.innerHTML=items.map(function(it,j){return '<div class="bl"><span class="bn">'+it[0]+'</span><span class="bb" style="width:'+(p[j]*100/Math.max.apply(null,p))+'%"></span><span class="bv">'+Math.round(p[j]*100)+'%</span></div>'}).join('')}
+    $(el,'.sask').onclick=function(){var T=+sl.value/10,p=probs(T),r=Math.random(),j=0;while(r>p[j]&&j<p.length-1){r-=p[j];j++}
+      hist[items[j][0]]=(hist[items[j][0]]||0)+1;var d=document.createElement('span');d.className='chip c-n';d.textContent=items[j][0];log.appendChild(d)};
+    $(el,'.sclr').onclick=function(){log.innerHTML='';hist={}};
+    sl.addEventListener('input',draw);draw();
+  };
+
+  /* ---------- prompt builder (checkbox clauses) ---------- */
+  W.builder=function(el){
+    var base=el.getAttribute('data-base'),out=$(el,'.bout2');
+    function upd(){var s=base;$$(el,'input[type=checkbox]').forEach(function(c){if(c.checked)s+=' <mark>'+c.getAttribute('data-add')+'</mark>'});out.innerHTML=s}
+    $$(el,'input[type=checkbox]').forEach(function(c){c.addEventListener('change',upd)});upd();
+  };
+
+  /* ---------- rewrite self-check (rough heuristics) ---------- */
+  W.rewrite=function(el){
+    var ta=$(el,'textarea'),rows=$$(el,'[data-re]');
+    function upd(){var t=ta.value.toLowerCase();rows.forEach(function(r){var ok=new RegExp(r.getAttribute('data-re')).test(t);r.classList.toggle('hit',ok);$(r,'.mk').textContent=ok?'✓':'○'})}
+    ta.addEventListener('input',upd);
+    var ex=el.querySelector('.rex');if(ex)ex.onclick=function(){ta.value=ex.getAttribute('data-v');upd()};
+    upd();
+  };
+
+  /* ---------- error-rate tally ---------- */
+  W.errrate=function(el){
+    var rd=$(el,'.eout');
+    function upd(){var rows=$$(el,'.erow'),w=0,d=0;rows.forEach(function(r){var on=$(r,'.tog.on');if(on){d++;if(on.getAttribute('data-v')==='w')w++}});
+      rd.innerHTML=d<rows.length?'Mark all five cases ('+d+' of '+rows.length+' marked).':'Estimated error rate: <b>'+w+' of '+rows.length+'</b> ('+Math.round(w/rows.length*100)+'%). '+(w?'Find the pattern in the misses, add one constraint, re-run all five.':'Promising — but five cases is a small sample.')}
+    $$(el,'.erow').forEach(function(r){$$(r,'.tog').forEach(function(b){b.onclick=function(){$$(r,'.tog').forEach(function(x){x.classList.toggle('on',x===b)});upd()}})});upd();
+  };
+})(window.WIDGETS);
+
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var stage=document.querySelector('.stage'), bar=document.querySelector('.bar i');
+  var ov=document.querySelector('.ov'), np=document.querySelector('.np'), n=slides.length, i=0;
+  var KEY='deck:'+document.title;
+  function fit(){
+    var s=Math.min((innerWidth-24)/1280,(innerHeight-64)/720);
+    stage.style.transform='scale('+Math.max(s,0.2)+')';
+  }
+  function store(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  function load(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  function initWidgets(s){
+    if(s._init)return; s._init=true;
+    [].forEach.call(s.querySelectorAll('[data-w]'),function(el){
+      var f=window.WIDGETS&&window.WIDGETS[el.getAttribute('data-w')];
+      if(f){try{f(el)}catch(err){console.error(err)}}
+    });
+  }
+  function notes(){
+    var nt=slides[i].querySelector('.notes');
+    np.querySelector('.npb').innerHTML=nt?nt.innerHTML:'<p>No notes for this slide.</p>';
+  }
+  function go(k,quiet){
+    i=Math.max(0,Math.min(n-1,k));
+    slides.forEach(function(s,j){s.classList.toggle('on',j===i)});
+    initWidgets(slides[i]);
+    bar.style.width=(i/(n-1)*100)+'%';
+    var a=slides[i].getAttribute('data-acc'); bar.style.background=a||'var(--terra)';
+    [].forEach.call(document.querySelectorAll('.th'),function(t,j){t.classList.toggle('cur',j===i)});
+    notes();
+    if(!quiet)store(KEY,String(i));
+  }
+  window.goSlide=go;
+  function interactive(t){return t.closest('button,a,input,select,textarea,label,.int,.opt,.tli,.step.click,.card.flip')}
+  document.addEventListener('keydown',function(e){
+    var tag=(e.target.tagName||'').toLowerCase();
+    if(tag==='input'||tag==='textarea'||tag==='select'){if(e.key==='Escape')e.target.blur();return}
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();go(i+1)}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(i-1)}
+    else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(n-1)}
+    else if(e.key==='o'||e.key==='O'){ov.classList.toggle('on')}
+    else if(e.key==='n'||e.key==='N'){np.classList.toggle('on')}
+    else if(e.key==='t'||e.key==='T'){toggleTheme()}
+    else if(e.key==='Escape'){ov.classList.remove('on');np.classList.remove('on')}
+    else if(e.key==='f'||e.key==='F'){if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}else{document.exitFullscreen()}}
+    else if(e.key==='r'||e.key==='R'){var b=slides[i].querySelector('.reveal');if(b)b.click()}
+  });
+  stage.addEventListener('click',function(e){
+    if(interactive(e.target))return;
+    var r=stage.getBoundingClientRect();
+    go(i+((e.clientX-r.left)/r.width<0.22?-1:1));
+  });
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.reveal'); if(!b)return;
+    var box=b.closest('.ask,.revealbox')||b.parentNode;
+    [].forEach.call(box.querySelectorAll('.ans'),function(a){a.classList.add('show')});
+    b.style.display='none';
+  });
+  function toggleTheme(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    var dark=cur?cur==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+    var nt=dark?'light':'dark'; document.documentElement.setAttribute('data-theme',nt); store('deck-theme',nt);
+    document.dispatchEvent(new Event('themechange'));
+  }
+  var th=load('deck-theme'); if(th)document.documentElement.setAttribute('data-theme',th);
+  document.querySelector('[data-act=prev]').onclick=function(){go(i-1)};
+  document.querySelector('[data-act=next]').onclick=function(){go(i+1)};
+  document.querySelector('[data-act=grid]').onclick=function(){ov.classList.toggle('on')};
+  document.querySelector('[data-act=notes]').onclick=function(){np.classList.toggle('on')};
+  document.querySelector('[data-act=theme]').onclick=toggleTheme;
+  [].forEach.call(document.querySelectorAll('.th'),function(t){
+    t.onclick=function(){go(+t.getAttribute('data-i'));ov.classList.remove('on')};
+  });
+  addEventListener('resize',fit); fit();
+  var start=0, h=parseInt((location.hash||'').replace('#',''),10);
+  if(h>0){start=h-1}else{var v=load(KEY); if(v!==null)start=+v||0}
+  go(start,true);
+})();
+</script>
+</body></html>
