@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI and Forensics</title><meta name="description" content="Interactive 40-slide lecture on AI in forensic science: evidence, uncertainty and human judgment."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,600;1,8..60,500&display=swap"><style>*,*::before,*::after{box-sizing:border-box}
+:root{
+  --ground:#EFEBE3; --stage:#FFFDF8; --ink:#1E1B17; --body:#433E37; --muted:#6E675D;
+  --line:#D8D1C4; --hair:#E9E3D8; --chip:#F4EFE6;
+  --terra:#B04E2F; --gold:#8C640E; --sage:#4C7044; --slate:#3F617A; --plum:#7A4A6A;
+  --tterra:#F8E7DF; --tgold:#F7EED9; --tsage:#E6EFE3; --tslate:#E3ECF2; --tplum:#F2E6EE; --tneutral:#F1ECE3;
+  --ok:#2F7A4F; --tok:#E1F1E7; --bad:#B0402F; --tbad:#F8E2DD;
+  --shadow:0 1px 2px rgba(30,27,23,.06),0 14px 44px rgba(30,27,23,.12);
+  --scrim:rgba(255,253,248,.93); --codebg:#F3EEE4;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0E0D0C; --stage:#191715; --ink:#FCF7EA; --body:#D8D1C2; --muted:#A39B8E;
+  --line:#3A3631; --hair:#2A2724; --chip:#24211E;
+  --terra:#E07A57; --gold:#E2B55A; --sage:#97B88E; --slate:#8FB0C8; --plum:#C995B8;
+  --tterra:#33221B; --tgold:#30281A; --tsage:#1F2A1D; --tslate:#1C2730; --tplum:#2C1F28; --tneutral:#23201D;
+  --ok:#7CC995; --tok:#18291E; --bad:#F08A76; --tbad:#33201C;
+  --shadow:0 1px 2px rgba(0,0,0,.45),0 18px 50px rgba(0,0,0,.5);
+  --scrim:rgba(25,23,21,.92); --codebg:#221F1C;
+}}
+:root[data-theme="dark"]{
+  --ground:#0E0D0C; --stage:#191715; --ink:#FCF7EA; --body:#D8D1C2; --muted:#A39B8E;
+  --line:#3A3631; --hair:#2A2724; --chip:#24211E;
+  --terra:#E07A57; --gold:#E2B55A; --sage:#97B88E; --slate:#8FB0C8; --plum:#C995B8;
+  --tterra:#33221B; --tgold:#30281A; --tsage:#1F2A1D; --tslate:#1C2730; --tplum:#2C1F28; --tneutral:#23201D;
+  --ok:#7CC995; --tok:#18291E; --bad:#F08A76; --tbad:#33201C;
+  --shadow:0 1px 2px rgba(0,0,0,.45),0 18px 50px rgba(0,0,0,.5);
+  --scrim:rgba(25,23,21,.92); --codebg:#221F1C;
+}
+html,body{height:100%}
+body{margin:0;background:var(--ground);color:var(--ink);overflow:hidden;
+  font-family:"Source Sans 3","Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+.wrap{position:fixed;inset:0 0 40px 0;display:grid;place-items:center}
+.stage{width:1280px;height:720px;flex:none;background:var(--stage);border-radius:10px;box-shadow:var(--shadow);
+  position:relative;overflow:hidden;transform-origin:center center}
+.slide{position:absolute;inset:0;padding:50px 64px 58px;display:none;flex-direction:column}
+.slide.on{display:flex}
+.eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--acc,var(--terra));font-weight:600;margin:0 0 12px}
+h1{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:40px;line-height:1.12;margin:0;color:var(--ink);
+  letter-spacing:-.012em;text-wrap:balance;max-width:24ch}
+h1.wide{max-width:none}
+.sub{font-size:18px;color:var(--muted);margin:10px 0 0;max-width:64ch;line-height:1.45}
+.body{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:16px;padding-top:14px}
+.foot{position:absolute;left:64px;right:64px;bottom:20px;display:flex;justify-content:space-between;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.kick{font-size:17px;color:var(--muted);line-height:1.45;margin:0;max-width:80ch}
+.kick b{color:var(--ink)}
+.note-line{font-size:15.5px;line-height:1.45;color:var(--acc,var(--gold));margin:0;font-weight:600}
+b,strong{font-weight:700;color:var(--ink)}
+a{color:var(--slate)}
+
+/* section + title slides */
+.title-slide .body,.section-slide .body{justify-content:center}
+.title-slide h1{font-size:60px;max-width:13ch;line-height:1.04}
+.tmeta{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc,var(--terra));margin:0 0 18px;font-weight:600}
+.tnote{font-size:14.5px;color:var(--muted);margin:26px 0 0;line-height:1.6;max-width:52ch}
+.tnote b{color:var(--ink)}
+.secnum{font-family:"Source Serif 4",Georgia,serif;font-size:120px;font-weight:600;line-height:.9;color:var(--acc,var(--terra));margin:0 0 10px}
+.section-slide h1{font-size:54px;max-width:16ch}
+
+/* photographs */
+.bleed{position:absolute;inset:0;overflow:hidden}
+.bleed img{width:100%;height:100%;object-fit:cover;display:block}
+.bleed::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg,var(--scrim) 0%,var(--scrim) 40%,color-mix(in srgb,var(--scrim) 60%,transparent) 60%,color-mix(in srgb,var(--scrim) 8%,transparent) 100%)}
+.onphoto{position:relative;z-index:2;max-width:640px}
+.split{display:grid;grid-template-columns:1.1fr .9fr;gap:34px;align-items:center;flex:1;min-height:0}
+.split.even{grid-template-columns:1fr 1fr}
+.split.wideL{grid-template-columns:1.35fr .65fr}
+.col{min-width:0;display:flex;flex-direction:column;gap:16px;justify-content:center}
+.shot{border-radius:10px;overflow:hidden;background:var(--tneutral);width:100%;box-shadow:0 1px 2px rgba(0,0,0,.08),0 10px 30px rgba(0,0,0,.14)}
+.shot img{width:100%;height:100%;max-height:440px;object-fit:cover;display:block}
+.cap{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:8px 0 0;text-align:right}
+.bleed-cap{position:absolute;right:22px;bottom:20px;z-index:3;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:#fff;background:rgba(0,0,0,.45);padding:4px 8px;border-radius:4px}
+
+/* labelled blocks */
+.lab{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:600;color:var(--acc,var(--terra));margin:0 0 7px}
+.blk p{margin:0;font-size:19px;line-height:1.45;color:var(--body)}
+.blk{border-left:3px solid var(--acc,var(--terra));padding:2px 0 2px 16px}
+.rows{display:flex;flex-direction:column;gap:0}
+.row{display:grid;grid-template-columns:230px 1fr;gap:24px;align-items:baseline;padding:20px 0;border-bottom:1px solid var(--hair)}
+.row:last-child{border-bottom:0}
+.row .k{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--acc,var(--terra));
+  border-left:3px solid var(--acc,var(--terra));padding-left:12px}
+.row .v{font-size:21px;line-height:1.42;color:var(--body)}
+
+/* cards */
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)} .g5{grid-template-columns:repeat(5,1fr)}
+.card{background:var(--tint,var(--tneutral));border-radius:10px;padding:20px 22px;min-width:0}
+.card .ct{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:600;color:var(--acc,var(--terra));margin:0 0 9px}
+.card h3{font-family:"Source Serif 4",Georgia,serif;font-size:23px;font-weight:600;margin:0 0 8px;color:var(--ink);line-height:1.15}
+.card p{margin:0;font-size:17px;line-height:1.45;color:var(--body)}
+.card .big{font-family:"Source Serif 4",Georgia,serif;font-size:44px;font-weight:600;line-height:1;color:var(--acc,var(--terra));margin:2px 0 10px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.t-terra{--tint:var(--tterra);--acc:var(--terra)} .t-gold{--tint:var(--tgold);--acc:var(--gold)} .t-sage{--tint:var(--tsage);--acc:var(--sage)}
+.t-slate{--tint:var(--tslate);--acc:var(--slate)} .t-plum{--tint:var(--tplum);--acc:var(--plum)} .t-neutral{--tint:var(--tneutral);--acc:var(--muted)}
+.a-terra{--acc:var(--terra)} .a-gold{--acc:var(--gold)} .a-sage{--acc:var(--sage)} .a-slate{--acc:var(--slate)} .a-plum{--acc:var(--plum)}
+
+/* quote */
+.quote{border-left:4px solid var(--acc,var(--gold));padding:6px 0 6px 20px;margin:0}
+.quote p{font-family:"Source Serif 4",Georgia,serif;font-size:24px;line-height:1.35;margin:0;color:var(--ink);font-style:italic}
+.quote .by{font-size:14px;color:var(--muted);margin-top:8px;font-style:normal;font-family:"Source Sans 3",sans-serif}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:16.5px}
+.tbl th{text-align:left;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--acc,var(--gold));
+  font-weight:600;padding:10px 14px;border-bottom:2px solid var(--line)}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--hair);color:var(--body);line-height:1.38;vertical-align:top}
+.tbl td:first-child{color:var(--ink);font-weight:600}
+.tbl tr.hl td{background:var(--tgold)}
+.tbl tbody tr{transition:background .15s}
+.tbl tbody tr:hover td{background:var(--tneutral)}
+.chip{display:inline-block;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.06em;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.c-ok{background:var(--tok);color:var(--ok)} .c-mid{background:var(--tgold);color:var(--gold)} .c-no{background:var(--tbad);color:var(--bad)} .c-n{background:var(--tneutral);color:var(--muted)}
+
+/* code */
+.code{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:21px;line-height:1.55;background:var(--codebg);border:1px solid var(--hair);
+  border-radius:10px;padding:20px 24px;color:var(--ink);white-space:pre;margin:0}
+.code .kw{color:var(--terra);font-weight:600} .code .ty{color:var(--slate)} .code .tac{color:var(--sage);font-weight:600} .code .bad{color:var(--bad);font-weight:600}
+.math{font-family:"Source Serif 4",Georgia,serif;font-size:44px;color:var(--gold);font-weight:600;letter-spacing:.01em}
+
+/* ask / reveal */
+.ask{background:var(--tgold);border-radius:12px;padding:20px 24px;border:1px solid color-mix(in srgb,var(--gold) 30%,transparent);display:flex;flex-direction:column;gap:12px}
+.ask .lbl{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.ask .q{font-size:21px;font-weight:600;line-height:1.32;color:var(--ink);font-family:"Source Serif 4",Georgia,serif;margin:0}
+.btn{border:0;background:var(--ink);color:var(--stage);font-size:14px;font-weight:600;padding:9px 16px;border-radius:7px;cursor:pointer;align-self:flex-start;letter-spacing:.01em}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn:hover{opacity:.86}
+.btn:focus-visible,.opt:focus-visible,.tog:focus-visible{outline:3px solid var(--slate);outline-offset:2px}
+.ans{display:none;font-size:16.5px;line-height:1.5;color:var(--body);border-top:1px solid color-mix(in srgb,var(--gold) 35%,transparent);padding-top:12px}
+.ans.show{display:block}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* clickable options (polls, votes, quizzes) */
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:grid;grid-template-columns:42px 1fr auto;gap:14px;align-items:center;text-align:left;cursor:pointer;
+  background:var(--tneutral);border:1.5px solid transparent;border-radius:10px;padding:13px 16px;position:relative;overflow:hidden}
+.opt:hover{border-color:var(--line)}
+.opt .L{font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;font-size:18px;color:var(--acc,var(--terra));text-align:center;position:relative;z-index:1}
+.opt .T{font-size:18px;line-height:1.35;color:var(--ink);position:relative;z-index:1}
+.opt .N{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:15px;font-weight:600;color:var(--muted);min-width:36px;text-align:right;position:relative;z-index:1}
+.opt .fill{position:absolute;left:0;top:0;bottom:0;background:color-mix(in srgb,var(--acc,var(--terra)) 16%,transparent);width:0;transition:width .25s}
+.opt.right{border-color:var(--ok);background:var(--tok)} .opt.wrong{border-color:var(--bad);background:var(--tbad)}
+.opt .why{grid-column:2/4;font-size:15px;color:var(--body);display:none;line-height:1.4;position:relative;z-index:1}
+.opt.right .why,.opt.wrong .why{display:block}
+.fb{font-size:16px;line-height:1.45;color:var(--body);min-height:24px;margin:0}
+.fb b{color:var(--ink)}
+
+/* flow */
+.flow{display:grid;gap:12px;align-items:stretch}
+.step{background:var(--tint,var(--tneutral));border-radius:10px;padding:18px 18px;position:relative;cursor:default}
+.step .sn{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--acc,var(--terra));display:block;margin-bottom:8px}
+.step h3{font-family:"Source Serif 4",Georgia,serif;font-size:22px;margin:0 0 6px;color:var(--ink);font-weight:600}
+.step p{margin:0;font-size:15.5px;line-height:1.42;color:var(--body)}
+.step.dim{opacity:.38}
+.step.lit{outline:2px solid var(--acc,var(--terra));outline-offset:0}
+.arrow{align-self:center;color:var(--muted);font-size:22px;text-align:center}
+
+/* timeline */
+.tl{display:grid;gap:0;position:relative;margin-top:6px}
+.tl::before{content:"";position:absolute;left:0;right:0;top:27px;height:2px;background:var(--line)}
+.tli{position:relative;padding:44px 12px 0 0;cursor:pointer;border:0;background:none;text-align:left;display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start}
+.tli::before{content:"";position:absolute;left:0;top:20px;width:16px;height:16px;border-radius:50%;background:var(--stage);border:3px solid var(--acc,var(--terra))}
+.tli.on::before{background:var(--acc,var(--terra))}
+.tli .y{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;font-weight:600;letter-spacing:.08em;color:var(--acc,var(--terra))}
+.tli .h{font-family:"Source Serif 4",Georgia,serif;font-size:19px;font-weight:600;color:var(--ink);margin:4px 0 4px;line-height:1.2}
+.tli .d{font-size:14.5px;line-height:1.4;color:var(--body)}
+.tldetail{background:var(--tneutral);border-radius:10px;padding:16px 20px;font-size:16.5px;line-height:1.48;color:var(--body);min-height:84px}
+.tldetail b{color:var(--ink)}
+
+/* toggles */
+.tog{border:1px solid var(--line);background:var(--stage);color:var(--body);border-radius:999px;padding:7px 14px;font-size:14px;cursor:pointer;font-weight:600}
+.tog.on{background:var(--ink);color:var(--stage);border-color:var(--ink)}
+.panel{background:var(--tneutral);border-radius:12px;padding:16px 18px}
+.readout{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:15px;color:var(--body);line-height:1.6}
+.readout b{color:var(--ink)}
+.big-read{font-family:"Source Serif 4",Georgia,serif;font-size:34px;font-weight:600;color:var(--ink);line-height:1.15;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--terra)}
+input[type=number],input[type=text],select{font:inherit;font-size:17px;padding:7px 10px;border-radius:7px;border:1px solid var(--line);background:var(--stage);color:var(--ink)}
+svg text{font-family:"Source Sans 3","Segoe UI",Arial,sans-serif}
+.ok{color:var(--ok)} .no{color:var(--bad)}
+
+/* chrome */
+.bar{position:fixed;left:0;right:0;bottom:0;height:3px;z-index:20}
+.bar i{display:block;height:100%;background:var(--terra);transition:width .22s ease}
+.hud{position:fixed;right:14px;bottom:12px;display:flex;gap:6px;z-index:21}
+.hud button{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.08em;border:1px solid var(--line);background:var(--stage);color:var(--muted);
+  border-radius:6px;padding:6px 10px;cursor:pointer}
+.hud button:hover{color:var(--ink);border-color:var(--muted)}
+.ov{position:fixed;inset:0;background:var(--ground);z-index:30;display:none;overflow:auto;padding:28px}
+.ov.on{display:block}
+.ov h2{font-family:"Source Serif 4",Georgia,serif;font-size:22px;margin:0 0 4px;color:var(--ink);max-width:1180px;margin-inline:auto}
+.ov .hint{font-size:13px;color:var(--muted);margin:0 auto 20px;max-width:1180px}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-width:1180px;margin:0 auto}
+.th{background:var(--stage);border:1px solid var(--hair);border-left:3px solid var(--tacc,var(--line));border-radius:7px;padding:11px 13px;cursor:pointer;text-align:left;min-height:76px}
+.th:hover{border-color:var(--terra)}
+.th .tn{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;color:var(--muted);letter-spacing:.1em}
+.th .tt{font-size:13px;line-height:1.3;color:var(--ink);margin-top:5px;font-weight:600}
+.th.cur{border-color:var(--terra);box-shadow:0 0 0 2px var(--terra)}
+.notes{display:none}
+.np{position:fixed;left:14px;bottom:52px;width:min(520px,calc(100vw - 28px));max-height:46vh;overflow:auto;z-index:25;background:var(--stage);border:1px solid var(--line);
+  border-radius:10px;box-shadow:var(--shadow);padding:16px 18px;display:none;font-size:14.5px;line-height:1.5;color:var(--body)}
+.np.on{display:block}
+.np h4{margin:0 0 8px;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.np p{margin:0 0 8px} .np a{word-break:break-all}
+.help{position:fixed;left:14px;bottom:13px;z-index:21;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted)}
+@media (max-width:700px){.help{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* widget pieces */
+.pstrip{display:grid;grid-template-columns:repeat(14,1fr);gap:5px}
+.pc{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;text-align:center;padding:6px 0;border-radius:5px;background:var(--tneutral);color:var(--muted)}
+.pc.yes{background:var(--tok);color:var(--ok);font-weight:600} .pc.no{background:var(--bad);color:var(--stage);font-weight:700}
+.card.flip{cursor:pointer;position:relative}
+.card.flip .back{display:none}
+.card.flip.show .back{display:block} .card.flip.show .front{display:none}
+.card.flip .front{font-size:15px;color:var(--muted);font-style:italic}
+.sitem{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:10px 14px;border-radius:9px;background:var(--tneutral);border:1.5px solid transparent}
+.sitem .st{font-size:17px;line-height:1.35;color:var(--ink)}
+.sitem .sw{grid-column:1/3;font-size:14.5px;color:var(--body);display:none}
+.sitem.right{border-color:var(--ok);background:var(--tok)} .sitem.wrong{border-color:var(--bad);background:var(--tbad)}
+.sitem.right .sw,.sitem.wrong .sw{display:block}
+.sitem .btnrow{gap:6px}
+.mrow{display:grid;grid-template-columns:34px 1fr 270px;gap:14px;align-items:center;padding:11px 14px;border-radius:9px;background:var(--tneutral);border:1.5px solid transparent}
+.mrow .mn{font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;font-size:18px;color:var(--terra);text-align:center}
+.mrow .mt{font-size:17px;line-height:1.35;color:var(--ink)}
+.mrow .mwhy{grid-column:2/4;font-size:14.5px;color:var(--body);display:none;line-height:1.4}
+.mrow.right{border-color:var(--ok);background:var(--tok)} .mrow.wrong{border-color:var(--bad);background:var(--tbad)}
+.door{cursor:pointer;border:2px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--stage);text-align:left;display:flex;flex-direction:column;gap:6px}
+.door:hover{border-color:var(--muted)}
+.door .dl{font-family:"Source Serif 4",Georgia,serif;font-size:34px;font-weight:600;color:var(--acc,var(--slate));line-height:1}
+.door .dt{font-size:16.5px;color:var(--ink);font-weight:600;line-height:1.3}
+.door.claim{background:var(--tterra);border-color:var(--terra)}
+.door.sel{box-shadow:0 0 0 3px var(--gold)}
+.rung{display:grid;grid-template-columns:30px 220px 1fr 140px;gap:14px;align-items:center;padding:11px 16px;border-radius:9px;background:var(--tneutral);cursor:pointer;border:1.5px solid transparent;text-align:left;width:100%}
+.rung:hover{border-color:var(--line)} .rung.sel{border-color:var(--gold);background:var(--tgold)}
+.rung .rn{font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;color:var(--muted);font-size:14px}
+.rung .rk{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.rung .rq{font-size:16.5px;color:var(--body);line-height:1.35}
+.rung .chip{justify-self:end}
+.ccarow{display:grid;grid-template-columns:1fr auto;gap:10px 16px;align-items:center;padding:12px 16px;border-radius:9px;background:var(--tneutral)}
+.ccarow .ct2{font-size:17.5px;color:var(--ink);line-height:1.35} .ccarow .ct2 small{display:block;font-size:12px;color:var(--muted);font-family:"IBM Plex Mono",ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.ccarow .ccawhy{grid-column:1/3;font-size:14.5px;color:var(--body);display:none;line-height:1.4}
+.tog.sugg{box-shadow:0 0 0 3px var(--ok)}
+.eq{font-family:"Source Serif 4",Georgia,serif;font-size:34px;color:var(--ink);display:flex;flex-wrap:wrap;align-items:center;gap:6px;justify-content:center}
+.eq [data-t]{padding:4px 10px;border-radius:8px;cursor:pointer;transition:background .15s}
+.eq [data-t].on{background:var(--tgold);box-shadow:inset 0 -3px 0 var(--gold)}
+.eq .op{color:var(--muted)}
+.card.lit{outline:2px solid var(--acc,var(--terra))} .card.dim{opacity:.4}
+.bars .bl{display:grid;grid-template-columns:260px 1fr 70px;gap:14px;align-items:center;margin:10px 0}
+.bars .bn{font-size:16px;color:var(--ink);line-height:1.3} .bars .bn small{display:block;color:var(--muted);font-size:13px}
+.bars .bb{height:26px;border-radius:5px;background:var(--acc,var(--slate))}
+.bars .bv{font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;font-size:17px;color:var(--ink)}
+.chk{display:flex;flex-direction:column;gap:8px}
+.chk label{display:flex;gap:12px;align-items:flex-start;font-size:17px;line-height:1.35;color:var(--ink);background:var(--tneutral);padding:10px 14px;border-radius:9px;cursor:pointer}
+.chk input{width:20px;height:20px;margin-top:2px;accent-color:var(--sage);flex:none}
+.links a{display:block;font-size:14px;line-height:1.5;color:var(--slate);text-decoration:none;word-break:break-all}
+.links a:hover{text-decoration:underline}
+.rows.compact .row{padding:8px 0;grid-template-columns:185px 1fr;gap:14px}
+.rows.compact .row .v{font-size:16.5px}
+.rows.compact .row .k{font-size:11.5px}
+.door{min-height:190px}
+.door .dt{font-size:19px}
+.mrow{padding:9px 14px}
+.mrow .mwhy{font-size:14px}
+
+/* week 10 additions */
+textarea{font:inherit;font-size:16px;line-height:1.45;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--stage);color:var(--ink);width:100%;resize:none}
+.tab{border:1px solid var(--line);background:var(--stage);color:var(--body);border-radius:999px;padding:7px 14px;font-size:14px;cursor:pointer;font-weight:600}
+.tab.on{background:var(--ink);color:var(--stage);border-color:var(--ink)}
+.cstack{display:flex;flex-direction:column;gap:5px;max-height:330px;overflow:auto;padding-right:4px}
+.cb{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;padding:7px 12px;border-radius:7px;flex:none}
+.cb.sys{background:var(--tslate);color:var(--slate);font-weight:600} .cb.usr{background:var(--tgold);color:var(--gold);margin-left:40px} .cb.ast{background:var(--tterra);color:var(--terra);margin-right:40px}
+.pcard{background:var(--stage);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+.prow{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:5px 0;border-bottom:1px solid var(--hair);font-size:15px}
+.prow:last-child{border-bottom:0}
+.pk{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--terra);font-weight:600;padding-top:2px}
+.pv{color:var(--ink)} .pv.empty{color:var(--muted)}
+.pform{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.pform label{display:flex;flex-direction:column;gap:3px;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.pform input{font-family:"Source Sans 3",sans-serif;font-size:15px;padding:6px 9px;letter-spacing:0;text-transform:none}
+mark{background:var(--tgold);color:var(--ink);padding:1px 3px;border-radius:3px}
+.prompt{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:16.5px;line-height:1.55;background:var(--codebg);border:1px solid var(--hair);border-left:4px solid var(--acc,var(--terra));
+  border-radius:9px;padding:14px 18px;color:var(--ink);white-space:pre-wrap;margin:0}
+.prompt.bad{--acc:var(--bad)} .prompt.good{--acc:var(--ok)}
+.plab{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;margin:0 0 6px;color:var(--acc,var(--muted))}
+.vend{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.vcol{background:var(--tneutral);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;border-top:4px solid var(--acc)}
+.vcol .vh{display:flex;gap:12px;align-items:center}
+.vcol .vg{width:36px;height:36px;border-radius:50%;background:var(--acc);color:var(--stage);display:grid;place-items:center;font-weight:700;font-family:"IBM Plex Mono",monospace;font-size:16px;flex:none}
+.vcol .vt{font-family:"Source Serif 4",Georgia,serif;font-size:22px;font-weight:600;color:var(--ink)}
+.vcol .vl{font-size:16px;color:var(--body);font-style:italic;margin:0}
+.vcol ul{margin:0;padding-left:20px} .vcol li{font-size:16.5px;line-height:1.4;color:var(--body);margin:0 0 6px}
+.vcol .prompt{font-size:14.5px;padding:10px 14px}
+.v-g{--acc:var(--terra)} .v-c{--acc:var(--slate)}
+.rw{display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:center;padding:7px 12px;border-radius:8px;background:var(--tneutral);font-size:15.5px;color:var(--body)}
+.rw .mk{font-weight:700;color:var(--muted);text-align:center} .rw.hit{background:var(--tok);color:var(--ink)} .rw.hit .mk{color:var(--ok)}
+.erow{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:8px 14px;border-radius:8px;background:var(--tneutral);font-size:16px;color:var(--ink)}
+.chat{display:flex;flex-direction:column;gap:8px}
+.msg{max-width:84%;padding:10px 14px;border-radius:12px;font-size:16.5px;line-height:1.4}
+.msg.u{align-self:flex-end;background:var(--tgold);color:var(--ink)} .msg.a{align-self:flex-start;background:var(--tslate);color:var(--ink)}
+.msg .who{display:block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.bigline{font-family:"Source Serif 4",Georgia,serif;font-size:38px;line-height:1.22;font-weight:600;color:var(--ink);margin:0;max-width:30ch}
+.bigline em{color:var(--terra);font-style:normal}
+.zlab{font-size:13px;font-weight:700;fill:var(--ink);pointer-events:none}
+.pyr{display:flex;flex-direction:column;gap:7px;align-items:flex-start}
+.pyr .pb{border-radius:8px;padding:11px 16px;display:flex;gap:16px;align-items:baseline;background:var(--tint)}
+.pyr .pb b{font-family:"Source Serif 4",Georgia,serif;font-size:21px;min-width:150px} .pyr .pb span{font-size:16px;color:var(--body)}
+
+/* week 11 additions */
+.ctrl{display:grid;grid-template-columns:200px 1fr 120px;gap:12px;align-items:center;font-size:15.5px;color:var(--body)}
+.ctrl b{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:14px;color:var(--ink);text-align:right}
+.dots{display:grid;grid-template-columns:repeat(20,1fr);gap:4px}
+.dots span{aspect-ratio:1;border-radius:3px;background:var(--tbad);border:1px solid color-mix(in srgb,var(--bad) 40%,transparent)}
+.dots span.tp{background:var(--ok);border-color:var(--ok)}
+.rbar{height:26px;border-radius:5px;transition:width .2s}
+.pq{display:block;width:100%;text-align:left;cursor:pointer;background:var(--tneutral);border:1.5px solid transparent;border-radius:9px;padding:9px 14px;font-size:16px;line-height:1.35;color:var(--ink)}
+.pq:hover{border-color:var(--line)}
+.pq.on{border-color:var(--gold);background:var(--tgold)}
+.pq.good{box-shadow:inset 4px 0 0 var(--ok)} .pq.weak{box-shadow:inset 4px 0 0 var(--bad);opacity:.75}
+.cands{display:flex;flex-direction:column;gap:7px}
+.cand{display:grid;grid-template-columns:40px 130px 1fr 54px;gap:12px;align-items:center;padding:8px 14px;border-radius:8px;background:var(--tneutral);font-size:16px;border:1.5px solid transparent}
+.cand span{font-family:"IBM Plex Mono",ui-monospace,monospace;color:var(--muted);font-weight:600}
+.cand i{display:block;height:14px;border-radius:4px;background:var(--slate);opacity:.7}
+.cand em{font-style:normal;font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;color:var(--ink);text-align:right}
+.cand.top.ok{border-color:var(--ok);background:var(--tok)} .cand.top.bad{border-color:var(--bad);background:var(--tbad)} .cand.top.muted{opacity:.55}
+.stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.disc{font-size:13px;color:var(--muted);font-style:italic;margin:0}
+.links a{font-size:15.5px;line-height:1.75}
+</style></head>
+<body>
+<div class="wrap"><div class="stage"><section class="slide title-slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 1"><div class="body"><p class="tmeta">AI for All · Week 11 · Part B</p><h1 style="font-size:62px;max-width:15ch;line-height:1.03">AI and Forensics</h1><p class="sub" style="font-size:22px">Evidence, uncertainty and human judgment — from plate readers to DNA software to legal chatbots.</p><div class="grid g4" style="max-width:820px;margin-top:22px;gap:10px"><div class="card t-slate" style="padding:12px 14px"><p class="ct" style="margin:0">Search</p></div><div class="card t-terra" style="padding:12px 14px"><p class="ct" style="margin:0">Evaluate</p></div><div class="card t-sage" style="padding:12px 14px"><p class="ct" style="margin:0">Estimate</p></div><div class="card t-plum" style="padding:12px 14px"><p class="ct" style="margin:0">Assist</p></div></div><p class="tnote">CSI 235 · AI for All · Xin Li · Fall 2026<br><b>← →</b> move · <b>O</b> all slides · <b>N</b> speaker notes · <b>R</b> reveal · <b>T</b> theme · <b>F</b> fullscreen</p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>01 / 40</span></div><aside class="notes"><p>This deck excludes multimedia forensics and deepfake detection, which have their own lecture. It covers policing tools, pattern evidence, DNA, forensic medicine, digital evidence and legal research. Case facts follow the survey deck (10_AI_and_Forensics.pptx).</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 2"><p class="eyebrow">The route</p><h1>Five parts, one recurring question</h1><div class="body" style=""><div class="grid g5"><button class="card t-slate" type="button" style="text-align:left;cursor:pointer;border:0;min-height:250px" onclick="goSlide(3)"><div class="big">01</div><h3 style="font-size:20px">What forensics asks</h3><p style="font-size:15.5px">Traces, roles for algorithms, the evidence workflow.</p></button><button class="card t-terra" type="button" style="text-align:left;cursor:pointer;border:0;min-height:250px" onclick="goSlide(8)"><div class="big">02</div><h3 style="font-size:20px">Policing and patterns</h3><p style="font-size:15.5px">Plate readers, fingerprints, firearms.</p></button><button class="card t-sage" type="button" style="text-align:left;cursor:pointer;border:0;min-height:250px" onclick="goSlide(18)"><div class="big">03</div><h3 style="font-size:20px">DNA and medicine</h3><p style="font-size:15.5px">Mixtures, likelihood ratios, genealogy, autopsy research.</p></button><button class="card t-plum" type="button" style="text-align:left;cursor:pointer;border:0;min-height:250px" onclick="goSlide(25)"><div class="big">04</div><h3 style="font-size:20px">Digital and legal</h3><p style="font-size:15.5px">Phones at scale, crypto, legal research tools.</p></button><button class="card t-gold" type="button" style="text-align:left;cursor:pointer;border:0;min-height:250px" onclick="goSlide(32)"><div class="big">05</div><h3 style="font-size:20px">Judgment</h3><p style="font-size:15.5px">Human review, fairness, courts, audit trails.</p></button></div><p class="kick" style="">The question on every slide: <b>is this a lead, an estimate, or a statement about evidence — and who can check it?</b></p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>02 / 40</span></div><aside class="notes"><p>Click a part to jump. The recurring question comes back as the final slide.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 3"><p class="eyebrow">Opening discussion · 2 minutes</p><h1>A camera flags your car as stolen</h1><div class="body" style=""><div class="split even"><div class="col"><p class="bigline" style="font-size:30px">An automated system says your car is stolen. The officer sees a matching plate number.</p><p class="kick" style="">What else should the officer check? What could go wrong before anyone reaches court?</p></div><div class="col"><div class="ask"><span class="lbl">Pair discussion</span><p class="q">What would you check?</p><button class="btn reveal" type="button">Show a checklist</button><div class="ans"><b>State</b> on the plate · <b>vehicle type and colour</b> · whether the hotlist record is <b>current</b> · whether the camera read is clear · the reason the car is listed. Every one of these failed in a real case you will see on slide 11.</div></div></div></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>03 / 40</span></div><aside class="notes"><p>Collect answers on the board before revealing. Keep them: slide 11 (Aurora) tests which checks would have interrupted the chain.</p></aside></section><section class="slide section-slide" data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 4"><div class="body"><div class="secnum">01</div><h1>What forensic science asks</h1><p class="sub" style="font-size:21px">Traces, questions, and the limits of a clue.</p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>04 / 40</span></div><aside class="notes"><p>Part 1 sets the frame: what forensic science is for, what roles algorithms play, and how evidence should move.</p></aside></section><section class="slide " data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 5"><p class="eyebrow">The core question</p><h1>Start with the trace</h1><div class="body" style=""><p class="bigline">What can a trace tell us about <em>a person, an object or an event?</em></p><div class="grid g2" style="margin-top:10px"><div class="card t-slate" style=""><p class="ct">The question</p><p style="">A fingerprint, a DNA swab, a phone log, a plate read — each is a trace left behind.</p></div><div class="card t-terra" style=""><p class="ct">The limit</p><p style="">A useful clue can still leave important questions unanswered: who, how, when and why.</p></div></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>05 / 40</span></div><aside class="notes"><p>Set expectations: forensic evidence rarely “solves” a case on its own. It narrows, supports or contradicts explanations.</p></aside></section><section class="slide " data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 6"><p class="eyebrow">Sort it · four roles for algorithms</p><h1>Search, evaluate, estimate or assist?</h1><div class="body" style=""><div class="grid g1" data-w="sort2" style="gap:8px"><div class="sitem" data-cat="s" style="padding:9px 12px"><span class="st" style="font-size:16px">Rank fingerprints in a database for an examiner to review</span><span class="btnrow"><button class="tog" data-v="s" type="button">Search</button><button class="tog" data-v="e" type="button">Evaluate</button><button class="tog" data-v="t" type="button">Estimate</button><button class="tog" data-v="a" type="button">Assist</button></span><span class="sw">Search: a candidate list.</span></div><div class="sitem" data-cat="e" style="padding:9px 12px"><span class="st" style="font-size:16px">Weigh how well two explanations fit a DNA mixture</span><span class="btnrow"><button class="tog" data-v="s" type="button">Search</button><button class="tog" data-v="e" type="button">Evaluate</button><button class="tog" data-v="t" type="button">Estimate</button><button class="tog" data-v="a" type="button">Assist</button></span><span class="sw">Evaluate: strength of evidence.</span></div><div class="sitem" data-cat="t" style="padding:9px 12px"><span class="st" style="font-size:16px">Predict how long ago someone died</span><span class="btnrow"><button class="tog" data-v="s" type="button">Search</button><button class="tog" data-v="e" type="button">Evaluate</button><button class="tog" data-v="t" type="button">Estimate</button><button class="tog" data-v="a" type="button">Assist</button></span><span class="sw">Estimate a property.</span></div><div class="sitem" data-cat="a" style="padding:9px 12px"><span class="st" style="font-size:16px">Summarize 40,000 messages from a seized phone</span><span class="btnrow"><button class="tog" data-v="s" type="button">Search</button><button class="tog" data-v="e" type="button">Evaluate</button><button class="tog" data-v="t" type="button">Estimate</button><button class="tog" data-v="a" type="button">Assist</button></span><span class="sw">Assist: organize an investigation.</span></div><div class="sitem" data-cat="s" style="padding:9px 12px"><span class="st" style="font-size:16px">Suggest which shootings used the same gun</span><span class="btnrow"><button class="tog" data-v="s" type="button">Search</button><button class="tog" data-v="e" type="button">Evaluate</button><button class="tog" data-v="t" type="button">Estimate</button><button class="tog" data-v="a" type="button">Assist</button></span><span class="sw">Search: possible links (leads).</span></div><div class="sitem" data-cat="t" style="padding:9px 12px"><span class="st" style="font-size:16px">Estimate age from a skeleton</span><span class="btnrow"><button class="tog" data-v="s" type="button">Search</button><button class="tog" data-v="e" type="button">Evaluate</button><button class="tog" data-v="t" type="button">Estimate</button><button class="tog" data-v="a" type="button">Assist</button></span><span class="sw">Estimate a property.</span></div></div><p class="kick score" style="font-size:15px"></p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>06 / 40</span></div><aside class="notes"><p>The same word “AI” covers very different jobs. Search produces leads; evaluation produces a statement about evidence; estimation predicts a property; assistance organizes work. The standard of proof differs for each.</p></aside></section><section class="slide " data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 7"><p class="eyebrow">The evidence workflow</p><h1>Four steps every finding should survive</h1><div class="body" style=""><div class="flow" data-w="stepper" style="grid-template-columns:repeat(4,1fr)"><div class="step t-slate" data-ex="Keep the original material untouched and record where it came from — the chain of custody."><span class="sn">01</span><h3>Collect</h3><p>Preserve the original.</p></div><div class="step t-terra" data-ex="Use a method that has been validated for &lt;b&gt;this kind of sample&lt;/b&gt; — not just any sample."><span class="sn">02</span><h3>Analyze</h3><p>Use a tested method.</p></div><div class="step t-sage" data-ex="Say what was found, what was assumed, and how uncertain it is."><span class="sn">03</span><h3>Interpret</h3><p>State findings and uncertainty.</p></div><div class="step t-gold" data-ex="Another qualified person — including the defence — must be able to examine the basis of the claim."><span class="sn">04</span><h3>Challenge</h3><p>Let someone else check.</p></div></div><div class="btnrow"><button class="btn stepbtn" type="button">Start</button></div><div class="panel stepout readout" data-start="Press Start to walk through it." style="font-family:inherit;font-size:16.5px;min-height:62px"></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>07 / 40</span></div><aside class="notes"><p>Interactive stepper. AI can enter at any step. The question is whether the step still holds up when it does — especially step 4.</p></aside></section><section class="slide " data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 8"><p class="eyebrow">A map of the field</p><h1>The same word “AI” covers very different methods</h1><div class="body" style=""><table class="tbl"><thead><tr><th>Area</th><th>Typical contribution</th><th>Kind of method</th></tr></thead><tbody><tr><td>Policing and patterns</td><td>Candidate lists and possible connections</td><td>Image matching, search</td></tr><tr><td>DNA mixtures</td><td>Statistical assessment of evidence</td><td>Probabilistic models</td></tr><tr><td>Forensic medicine</td><td>Research on detection and estimation</td><td>Machine learning on scans, chemistry</td></tr><tr><td>Digital and legal work</td><td>Search, summaries, document review</td><td>Language models, retrieval</td></tr></tbody></table><p class="kick" style="">Some of these tools predate modern deep learning. “AI-powered” on a box tells you little about how a result was reached.</p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>08 / 40</span></div><aside class="notes"><p>Use the third column to show that “AI” spans classic statistics through generative models.</p></aside></section><section class="slide section-slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 9"><div class="body"><div class="secnum">02</div><h1>Policing and patterns</h1><p class="sub" style="font-size:21px">Plate readers, fingerprints and firearms: search tools that produce leads.</p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>09 / 40</span></div><aside class="notes"><p>Part 2: search systems. Their output is a candidate or a lead — and what happens next decides whether harm occurs.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 10"><p class="eyebrow">Automatic licence-plate readers</p><h1>Cameras that read every passing plate</h1><div class="body" style=""><div class="split even"><div class="col"><div class="blk a-terra"><div class="lab">What the system does</div><p>A camera reads a plate and records a time and place. Software checks it against selected lists (“hotlists”).</p></div><div class="blk a-slate"><div class="lab">Why it helps</div><p>Investigators can find a vehicle sooner and connect sightings across places.</p></div></div><div class="col"><div class="flow" data-w="stepper" style="grid-template-columns:repeat(3,1fr)"><div class="step t-terra" data-ex="Optical character recognition turns an image into a plate string."><span class="sn">1</span><h3>Read</h3><p>Camera reads plate.</p></div><div class="step t-gold" data-ex="The plate string is compared with lists: stolen vehicles, warrants, missing persons."><span class="sn">2</span><h3>Compare</h3><p>Check the hotlist.</p></div><div class="step t-plum" data-ex="An alert is a &lt;b&gt;lead&lt;/b&gt;, not a confirmation. Human checks come next."><span class="sn">3</span><h3>Alert</h3><p>An officer is notified.</p></div></div><div class="btnrow"><button class="btn stepbtn" type="button">Start</button></div><div class="panel stepout readout" data-start="Press Start to walk through it." style="font-family:inherit;font-size:16.5px;min-height:62px"></div></div></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>10 / 40</span></div><aside class="notes"><p>Keep the three steps distinct: a correct read can still match an outdated or wrong record.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 11"><p class="eyebrow">Case study · Aurora, Colorado, 2020</p><h1>A wrong match, step by step</h1><div class="body" style=""><div class="tl" data-w="tl" style="grid-template-columns:repeat(4,1fr)"><button class="tli" type="button" data-detail="In 2020, officers in Aurora, Colorado stopped Brittney Gilliam’s car with four children inside after a plate-reader alert."><span class="y">The event</span><span class="h">A family stopped</span><span class="d">Officers stop Brittney Gilliam and four children.</span></button><button class="tli" type="button" data-detail="The plate &lt;b&gt;number&lt;/b&gt; matched — but the &lt;b&gt;state&lt;/b&gt; and &lt;b&gt;vehicle type&lt;/b&gt; did not. A car is not a motorcycle."><span class="y">The error</span><span class="h">The wrong vehicle</span><span class="d">Her Colorado plate number matched a stolen Montana motorcycle.</span></button><button class="tli" type="button" data-detail="Officers held the family at gunpoint and handcuffed two of the children. The family later received a $1.9 million settlement (2024, per AP)."><span class="y">The harm</span><span class="h">At gunpoint</span><span class="d">Officers held the family at gunpoint and handcuffed two children.</span></button><button class="tli" type="button" data-detail="This was a &lt;b&gt;system and verification failure&lt;/b&gt;, not proof that the camera misread the plate. Which of your slide-3 checks would have stopped it?"><span class="y">The lesson</span><span class="h">Check everything</span><span class="d">Plate number, state, vehicle and record status all matter.</span></button></div><div class="tldetail"></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>11 / 40</span></div><aside class="notes"><p>Interactive timeline: click each step. Focus on the documented mismatch, not speculation about a specific camera model. Avoid equating a settlement with an adjudicated technical error rate.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 12"><p class="eyebrow">Try it · why rare events produce many false alarms</p><h1>Most alerts can be wrong even when the camera is good</h1><div class="body" style=""><div class="split even" data-w="baserate" style="align-items:start"><div class="col" style="gap:12px"><div class="ctrl"><span>Wanted vehicles per 10,000</span><input class="bT" type="range" min="1" max="200" value="10"><b class="vT"></b></div><div class="ctrl"><span>False-alert rate (other cars)</span><input class="bF" type="range" min="1" max="50" value="10"><b class="vF"></b></div><div class="ctrl"><span>Wanted cars caught</span><input class="bD" type="range" min="50" max="100" value="100"><b class="vD"></b></div><p class="readout bout" style="font-size:15.5px"></p></div><div class="col" style="gap:8px"><p class="lab" style="margin:0">Every 100 alerts · <span class="ok">real target</span> vs <span class="no">false alarm</span></p><div class="dots"></div><p class="disc">Start values reproduce the lecture example: 10 wanted cars, 1% false alerts → about 110 alerts, roughly 1 in 11 real. Illustration only — not measured ALPR rates.</p></div></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>12 / 40</span></div><aside class="notes"><p>Interactive. Start at 10 targets and 1.0%: about 100 false alerts and 10 true ones. Then raise the number of targets: precision improves. The lesson: when the thing you look for is rare, even a small false-alert rate swamps the true alerts.</p></aside></section><section class="slide " data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 13"><p class="eyebrow">Quick check</p><h1>A city doubles its cameras. The hotlist stays the same. What happens?</h1><div class="body" style=""><div class="opts" data-w="quiz" data-ans="1"><button class="opt" type="button"><span class="fill"></span><span class="L">A</span><span class="T">False alarms disappear because more cameras means more accuracy</span><span class="N"></span><span class="why">Each camera has its own error rate; more reads means more errors.</span></button><button class="opt" type="button"><span class="fill"></span><span class="L">B</span><span class="T">Both true alerts and false alarms roughly double</span><span class="N"></span><span class="why">Yes — more reads of the same mix of cars, same proportions.</span></button><button class="opt" type="button"><span class="fill"></span><span class="L">C</span><span class="T">Only true alerts increase</span><span class="N"></span><span class="why">False alerts come from ordinary cars, which are read twice as often too.</span></button><button class="opt" type="button"><span class="fill"></span><span class="L">D</span><span class="T">Nothing changes</span><span class="N"></span><span class="why">More reads means more alerts of both kinds.</span></button></div><p class="fb" data-right="&lt;b&gt;Right.&lt;/b&gt; The share of alerts that are real stays about the same — so officers face twice as many false alarms to check." data-wrong="Not quite — read the other options again."></p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>13 / 40</span></div><aside class="notes"><p>Answer B. Follow-up: what policy would you put in place so the extra false alarms do not become extra stops?</p></aside></section><section class="slide " data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 14"><p class="eyebrow">Poll · location data and privacy</p><h1>Who should be allowed to search a month of plate reads?</h1><div class="body" style=""><div class="split even" style="align-items:start"><div class="col"><div class="opts" data-w="poll"><button class="opt" type="button"><span class="fill"></span><span class="L">A</span><span class="T">Any officer, if they log a case number</span><span class="N"></span></button><button class="opt" type="button"><span class="fill"></span><span class="L">B</span><span class="T">Only with a warrant from a judge</span><span class="N"></span></button><button class="opt" type="button"><span class="fill"></span><span class="L">C</span><span class="T">Only for serious crimes or missing persons</span><span class="N"></span></button><button class="opt" type="button"><span class="fill"></span><span class="L">D</span><span class="T">Nobody — delete reads after 24 hours</span><span class="N"></span></button></div><div class="btnrow"><button class="btn ghost reset" type="button">Reset tally</button><span class="kick" style="font-size:13.5px">Click to add a vote · right-click to remove one</span></div></div><div class="col"><div class="ask"><span class="lbl">After the vote</span><p class="q">Does your answer change if the same data could locate a missing child — or track visits to a clinic or a place of worship?</p><button class="btn reveal" type="button">Reveal</button><div class="ans"><b>Function creep</b>: data collected for one purpose gets used for another. Retention limits, access controls, purpose limits and audit logs matter even when every plate is read correctly.</div></div></div></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>14 / 40</span></div><aside class="notes"><p>There is no single right answer. Push students to name a rule, not just a feeling.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 15"><p class="eyebrow">Fingerprint search</p><h1>Software ranks candidates; an examiner decides</h1><div class="body" style=""><div class="split even"><div class="col"><div class="blk a-terra"><div class="lab">The advance</div><p>Software compares a partial print with millions of stored prints and ranks possible matches.</p></div><div class="blk a-slate"><div class="lab">The check</div><p>An examiner still evaluates the ridge detail and the quality of the print.</p></div></div><div class="col"><div class="grid g1"><div class="card t-terra" style=""><p class="ct">Case · 2004</p><h3>Brandon Mayfield</h3><p style="">FBI examiners wrongly attributed a Madrid bombing fingerprint to an Oregon lawyer. He was released after about two weeks.</p></div><div class="card t-plum" style=""><p class="ct">What the review found</p><h3>Look-alikes and bias</h3><p style="">Look-alike detail plus failures in examination and review. Examiners also discounted Spanish police disagreement.</p></div></div></div></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>15 / 40</span></div><aside class="notes"><p>Mayfield (DOJ Inspector General review). The lesson is about human–technology interaction and independent review: a top-ranked candidate can shape what an examiner expects to see.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 16"><p class="eyebrow">Read the headline carefully</p><h1>“Not every fingerprint is unique”?</h1><div class="body" style=""><div class="split even"><div class="col"><div class="quote"><p>“AI discovers that not every fingerprint is unique.”</p><p class="by">A 2024 university news headline about Columbia research</p></div><div class="blk a-slate"><div class="lab">The actual task</div><p>Can AI tell whether two <b>different fingers</b> belong to the same person?</p></div></div><div class="col"><div class="ask"><span class="lbl">Your turn</span><p class="q">Rewrite the headline so it is accurate.</p><button class="btn reveal" type="button">Reveal</button><div class="ans">“AI finds similarities among different fingers of the <b>same person</b>.” Shared patterns across fingers do <b>not</b> mean two prints are identical, and the authors called for more validation before forensic use.</div></div></div></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>16 / 40</span></div><aside class="notes"><p>A media-literacy moment. The research is interesting; the headline overstates it. Ask students to write their version before revealing.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 17"><p class="eyebrow">Firearms and cartridge cases</p><h1>A lead is not a confirmed hit</h1><div class="body" style=""><div class="split even"><div class="col"><div class="blk a-terra"><div class="lab">A working search network</div><p>NIBIN compares images of cartridge cases to suggest links between shootings.</p></div><div class="blk a-slate"><div class="lab">A different step</div><p>ATF distinguishes an <b>unconfirmed lead</b> from a hit <b>confirmed by an examiner</b> — microscopic examination when needed for court.</p></div></div><div class="col"><div class="card t-gold"><div class="big">193,269</div><p>NIBIN leads reported by ATF in fiscal year 2025.</p></div><p class="kick" style="font-size:16px">A workload count — not a number of crimes solved, and not proof that each lead is correct.</p></div></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>17 / 40</span></div><aside class="notes"><p>NIBIN predates modern deep learning. New 3D and statistical methods aim for more objective comparison, but each needs its own validation.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 18"><p class="eyebrow">Try it · closed test vs open investigation</p><h1>A ranked list always has a #1</h1><div class="body" style=""><div class="split even" data-w="openset" style="align-items:start"><div class="col" style="gap:10px"><div class="btnrow"><button class="tog" data-k="in" type="button">True source in database</button><button class="tog" data-k="out" type="button">True source absent</button><button class="tog" data-k="none" type="button">Allow “none of these”</button></div><div class="cands"></div><p class="readout oout" style="font-size:15.5px"></p></div><div class="col"><div class="blk a-slate"><div class="lab">Closed test</div><p>The right answer is always one of the examples. High scores here can mislead.</p></div><div class="blk a-terra"><div class="lab">Open investigation</div><p>The right answer may not be in the database at all.</p></div><p class="note-line">A reliable system needs a useful “none of these” option.</p><p class="disc">Scores are invented for illustration.</p></div></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>18 / 40</span></div><aside class="notes"><p>Interactive. Click “absent”: the top candidate is now an innocent person. Then turn on “none of these”. Link back to Mayfield and to chemistry/handwriting models trained on controlled datasets.</p></aside></section><section class="slide section-slide" data-acc="var(--sage)" style="--acc:var(--sage)" aria-label="Slide 19"><div class="body"><div class="secnum">03</div><h1>DNA and medicine</h1><p class="sub" style="font-size:21px">Mixtures, likelihood ratios, family trees and autopsy research.</p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>19 / 40</span></div><aside class="notes"><p>Part 3: evaluation and estimation. These tools produce statements about evidence, so the wording matters.</p></aside></section><section class="slide " data-acc="var(--sage)" style="--acc:var(--sage)" aria-label="Slide 20"><p class="eyebrow">DNA mixtures</p><h1>When one swab holds several people’s DNA</h1><div class="body" style=""><div class="split even"><div class="col"><div class="blk a-sage"><div class="lab">The challenge</div><p>One sample can contain small amounts of DNA from several people, overlapping in the signal.</p></div><div class="blk a-slate"><div class="lab">The contribution</div><p><b>Probabilistic genotyping</b> software compares possible explanations for the mixed signal.</p></div></div><div class="col"><div class="rows compact"><div class="row" style="--acc:var(--terra)"><div class="k">Gets harder with</div><div class="v">Very little DNA, degraded samples, many contributors.</div></div><div class="row" style="--acc:var(--plum)"><div class="k">Kind of AI</div><div class="v">Mostly statistical modelling, not generative AI.</div></div><div class="row" style="--acc:var(--gold)"><div class="k">Must check</div><div class="v">Was the lab’s validation done on samples like this one?</div></div></div></div></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>20 / 40</span></div><aside class="notes"><p>A mature example of computational assistance. Avoid describing a mixture as cleanly separating every person.</p></aside></section><section class="slide " data-acc="var(--sage)" style="--acc:var(--sage)" aria-label="Slide 21"><p class="eyebrow">What a likelihood ratio compares</p><h1>Two explanations, one number</h1><div class="body" style=""><div class="grid g2"><div class="card t-sage" style="min-height:160px;"><p class="ct">Explanation A</p><h3>Person of interest + an unknown</h3><p style="">The suspect and one unknown person contributed the DNA.</p></div><div class="card t-slate" style="min-height:160px;"><p class="ct">Explanation B</p><h3>Two unknowns</h3><p style="">Two unknown people contributed the DNA.</p></div></div><div class="ask"><span class="lbl">Common trap</span><p class="q">The software reports a likelihood ratio of 1,000 favouring A. Does that mean 1,000-to-1 odds the suspect is guilty?</p><button class="btn reveal" type="button">Reveal</button><div class="ans"><b>No.</b> It says the DNA is about 1,000 times more probable under A than under B, <b>given stated assumptions</b>. It says nothing about guilt, and nothing about how or when the DNA got there.</div></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>21 / 40</span></div><aside class="notes"><p>Confusing the likelihood ratio with the probability of guilt is a classic courtroom error (sometimes called the prosecutor’s fallacy). Keep it qualitative.</p></aside></section><section class="slide " data-acc="var(--sage)" style="--acc:var(--sage)" aria-label="Slide 22"><p class="eyebrow">Sort it · whose DNA, and how did it get there?</p><h1>Source question or activity question?</h1><div class="body" style=""><div class="grid g2" data-w="sort2" style="gap:8px"><div class="sitem" data-cat="src" style="padding:9px 12px"><span class="st" style="font-size:16px">Did this DNA come from Mr. Lee?</span><span class="btnrow"><button class="tog" data-v="src" type="button">Source</button><button class="tog" data-v="act" type="button">Activity</button></span><span class="sw">Source level: whose DNA.</span></div><div class="sitem" data-cat="act" style="padding:9px 12px"><span class="st" style="font-size:16px">Did Mr. Lee touch the knife during the attack?</span><span class="btnrow"><button class="tog" data-v="src" type="button">Source</button><button class="tog" data-v="act" type="button">Activity</button></span><span class="sw">Activity level: DNA alone may not say.</span></div><div class="sitem" data-cat="act" style="padding:9px 12px"><span class="st" style="font-size:16px">Could the DNA have transferred via a handshake?</span><span class="btnrow"><button class="tog" data-v="src" type="button">Source</button><button class="tog" data-v="act" type="button">Activity</button></span><span class="sw">Transfer is an activity question.</span></div><div class="sitem" data-cat="src" style="padding:9px 12px"><span class="st" style="font-size:16px">Is the profile consistent with a known sample?</span><span class="btnrow"><button class="tog" data-v="src" type="button">Source</button><button class="tog" data-v="act" type="button">Activity</button></span><span class="sw">A source-level comparison.</span></div><div class="sitem" data-cat="act" style="padding:9px 12px"><span class="st" style="font-size:16px">When was the DNA deposited?</span><span class="btnrow"><button class="tog" data-v="src" type="button">Source</button><button class="tog" data-v="act" type="button">Activity</button></span><span class="sw">DNA usually cannot date itself.</span></div><div class="sitem" data-cat="src" style="padding:9px 12px"><span class="st" style="font-size:16px">How many people contributed to the mixture?</span><span class="btnrow"><button class="tog" data-v="src" type="button">Source</button><button class="tog" data-v="act" type="button">Activity</button></span><span class="sw">A question about sources in the sample.</span></div></div><p class="kick score" style="font-size:15px"></p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>22 / 40</span></div><aside class="notes"><p>A profile may support an association with a person. DNA alone may not establish when it arrived or what that person did.</p></aside></section><section class="slide " data-acc="var(--sage)" style="--acc:var(--sage)" aria-label="Slide 23"><p class="eyebrow">Algorithms can also correct errors</p><h1>Reanalysis cuts both ways</h1><div class="body" style=""><div class="split even"><div class="col"><div class="grid g1"><div class="card t-sage" style=""><p class="ct">2020 · Georgia</p><h3>Kerry Robinson</h3><p style="">A new DNA interpretation helped secure his exoneration after more than 17 years in prison.</p></div></div><p class="kick" style="font-size:16px">Scientists, lawyers and an innocence organization did the work — not an autonomous computer decision.</p></div><div class="col"><div class="blk a-slate"><div class="lab">The broader lesson</div><p>Independent reanalysis can challenge both human judgment and software output.</p></div><div class="blk a-plum"><div class="lab">Transparency</div><p>In <i>State v. Pickett</i> (2021), a New Jersey appeals court required access to DNA software source code, under protections.</p></div></div></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>23 / 40</span></div><aside class="notes"><p>Robinson: Boise State describes Greg Hampikian and Itiel Dror’s work and the later probabilistic genotyping analysis. Pickett was case-specific; access rules vary by jurisdiction.</p></aside></section><section class="slide " data-acc="var(--sage)" style="--acc:var(--sage)" aria-label="Slide 24"><p class="eyebrow">Genetic genealogy</p><h1>One person’s DNA reveals their relatives</h1><div class="body" style=""><div class="rows"><div class="row" style="--acc:var(--sage)"><div class="k">The method</div><div class="v">Relative matches plus family-tree research narrow possible identities.</div></div><div class="row" style="--acc:var(--slate)"><div class="k">The role</div><div class="v">A genealogical lead needs independent follow-up. DOJ’s 2019 interim policy bars arrest based on genetic association alone.</div></div><div class="row" style="--acc:var(--terra)"><div class="k">The reach</div><div class="v">Your cousin’s upload can point to you — though you never consented.</div></div><div class="row" style="--acc:var(--plum)"><div class="k">The boundary</div><div class="v">Consent, database rules and legal authority shape appropriate use.</div></div></div><p class="kick" style="">Discussion: should people be able to opt their family out of police searches?</p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>24 / 40</span></div><aside class="notes"><p>Genetic genealogy differs from ordinary forensic DNA matching and from predicting a face from DNA.</p></aside></section><section class="slide " data-acc="var(--sage)" style="--acc:var(--sage)" aria-label="Slide 25"><p class="eyebrow">AI in forensic medicine</p><h1>Promising research, hard validation</h1><div class="body" style=""><div data-w="tabs" style="display:flex;flex-direction:column;gap:16px"><div class="btnrow"><button class="tab" data-k="scan" type="button">Post-mortem scans</button><button class="tab" data-k="time" type="button">Time since death</button><button class="tab" data-k="bone" type="button">Bones and teeth</button></div><div class="tpane" data-k="scan"><div class="rows compact"><div class="row" style="--acc:var(--sage)"><div class="k">Idea</div><div class="v">Models examine post-mortem CT scans or help organize medical-examiner records.</div></div><div class="row" style="--acc:var(--terra)"><div class="k">Gap</div><div class="v">A result from one hospital may change on another scanner or population.</div></div></div></div><div class="tpane" data-k="time"><div class="rows compact"><div class="row" style="--acc:var(--sage)"><div class="k">Idea</div><div class="v">Chemical or microbial changes may help estimate how long decomposition has progressed.</div></div><div class="row" style="--acc:var(--terra)"><div class="k">Gap</div><div class="v">Temperature, surroundings and the condition of the remains change those patterns.</div></div></div></div><div class="tpane" data-k="bone"><div class="rows compact"><div class="row" style="--acc:var(--sage)"><div class="k">Idea</div><div class="v">AI may help estimate skeletal or dental characteristics and organize comparisons.</div></div><div class="row" style="--acc:var(--terra)"><div class="k">Limit</div><div class="v">Automating an unsupported method does not make its conclusions reliable (e.g. bitemark analysis).</div></div></div></div></div><p class="kick" style="">In every tab: <b>does it still work at another lab, on another population?</b></p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>25 / 40</span></div><aside class="notes"><p>Interactive tabs. NIST’s scientific foundation review of bitemark analysis is a good example of a method whose foundations were found lacking — automating it would not fix that.</p></aside></section><section class="slide section-slide" data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 26"><div class="body"><div class="secnum">04</div><h1>Digital and legal</h1><p class="sub" style="font-size:21px">Phones, crypto and legal research: AI that reads more than any person can.</p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>26 / 40</span></div><aside class="notes"><p>Part 4: assistance tools. Their risk is plausible-sounding output that nobody checks.</p></aside></section><section class="slide " data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 27"><p class="eyebrow">Digital evidence at scale</p><h1>An assistant that can be checked</h1><div class="body" style=""><p class="kick" style="font-size:18px">Phones and computers hold far more material than investigators can read. Search and summaries help — if every claim can be traced.</p><div class="flow" data-w="stepper" style="grid-template-columns:repeat(4,1fr)"><div class="step t-plum" data-ex="Keep a protected original and work on a verified copy (hash checked)."><span class="sn">1</span><h3>Preserve</h3><p>Protected original + verified copy.</p></div><div class="step t-slate" data-ex="Search only the case data the warrant or consent covers."><span class="sn">2</span><h3>Retrieve</h3><p>Search within authorized access.</p></div><div class="step t-gold" data-ex="Every statement in a summary points to the exact message, file or log entry — with context."><span class="sn">3</span><h3>Cite</h3><p>Link each claim to a record.</p></div><div class="step t-sage" data-ex="A person checks the cited records before anything goes into a report."><span class="sn">4</span><h3>Review</h3><p>A person checks sources.</p></div></div><div class="btnrow"><button class="btn stepbtn" type="button">Start</button></div><div class="panel stepout readout" data-start="Press Start to walk through it." style="font-family:inherit;font-size:16.5px;min-height:62px"></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>27 / 40</span></div><aside class="notes"><p>The design principle: an AI summary is acceptable only if each material claim can be traced to a specific record and checked.</p></aside></section><section class="slide " data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 28"><p class="eyebrow">Knowing forensics vs doing forensics</p><h1>Quiz scores do not equal casework</h1><div class="body" style=""><div class="bars"><div class="bl"><span class="bn">Knowledge questions<small>multiple choice</small></span><span class="bb" style="width:92.8%;--acc:var(--sage)"></span><span class="bv">92.75%</span></div><div class="bl"><span class="bn">Practical challenge tasks<small>47 of 150 correct</small></span><span class="bb" style="width:31.3%;--acc:var(--gold)"></span><span class="bv">47/150</span></div><div class="bl"><span class="bn">String-search tasks<small>500 tasks</small></span><span class="bb" style="width:1.0%;--acc:var(--terra)"></span><span class="bv">≈ 0</span></div></div><p class="kick" style="">DFIR-Metric (2025 preprint), reported results for GPT-4.1. <b>What it supports:</b> evaluate the actual workflow, not just a quiz.</p><p class="disc">Historical, task-specific results — not a 2026 product ranking.</p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>28 / 40</span></div><aside class="notes"><p>The preprint’s string-search reporting is internally inconsistent, so the deck uses “near-zero fully correct”. It is an academic evaluation, not an independent validation of commercial forensic tools.</p></aside></section><section class="slide " data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 29"><p class="eyebrow">Sort it · following cryptocurrency</p><h1>Observable record or investigative inference?</h1><div class="body" style=""><div class="grid g2" data-w="sort2" style="gap:8px"><div class="sitem" data-cat="o" style="padding:9px 12px"><span class="st" style="font-size:16px">Address A sent coins to address B at 14:02</span><span class="btnrow"><button class="tog" data-v="o" type="button">Observable</button><button class="tog" data-v="i" type="button">Inference</button></span><span class="sw">Recorded on the blockchain.</span></div><div class="sitem" data-cat="i" style="padding:9px 12px"><span class="st" style="font-size:16px">Addresses A and C belong to the same person</span><span class="btnrow"><button class="tog" data-v="o" type="button">Observable</button><button class="tog" data-v="i" type="button">Inference</button></span><span class="sw">An inference from patterns.</span></div><div class="sitem" data-cat="i" style="padding:9px 12px"><span class="st" style="font-size:16px">Address D belongs to an exchange</span><span class="btnrow"><button class="tog" data-v="o" type="button">Observable</button><button class="tog" data-v="i" type="button">Inference</button></span><span class="sw">Usually inferred, sometimes confirmed by records.</span></div><div class="sitem" data-cat="o" style="padding:9px 12px"><span class="st" style="font-size:16px">The transaction amount was 0.42 coins</span><span class="btnrow"><button class="tog" data-v="o" type="button">Observable</button><button class="tog" data-v="i" type="button">Inference</button></span><span class="sw">Observable.</span></div><div class="sitem" data-cat="i" style="padding:9px 12px"><span class="st" style="font-size:16px">This pattern shows criminal intent</span><span class="btnrow"><button class="tog" data-v="o" type="button">Observable</button><button class="tog" data-v="i" type="button">Inference</button></span><span class="sw">Unusual activity has innocent explanations too.</span></div><div class="sitem" data-cat="o" style="padding:9px 12px"><span class="st" style="font-size:16px">Two transactions happened in the same block</span><span class="btnrow"><button class="tog" data-v="o" type="button">Observable</button><button class="tog" data-v="i" type="button">Inference</button></span><span class="sw">Observable.</span></div></div><p class="kick score" style="font-size:15px"></p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>29 / 40</span></div><aside class="notes"><p>Clustering combines assumptions about behaviour with other information. Exchange records or other corroboration may connect addresses to people. Research such as Elliptic2 detects suspicious subgraphs, not intent.</p></aside></section><section class="slide " data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 30"><p class="eyebrow">Legal research tools</p><h1>Retrieval does not eliminate hallucinations</h1><div class="body" style=""><div class="bars"><div class="bl"><span class="bn">Lexis+ AI<small>tested 2024</small></span><span class="bb" style="width:34.0%;--acc:var(--slate)"></span><span class="bv">≈ 17%</span></div><div class="bl"><span class="bn">Westlaw AI-Assisted Research<small>tested 2024</small></span><span class="bb" style="width:66.0%;--acc:var(--terra)"></span><span class="bv">≈ 33%</span></div></div><p class="kick" style="">Share of answers that were false or unsupported in a Stanford study (Magesh et al.). These tools retrieve real sources first (RAG) — and still erred.</p><p class="note-line">RAG supplies sources. The answer still needs verification.</p><p class="disc">Specific versions and questions — not all current tools.</p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>30 / 40</span></div><aside class="notes"><p>An answer may cite a real decision but misstate what it holds. Verification asks both whether a source exists and whether it supports the precise claim. Related: lawyers were fined $5,000 in 2023 for filing fake ChatGPT citations.</p></aside></section><section class="slide " data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 31"><p class="eyebrow">Small groups · 3 minutes</p><h1>A citation that looks convincing</h1><div class="body" style=""><div class="split even"><div class="col"><p class="bigline" style="font-size:28px">A draft cites a real court case. The case discusses the same broad topic.</p><p class="kick" style="">Is that enough to trust the draft? What would you check in the original decision?</p></div><div class="col"><div class="chk" data-w="chkc"><label><input type="checkbox"><span>The case exists, with the right name and year</span></label><label><input type="checkbox"><span>The quoted words actually appear</span></label><label><input type="checkbox"><span>The holding supports <b>this exact</b> claim</span></label><label><input type="checkbox"><span>It is still good law (not overturned)</span></label><label><input type="checkbox"><span>It applies in this jurisdiction</span></label></div><p class="kick cout4" style="font-size:15px"></p></div></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>31 / 40</span></div><aside class="notes"><p>Interactive checklist. Most students stop at “the case exists”. The third box is where AI drafts usually fail.</p></aside></section><section class="slide " data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 32"><p class="eyebrow">Try it · finding more creates more review</p><h1>Recall vs precision in document review</h1><div class="body" style=""><div data-w="recall" style="display:flex;flex-direction:column;gap:14px"><div class="ctrl" style="grid-template-columns:120px 1fr 120px"><span>Strict</span><input type="range" min="0" max="100" value="0" aria-label="Search breadth"><span style="text-align:right">Broad</span></div><div class="bars"><div class="bl"><span class="bn">Relevant found<small>out of 100</small></span><span class="rbar rb1" style="background:var(--ok)"></span><span class="bv rv1"></span></div><div class="bl"><span class="bn">Irrelevant returned<small>to be read anyway</small></span><span class="rbar rb2" style="background:var(--bad)"></span><span class="bv rv2"></span></div></div><p class="readout rout2" style="font-size:15.5px"></p></div><p class="kick" style=""><b>Recall</b>: how much relevant material the search finds. <b>Precision</b>: how much of what it returns is relevant. Which cost matters more if a missed document could clear someone?</p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>32 / 40</span></div><aside class="notes"><p>Invented numbers from the survey deck: strict finds 60 relevant and 10 irrelevant; broad finds 90 relevant and 90 irrelevant. There is no best setting independent of the task and its consequences.</p></aside></section><section class="slide section-slide" data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 33"><div class="body"><div class="secnum">05</div><h1>Judgment and accountability</h1><p class="sub" style="font-size:21px">Human review, fairness, courts and audit trails.</p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>33 / 40</span></div><aside class="notes"><p>Part 5: designing the human side. “A human in the loop” only helps if the loop is designed well.</p></aside></section><section class="slide " data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 34"><p class="eyebrow">Poll · automation bias</p><h1>Should the examiner see the AI’s ranking first?</h1><div class="body" style=""><div class="split even" style="align-items:start"><div class="col"><div class="opts" data-w="poll"><button class="opt" type="button"><span class="fill"></span><span class="L">A</span><span class="T">Yes — it saves time</span><span class="N"></span></button><button class="opt" type="button"><span class="fill"></span><span class="L">B</span><span class="T">No — examine first, then compare with the AI</span><span class="N"></span></button><button class="opt" type="button"><span class="fill"></span><span class="L">C</span><span class="T">Only the top candidate, not the score</span><span class="N"></span></button><button class="opt" type="button"><span class="fill"></span><span class="L">D</span><span class="T">Show it, but require a second examiner</span><span class="N"></span></button></div><div class="btnrow"><button class="btn ghost reset" type="button">Reset tally</button><span class="kick" style="font-size:13.5px">Click to add a vote · right-click to remove one</span></div></div><div class="col"><div class="ask"><span class="lbl">After the vote</span><p class="q">What does the research on automation bias suggest?</p><button class="btn reveal" type="button">Reveal</button><div class="ans">A confident machine suggestion can steer a reviewer toward agreement. <b>Independent examination first</b>, then comparison, with disagreements recorded, makes checking more meaningful.</div></div></div></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>34 / 40</span></div><aside class="notes"><p>Connect to Mayfield: a ranked candidate shaped expectations. Recorded disagreement is a sign the human check is real.</p></aside></section><section class="slide " data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 35"><p class="eyebrow">Fairness includes who bears the errors</p><h1>Four questions to ask of any forensic tool</h1><div class="body" style=""><div class="grid g4" data-w="flip"><div class="card flip t-terra" style="min-height:200px"><p class="ct">False accusations</p><h3>Who is wrongly implicated?</h3><p class="front">Click to turn over</p><p class="back">How often does the tool point at an innocent person — and are some groups hit more often?</p></div><div class="card flip t-slate" style="min-height:200px"><p class="ct">Missed evidence</p><h3>Whose evidence is overlooked?</h3><p class="front">Click to turn over</p><p class="back">An error can also hide evidence that would clear someone.</p></div><div class="card flip t-sage" style="min-height:200px"><p class="ct">Coverage</p><h3>Who was in the test data?</h3><p class="front">Click to turn over</p><p class="back">Which groups, labs and conditions appear in the validation data?</p></div><div class="card flip t-plum" style="min-height:200px"><p class="ct">Recourse</p><h3>Can the person push back?</h3><p class="front">Click to turn over</p><p class="back">Can the affected person obtain a meaningful, independent review?</p></div></div><div class="btnrow"><button class="btn ghost flipall" type="button">Turn all over</button></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>35 / 40</span></div><aside class="notes"><p>Interactive flip cards. Connect to Week 13 (fairness).</p></aside></section><section class="slide " data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 36"><p class="eyebrow">What a court needs to examine</p><h1>Four questions before an AI result becomes evidence</h1><div class="body" style=""><div class="rows"><div class="row" style="--acc:var(--slate)"><div class="k">Method</div><div class="v">What scientific support exists for the method?</div></div><div class="row" style="--acc:var(--terra)"><div class="k">Application</div><div class="v">Did the analyst use it reliably on <b>this</b> evidence?</div></div><div class="row" style="--acc:var(--sage)"><div class="k">Limits</div><div class="v">What errors and unsuitable conditions are known?</div></div><div class="row" style="--acc:var(--plum)"><div class="k">Access</div><div class="v">Can the other side meaningfully challenge the result?</div></div></div><p class="kick" style="">In US federal courts, Rule 702 governs expert testimony; a 2023 amendment stresses that reliable application must be shown.</p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>36 / 40</span></div><aside class="notes"><p>Other rules, jurisdictions and facts matter. A proposed AI-specific evidence rule should not be described as enacted law.</p></aside></section><section class="slide " data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 37"><p class="eyebrow">Checklist · an audit trail</p><h1>Could someone reconstruct this AI-assisted finding?</h1><div class="body" style=""><div class="split even" style="align-items:start"><div class="col"><div class="chk" data-w="chkc"><label><input type="checkbox"><span><b>Input</b> — which evidence files and records were used</span></label><label><input type="checkbox"><span><b>System</b> — model version, settings and tools</span></label><label><input type="checkbox"><span><b>Process</b> — what the AI did and what the examiner did</span></label><label><input type="checkbox"><span><b>Output</b> — which source passages support each claim</span></label><label><input type="checkbox"><span><b>Disagreement</b> — where the examiner overruled the system</span></label></div><p class="kick cout4" style="font-size:15px"></p></div><div class="col"><div class="ask"><span class="lbl">Discuss</span><p class="q">Which missing item would a defence lawyer attack first?</p><button class="btn reveal" type="button">Reveal</button><div class="ans">Usually <b>process</b>: if nobody recorded what the human checked independently, the “human review” cannot be shown to have happened.</div></div></div></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>37 / 40</span></div><aside class="notes"><p>Interactive checklist. An audit trail is what makes step 4 of the evidence workflow (challenge) possible.</p></aside></section><section class="slide " data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 38"><p class="eyebrow">Group activity · 5 minutes</p><h1>You are the laboratory review panel</h1><div class="body" style=""><div class="split even" style="align-items:start"><div class="col"><p class="bigline" style="font-size:26px">A vendor says: “Our AI is 98% accurate.” It proposes automatic suspect identification.</p><p class="kick" style="">You may ask only <b>four</b> questions. Then: approve a pilot, restrict it, or decline?</p></div><div class="col" data-w="pickn" data-max="4" style="gap:6px"><button class="pq" type="button" data-g="1">98% of what — which task, which data?</button><button class="pq" type="button" data-g="1">How often does it name the wrong person?</button><button class="pq" type="button" data-g="1">Was it tested at a lab like ours, by someone independent?</button><button class="pq" type="button" data-g="1">Can it say “none of these”?</button><button class="pq" type="button" data-g="0">How fast is it?</button><button class="pq" type="button" data-g="0">Who else has bought it?</button><button class="pq" type="button" data-g="1">Can the defence examine how it works?</button><button class="pq" type="button" data-g="0">Does it have a good user interface?</button><p class="readout pout" style="font-size:14.5px"></p><div class="btnrow"><button class="btn pshow" type="button">Show strong questions</button><button class="btn ghost pclr" type="button">Clear</button></div></div></div></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>38 / 40</span></div><aside class="notes"><p>Interactive: pick four. Strong questions target the task definition, wrong-person errors, independent validation, open-set behaviour and access for challenge. Speed and popularity tell you little about evidential reliability.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 39"><p class="eyebrow">Take these into any AI claim</p><h1>Four questions — and adoption is not validation</h1><div class="body" style=""><div class="grid g4"><div class="card t-slate" style="min-height:170px;"><p class="ct">What task?</p><p style="font-size:18px">A lead, an estimate, or a statement about evidence?</p></div><div class="card t-terra" style="min-height:170px;"><p class="ct">What test?</p><p style="font-size:18px">Independent evidence under relevant conditions?</p></div><div class="card t-sage" style="min-height:170px;"><p class="ct">What limit?</p><p style="font-size:18px">Known uncertainty — and a useful way to decline?</p></div><div class="card t-plum" style="min-height:170px;"><p class="ct">Who can check?</p><p style="font-size:18px">Access to sources, records and meaningful review?</p></div></div><p class="kick" style="">A product’s availability tells us little about its evidentiary reliability. Research to watch: knowing when evidence is insufficient, working across labs, improving team decisions, and letting reviewers reconstruct findings.</p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>39 / 40</span></div><aside class="notes"><p>The closing frame. Ask each student to apply the four questions to one tool from today.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 40"><p class="eyebrow">Sources</p><h1>Selected sources and further reading</h1><div class="body" style=""><div class="split even" style="align-items:start"><div class="col"><div class="links"><a href="https://apnews.com/article/a7a695839b8841e56b7db0d103cc5ed1" target="_blank" rel="noopener">AP · Family of Black girls handcuffed by Colorado police (settlement)</a><a href="https://www.eff.org/deeplinks/2024/11/human-toll-alpr-errors" target="_blank" rel="noopener">EFF · The human toll of ALPR errors</a><a href="https://oig.justice.gov/archives/semiannual/0605/highlights.htm" target="_blank" rel="noopener">DOJ OIG · Mayfield review highlights</a><a href="https://www.engineering.columbia.edu/about/news/ai-discovers-not-every-fingerprint-unique" target="_blank" rel="noopener">Columbia Engineering · AI and fingerprint uniqueness</a><a href="https://www.atf.gov/resource-center/fact-sheet/national-integrated-ballistic-information-network" target="_blank" rel="noopener">ATF · NIBIN fact sheet</a><a href="https://www.nist.gov/feature-stories/dna-mixtures-forensic-science-explainer" target="_blank" rel="noopener">NIST · DNA mixtures explainer</a><a href="https://www.boisestate.edu/news/2022/06/30/hampikians-forensic-work-assists-in-exoneration-of-innocent-man/" target="_blank" rel="noopener">Boise State · Kerry Robinson exoneration</a><a href="https://www.njcourts.gov/system/files/court-opinions/2021/a4207-19.pdf" target="_blank" rel="noopener">NJ Courts · State v. Pickett (2021)</a><a href="https://www.justice.gov/olp/page/file/1204386/download" target="_blank" rel="noopener">DOJ · Interim policy on forensic genetic genealogy (2019)</a></div></div><div class="col"><div class="links"><a href="https://www.nist.gov/spo/forensic-science-program/foundation-studies/bitemark-analysis-nist-scientific-foundation-review" target="_blank" rel="noopener">NIST · Bitemark analysis foundation review</a><a href="https://arxiv.org/html/2505.19973v1" target="_blank" rel="noopener">DFIR-Metric preprint (2025)</a><a href="https://dho.stanford.edu/wp-content/uploads/Legal_RAG_Hallucinations.pdf" target="_blank" rel="noopener">Magesh et al. · Legal RAG hallucinations (Stanford)</a><a href="https://arxiv.org/abs/2404.19109" target="_blank" rel="noopener">Elliptic2 · suspicious subgraphs (arXiv)</a><a href="https://www.uscourts.gov/sites/default/files/2025-02/federal-rules-of-evidence-dec-1-2024_0.pdf" target="_blank" rel="noopener">Federal Rules of Evidence (Dec 2024)</a><a href="https://www.fbi.gov/news/stories/rcfls-follow-the-modern-evidence-trail-081219" target="_blank" rel="noopener">FBI · RCFLs and the modern evidence trail</a></div></div></div><p class="kick" style="font-size:14px">Hypothetical numbers on slides 12, 18 and 32 are illustrations, not measured rates.</p></div><div class="foot"><span>AI and Forensics · Week 11B</span><span>40 / 40</span></div><aside class="notes"><p>Source list. Based on the AI and Forensics survey deck (10_AI_and_Forensics.pptx).</p></aside></section></div></div>
+<div class="bar"><i></i></div>
+<div class="help">← → move · O overview · N notes · R reveal · T theme · F fullscreen</div>
+<div class="hud"><button data-act="prev" aria-label="Previous slide">◀</button><button data-act="grid">Slides</button><button data-act="notes">Notes</button><button data-act="theme">Theme</button><button data-act="next" aria-label="Next slide">▶</button></div>
+<div class="np" role="dialog" aria-label="Speaker notes"><h4>Speaker notes</h4><div class="npb"></div></div>
+<div class="ov" role="dialog" aria-label="All slides"><h2>AI and Forensics</h2><p class="hint">Click a slide to jump to it. Press O or Esc to close.</p><div class="thumbs"><button class="th" data-i="0" style="--tacc:var(--terra)"><div class="tn">01</div><div class="tt">AI and Forensics</div></button><button class="th" data-i="1" style="--tacc:var(--terra)"><div class="tn">02</div><div class="tt">Five parts, one recurring question</div></button><button class="th" data-i="2" style="--tacc:var(--terra)"><div class="tn">03</div><div class="tt">A camera flags your car as stolen</div></button><button class="th" data-i="3" style="--tacc:var(--slate)"><div class="tn">04</div><div class="tt">01 · What forensic science asks</div></button><button class="th" data-i="4" style="--tacc:var(--slate)"><div class="tn">05</div><div class="tt">Start with the trace</div></button><button class="th" data-i="5" style="--tacc:var(--slate)"><div class="tn">06</div><div class="tt">Search, evaluate, estimate or assist?</div></button><button class="th" data-i="6" style="--tacc:var(--slate)"><div class="tn">07</div><div class="tt">Four steps every finding should survive</div></button><button class="th" data-i="7" style="--tacc:var(--slate)"><div class="tn">08</div><div class="tt">The same word “AI” covers very different methods</div></button><button class="th" data-i="8" style="--tacc:var(--terra)"><div class="tn">09</div><div class="tt">02 · Policing and patterns</div></button><button class="th" data-i="9" style="--tacc:var(--terra)"><div class="tn">10</div><div class="tt">Cameras that read every passing plate</div></button><button class="th" data-i="10" style="--tacc:var(--terra)"><div class="tn">11</div><div class="tt">A wrong match, step by step</div></button><button class="th" data-i="11" style="--tacc:var(--terra)"><div class="tn">12</div><div class="tt">Most alerts can be wrong even when the camera is good</div></button><button class="th" data-i="12" style="--tacc:var(--gold)"><div class="tn">13</div><div class="tt">A city doubles its cameras. The hotlist stays the same. What happens?</div></button><button class="th" data-i="13" style="--tacc:var(--gold)"><div class="tn">14</div><div class="tt">Who should be allowed to search a month of plate reads?</div></button><button class="th" data-i="14" style="--tacc:var(--terra)"><div class="tn">15</div><div class="tt">Software ranks candidates; an examiner decides</div></button><button class="th" data-i="15" style="--tacc:var(--terra)"><div class="tn">16</div><div class="tt">“Not every fingerprint is unique”?</div></button><button class="th" data-i="16" style="--tacc:var(--terra)"><div class="tn">17</div><div class="tt">A lead is not a confirmed hit</div></button><button class="th" data-i="17" style="--tacc:var(--terra)"><div class="tn">18</div><div class="tt">A ranked list always has a #1</div></button><button class="th" data-i="18" style="--tacc:var(--sage)"><div class="tn">19</div><div class="tt">03 · DNA and medicine</div></button><button class="th" data-i="19" style="--tacc:var(--sage)"><div class="tn">20</div><div class="tt">When one swab holds several people’s DNA</div></button><button class="th" data-i="20" style="--tacc:var(--sage)"><div class="tn">21</div><div class="tt">Two explanations, one number</div></button><button class="th" data-i="21" style="--tacc:var(--sage)"><div class="tn">22</div><div class="tt">Source question or activity question?</div></button><button class="th" data-i="22" style="--tacc:var(--sage)"><div class="tn">23</div><div class="tt">Reanalysis cuts both ways</div></button><button class="th" data-i="23" style="--tacc:var(--sage)"><div class="tn">24</div><div class="tt">One person’s DNA reveals their relatives</div></button><button class="th" data-i="24" style="--tacc:var(--sage)"><div class="tn">25</div><div class="tt">Promising research, hard validation</div></button><button class="th" data-i="25" style="--tacc:var(--plum)"><div class="tn">26</div><div class="tt">04 · Digital and legal</div></button><button class="th" data-i="26" style="--tacc:var(--plum)"><div class="tn">27</div><div class="tt">An assistant that can be checked</div></button><button class="th" data-i="27" style="--tacc:var(--plum)"><div class="tn">28</div><div class="tt">Quiz scores do not equal casework</div></button><button class="th" data-i="28" style="--tacc:var(--plum)"><div class="tn">29</div><div class="tt">Observable record or investigative inference?</div></button><button class="th" data-i="29" style="--tacc:var(--plum)"><div class="tn">30</div><div class="tt">Retrieval does not eliminate hallucinations</div></button><button class="th" data-i="30" style="--tacc:var(--plum)"><div class="tn">31</div><div class="tt">A citation that looks convincing</div></button><button class="th" data-i="31" style="--tacc:var(--plum)"><div class="tn">32</div><div class="tt">Recall vs precision in document review</div></button><button class="th" data-i="32" style="--tacc:var(--gold)"><div class="tn">33</div><div class="tt">05 · Judgment and accountability</div></button><button class="th" data-i="33" style="--tacc:var(--gold)"><div class="tn">34</div><div class="tt">Should the examiner see the AI’s ranking first?</div></button><button class="th" data-i="34" style="--tacc:var(--gold)"><div class="tn">35</div><div class="tt">Four questions to ask of any forensic tool</div></button><button class="th" data-i="35" style="--tacc:var(--gold)"><div class="tn">36</div><div class="tt">Four questions before an AI result becomes evidence</div></button><button class="th" data-i="36" style="--tacc:var(--gold)"><div class="tn">37</div><div class="tt">Could someone reconstruct this AI-assisted finding?</div></button><button class="th" data-i="37" style="--tacc:var(--gold)"><div class="tn">38</div><div class="tt">You are the laboratory review panel</div></button><button class="th" data-i="38" style="--tacc:var(--terra)"><div class="tn">39</div><div class="tt">Four questions — and adoption is not validation</div></button><button class="th" data-i="39" style="--tacc:var(--terra)"><div class="tn">40</div><div class="tt">Selected sources and further reading</div></button></div></div>
+<script>window.WIDGETS={};
+(function(W){
+  var NS="http://www.w3.org/2000/svg";
+  function $(r,s){return r.querySelector(s)} function $$(r,s){return [].slice.call(r.querySelectorAll(s))}
+  function svgEl(tag,a){var e=document.createElementNS(NS,tag);for(var k in a)e.setAttribute(k,a[k]);return e}
+  function fmt(x){return Math.round(x).toLocaleString("en-US")}
+/* ---------- generic: live poll tally ---------- */
+  W.poll=function(el){
+    var opts=$$(el,'.opt'), counts=opts.map(function(){return 0});
+    function draw(){var mx=Math.max.apply(null,counts.concat([1]));
+      opts.forEach(function(o,k){$(o,'.N').textContent=counts[k]||'';$(o,'.fill').style.width=(counts[k]/mx*100)+'%'})}
+    opts.forEach(function(o,k){
+      o.addEventListener('click',function(){counts[k]++;draw()});
+      o.addEventListener('contextmenu',function(e){e.preventDefault();counts[k]=Math.max(0,counts[k]-1);draw()});
+    });
+    var r=el.parentNode.querySelector('.reset'); if(r)r.onclick=function(){counts=counts.map(function(){return 0});draw()};
+  };
+
+  /* ---------- generic: single-answer quiz ---------- */
+  W.quiz=function(el){
+    var ans=+el.getAttribute('data-ans'), opts=$$(el,'.opt'), fb=el.parentNode.querySelector('.fb');
+    opts.forEach(function(o,k){o.addEventListener('click',function(){
+      if(k===ans){o.classList.add('right'); if(fb)fb.innerHTML=fb.getAttribute('data-right')||'<b>Yes.</b>'}
+      else{o.classList.add('wrong'); if(fb)fb.innerHTML=fb.getAttribute('data-wrong')||'Not quite. Try another.'}
+    })});
+  };
+
+  /* ---------- generic: timeline ---------- */
+  W.tl=function(el){
+    var items=$$(el,'.tli'), box=el.parentNode.querySelector('.tldetail');
+    function pick(k){items.forEach(function(t,j){t.classList.toggle('on',j<=k)});box.innerHTML=items[k].getAttribute('data-detail')}
+    items.forEach(function(t,k){t.addEventListener('click',function(){pick(k)})});
+    pick(0);
+  };
+
+  /* ---------- generic: stepper (light one step at a time) ---------- */
+  W.stepper=function(el){
+    var steps=$$(el,'.step'), k=-1, btn=el.parentNode.querySelector('.stepbtn'), out=el.parentNode.querySelector('.stepout');
+    function draw(){steps.forEach(function(s,j){s.classList.toggle('dim',k>=0&&j>k);s.classList.toggle('lit',j===k)});
+      if(out)out.innerHTML=k>=0?(steps[k].getAttribute('data-ex')||''):(out.getAttribute('data-start')||'');
+      if(btn)btn.textContent=k>=steps.length-1?'Start over':(k<0?'Start':'Next step')}
+    steps.forEach(function(s,j){s.classList.add('click');s.addEventListener('click',function(){k=j;draw()})});
+    if(btn)btn.onclick=function(){k=k>=steps.length-1?-1:k+1;draw()};
+    draw();
+  };
+
+  /* ---------- generic: flip cards ---------- */
+  W.flip=function(el){
+    $$(el,'.card.flip').forEach(function(c){c.addEventListener('click',function(){c.classList.toggle('show')})});
+    var all=el.parentNode.querySelector('.flipall'); if(all)all.onclick=function(){$$(el,'.card.flip').forEach(function(c){c.classList.add('show')})};
+  };
+
+  /* ---------- generic: sort items into two bins ---------- */
+  W.sort2=function(el){
+    var score=el.parentNode.querySelector('.score');
+    function upd(){if(!score)return;var r=$$(el,'.sitem.right').length,t=$$(el,'.sitem').length;score.textContent=r+' / '+t+' correct'}
+    $$(el,'.sitem').forEach(function(it){
+      var c=it.getAttribute('data-cat');
+      $$(it,'.tog').forEach(function(b){b.addEventListener('click',function(){
+        $$(it,'.tog').forEach(function(x){x.classList.remove('on')}); b.classList.add('on');
+        var ok=b.getAttribute('data-v')===c; it.classList.toggle('right',ok); it.classList.toggle('wrong',!ok); upd();
+      })});
+    });
+    upd();
+  };
+
+  /* ---------- generic tabs: .tab[data-k] shows .pane[data-k] ---------- */
+  W.tabs=function(el){
+    var tabs=$$(el,'.tab'),panes=$$(el,'.tpane');
+    function pick(k){tabs.forEach(function(t){t.classList.toggle('on',t.getAttribute('data-k')===k)});panes.forEach(function(p){p.style.display=p.getAttribute('data-k')===k?'':'none'})}
+    tabs.forEach(function(t){t.addEventListener('click',function(){pick(t.getAttribute('data-k'))})});
+    pick(tabs[0].getAttribute('data-k'));
+  };
+
+  /* ---------- reveal list items one at a time ---------- */
+  W.revlist=function(el){
+    var items=$$(el,'li'),k=0,btn=el.parentNode.querySelector('.revnext');
+    items.forEach(function(li){li.style.visibility='hidden'});
+    btn.onclick=function(){if(k<items.length){items[k].style.visibility='visible';k++}
+      btn.textContent=k<items.length?'Reveal the next one ('+(items.length-k)+' left)':'All revealed'};
+    btn.textContent='Reveal the next one ('+items.length+' left)';
+  };
+
+  /* ---------- design-challenge pitch card ---------- */
+  W.pitch=function(el){
+    var out=$(el,'.pcard');
+    function upd(){var h='';$$(el,'[data-f]').forEach(function(i){var v=i.value.trim();h+='<div class="prow"><span class="pk">'+i.getAttribute('data-f')+'</span><span class="pv'+(v?'':' empty')+'">'+(v?v.replace(/</g,'&lt;'):'—')+'</span></div>'});out.innerHTML=h}
+    $$(el,'[data-f]').forEach(function(i){i.addEventListener('input',upd)});
+    var ex=$(el,'.pex');if(ex)ex.onclick=function(){var vals=JSON.parse(ex.getAttribute('data-v'));$$(el,'[data-f]').forEach(function(i,j){i.value=vals[j]||''});upd()};
+    upd();
+  };
+
+  
+  /* ---------- week 11: threshold explorer (two score distributions) ---------- */
+  W.thresh=function(el){
+    var svg=$(el,'svg'),sl=$(el,'input'),rd=$(el,'.tout'),Wd=600,Ht=250,pad=30;
+    var G={m:70,s:9},I={m:38,s:10};
+    function pdf(x,d){return Math.exp(-0.5*Math.pow((x-d.m)/d.s,2))/(d.s*Math.sqrt(2*Math.PI))}
+    function cdf(x,d){var z=(x-d.m)/(d.s*Math.SQRT2),t=1/(1+0.3275911*Math.abs(z));
+      var y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-z*z);
+      return 0.5*(1+(z>=0?y:-y))}
+    function X(v){return pad+v/100*(Wd-2*pad)} var top=pdf(70,G);
+    function Y(p){return Ht-pad-p/top*(Ht-2*pad-36)}
+    function curve(d,from,to){var s='M '+X(from)+' '+Y(0);for(var v=from;v<=to+0.01;v+=0.5)s+=' L '+X(v)+' '+Y(pdf(v,d));return s+' L '+X(to)+' '+Y(0)+' Z'}
+    function line(d){var s='';for(var v=0;v<=100;v+=0.5)s+=(v?' L ':'M ')+X(v)+' '+Y(pdf(v,d));return s}
+    function draw(){
+      var t=+sl.value;while(svg.firstChild)svg.removeChild(svg.firstChild);
+      svg.appendChild(svgEl('line',{x1:pad,y1:Ht-pad,x2:Wd-pad,y2:Ht-pad,style:'stroke:var(--line);stroke-width:2'}));
+      svg.appendChild(svgEl('path',{d:curve(I,t,100),style:'fill:var(--bad);opacity:.35'}));
+      svg.appendChild(svgEl('path',{d:curve(G,0,t),style:'fill:var(--gold);opacity:.45'}));
+      svg.appendChild(svgEl('path',{d:line(I),style:'fill:none;stroke:var(--slate);stroke-width:2.5'}));
+      svg.appendChild(svgEl('path',{d:line(G),style:'fill:none;stroke:var(--sage);stroke-width:2.5'}));
+      svg.appendChild(svgEl('line',{x1:X(t),y1:30,x2:X(t),y2:Ht-pad,style:'stroke:var(--ink);stroke-width:2.5;stroke-dasharray:6 4'}));
+      [['Different people',X(38)-50,Y(pdf(38,I))-10,'var(--slate)'],['Same person',X(70)-40,Y(pdf(70,G))-10,'var(--sage)'],['threshold '+t,X(t)-34,20,'var(--ink)'],['similarity score →',Wd-pad-120,Ht-8,'var(--muted)']].forEach(function(a){
+        var tx=svgEl('text',{x:a[1],y:a[2],style:'fill:'+a[3]+';font-size:13px;font-weight:600'});tx.textContent=a[0];svg.appendChild(tx)});
+      var fm=(1-cdf(t,I))*100,fn=cdf(t,G)*100;
+      rd.innerHTML='Threshold <b>'+t+'</b> &nbsp;·&nbsp; <span style="color:var(--bad)">false matches</span> (a stranger accepted): <b>'+(fm<0.1?fm.toFixed(3):fm.toFixed(1))+'%</b> &nbsp;·&nbsp; <span style="color:var(--gold)">false rejections</span> (the right person refused): <b>'+(fn<0.1?fn.toFixed(3):fn.toFixed(1))+'%</b>';
+    }
+    sl.addEventListener('input',draw);
+    $$(el,'[data-t]').forEach(function(b){b.onclick=function(){sl.value=b.getAttribute('data-t');draw()}});
+    draw();
+  };
+
+  /* ---------- week 11: search scale (gallery size x false-match rate) ---------- */
+  W.scale=function(el){
+    var a=$(el,'.sN'),b=$(el,'.sP'),rd=$(el,'.sout');
+    var NS_=[100,1000,10000,100000,1000000,10000000,100000000],PS=[0.01,0.001,0.0001,0.00001,0.000001];
+    function upd(){var N=NS_[+a.value],p=PS[+b.value],ex=N*p,one=1-Math.pow(1-p,N);
+      $(el,'.vN').textContent=fmt(N);$(el,'.vP').textContent=(p*100)+'% (1 in '+fmt(1/p)+')';
+      rd.innerHTML='Expected false matches per search: <b class="big-read" style="font-size:30px">'+(ex<1?ex.toFixed(2):fmt(ex))+'</b><br>Chance a search returns at least one wrong person above the threshold: <b>'+(one>0.999?'≈ 100':(one*100).toFixed(1))+'%</b>'}
+    a.addEventListener('input',upd);b.addEventListener('input',upd);upd();
+  };
+
+  /* ---------- week 11: base rates for plate-reader alerts ---------- */
+  W.baserate=function(el){
+    var t=$(el,'.bT'),f=$(el,'.bF'),d=$(el,'.bD'),grid=$(el,'.dots'),rd=$(el,'.bout');
+    for(var k=0;k<100;k++){var c=document.createElement('span');grid.appendChild(c)}
+    function upd(){var T=+t.value,F=+f.value/10,D=+d.value,N=10000;
+      $(el,'.vT').textContent=T;$(el,'.vF').textContent=F.toFixed(1)+'%';$(el,'.vD').textContent=D+'%';
+      var tp=T*D/100,fp=(N-T)*F/100,share=tp/(tp+fp||1),g=Math.round(share*100);
+      [].forEach.call(grid.children,function(s,j){s.className=j<g?'tp':'fp'});
+      rd.innerHTML='Out of 10,000 vehicles: <b>'+fmt(tp+fp)+'</b> alerts — <b class="ok">'+fmt(tp)+'</b> real targets and <b class="no">'+fmt(fp)+'</b> false alarms.<br>So about <b>'+g+' in 100</b> alerts point at the right vehicle (shown in the grid).'}
+    [t,f,d].forEach(function(x){x.addEventListener('input',upd)});upd();
+  };
+
+  /* ---------- week 11: recall vs precision slider ---------- */
+  W.recall=function(el){
+    var sl=$(el,'input'),rd=$(el,'.rout2');
+    function upd(){var s=+sl.value/100,rel=Math.round(60+30*s),irr=Math.round(10+80*s);
+      $(el,'.rb1').style.width=rel*0.6+'%';$(el,'.rb2').style.width=irr*0.6+'%';
+      $(el,'.rv1').textContent=rel;$(el,'.rv2').textContent=irr;
+      rd.innerHTML='<b>Recall</b> '+rel+' of 100 relevant documents found ('+rel+'%) &nbsp;·&nbsp; <b>Precision</b> '+rel+' of '+(rel+irr)+' returned are relevant ('+Math.round(rel/(rel+irr)*100)+'%) &nbsp;·&nbsp; missed: <b class="no">'+(100-rel)+'</b> &nbsp;·&nbsp; pages to read: <b>'+(rel+irr)+'</b>'}
+    sl.addEventListener('input',upd);upd();
+  };
+
+  /* ---------- week 11: choose at most N questions, then reveal ---------- */
+  W.pickn=function(el){
+    var max=+el.getAttribute('data-max')||4,items=$$(el,'.pq'),rd=$(el,'.pout');
+    function upd(){var k=$$(el,'.pq.on').length;rd.innerHTML='Questions chosen: <b>'+k+' / '+max+'</b>'+(k===max?' — now decide: pilot, restrict or decline?':'')}
+    items.forEach(function(it){it.onclick=function(){if(!it.classList.contains('on')&&$$(el,'.pq.on').length>=max)return;it.classList.toggle('on');upd()}});
+    $(el,'.pshow').onclick=function(){items.forEach(function(it){it.classList.add(it.getAttribute('data-g')==='1'?'good':'weak')})};
+    $(el,'.pclr').onclick=function(){items.forEach(function(it){it.classList.remove('on','good','weak')});upd()};
+    upd();
+  };
+
+  /* ---------- week 11: checklist counter ---------- */
+  W.chkc=function(el){
+    var bx=$$(el,'input[type=checkbox]'),rd=el.parentNode.querySelector('.cout4');
+    function upd(){var k=bx.filter(function(b){return b.checked}).length;rd.innerHTML=k===bx.length?'<b class="ok">Complete.</b> An independent reviewer could reconstruct this finding.':'<b>'+k+' of '+bx.length+'</b> recorded. Missing items are where a challenge would start.'}
+    bx.forEach(function(b){b.addEventListener('change',upd)});upd();
+  };
+
+  /* ---------- week 11: closed test vs open investigation ---------- */
+  W.openset=function(el){
+    var box=$(el,'.cands'),rd=$(el,'.oout'),inDb=true,none=false;
+    var C=[['Print A',0.62],['Print B',0.58],['Print C',0.55],['Print D',0.41],['Print E',0.37]];
+    function draw(){
+      var list=C.map(function(c){return c.slice()});
+      if(inDb)list[2]=['True source',0.81];
+      list.sort(function(a,b){return b[1]-a[1]});
+      var thr=0.70,topOk=list[0][0]==='True source';
+      box.innerHTML=list.map(function(c,j){var cls=j===0?(c[0]==='True source'?'top ok':(none&&c[1]<thr?'top muted':'top bad')):'';
+        return '<div class="cand '+cls+'"><span>#'+(j+1)+'</span><b>'+c[0]+'</b><i style="width:'+(c[1]*100)+'%"></i><em>'+c[1].toFixed(2)+'</em></div>'}).join('');
+      if(topOk)rd.innerHTML='<b class="ok">The true source is in the database</b> and ranks first — the situation most closed tests measure.';
+      else if(none)rd.innerHTML='The true source is <b>absent</b>. With a minimum score of '+thr.toFixed(2)+', the system answers <b>“none of these”</b> instead of naming someone.';
+      else rd.innerHTML='The true source is <b>absent</b>, yet the system still ranks <b class="no">'+list[0][0]+'</b> first. A ranked list always has a #1.';
+      $$(el,'.tog').forEach(function(b){var k=b.getAttribute('data-k');b.classList.toggle('on',(k==='in'&&inDb)||(k==='out'&&!inDb)||(k==='none'&&none))});
+    }
+    $$(el,'.tog').forEach(function(b){b.onclick=function(){var k=b.getAttribute('data-k');if(k==='in')inDb=true;else if(k==='out')inDb=false;else none=!none;draw()}});
+    draw();
+  };
+
+})(window.WIDGETS);
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var stage=document.querySelector('.stage'), bar=document.querySelector('.bar i');
+  var ov=document.querySelector('.ov'), np=document.querySelector('.np'), n=slides.length, i=0;
+  var KEY='deck:'+document.title;
+  function fit(){
+    var s=Math.min((innerWidth-24)/1280,(innerHeight-64)/720);
+    stage.style.transform='scale('+Math.max(s,0.2)+')';
+  }
+  function store(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  function load(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  function initWidgets(s){
+    if(s._init)return; s._init=true;
+    [].forEach.call(s.querySelectorAll('[data-w]'),function(el){
+      var f=window.WIDGETS&&window.WIDGETS[el.getAttribute('data-w')];
+      if(f){try{f(el)}catch(err){console.error(err)}}
+    });
+  }
+  function notes(){
+    var nt=slides[i].querySelector('.notes');
+    np.querySelector('.npb').innerHTML=nt?nt.innerHTML:'<p>No notes for this slide.</p>';
+  }
+  function go(k,quiet){
+    i=Math.max(0,Math.min(n-1,k));
+    slides.forEach(function(s,j){s.classList.toggle('on',j===i)});
+    initWidgets(slides[i]);
+    bar.style.width=(i/(n-1)*100)+'%';
+    var a=slides[i].getAttribute('data-acc'); bar.style.background=a||'var(--terra)';
+    [].forEach.call(document.querySelectorAll('.th'),function(t,j){t.classList.toggle('cur',j===i)});
+    notes();
+    if(!quiet)store(KEY,String(i));
+  }
+  window.goSlide=go;
+  function interactive(t){return t.closest('button,a,input,select,textarea,label,.int,.opt,.tli,.step.click,.card.flip')}
+  document.addEventListener('keydown',function(e){
+    var tag=(e.target.tagName||'').toLowerCase();
+    if(tag==='input'||tag==='textarea'||tag==='select'){if(e.key==='Escape')e.target.blur();return}
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();go(i+1)}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(i-1)}
+    else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(n-1)}
+    else if(e.key==='o'||e.key==='O'){ov.classList.toggle('on')}
+    else if(e.key==='n'||e.key==='N'){np.classList.toggle('on')}
+    else if(e.key==='t'||e.key==='T'){toggleTheme()}
+    else if(e.key==='Escape'){ov.classList.remove('on');np.classList.remove('on')}
+    else if(e.key==='f'||e.key==='F'){if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}else{document.exitFullscreen()}}
+    else if(e.key==='r'||e.key==='R'){var b=slides[i].querySelector('.reveal');if(b)b.click()}
+  });
+  stage.addEventListener('click',function(e){
+    if(interactive(e.target))return;
+    var r=stage.getBoundingClientRect();
+    go(i+((e.clientX-r.left)/r.width<0.22?-1:1));
+  });
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.reveal'); if(!b)return;
+    var box=b.closest('.ask,.revealbox')||b.parentNode;
+    [].forEach.call(box.querySelectorAll('.ans'),function(a){a.classList.add('show')});
+    b.style.display='none';
+  });
+  function toggleTheme(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    var dark=cur?cur==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+    var nt=dark?'light':'dark'; document.documentElement.setAttribute('data-theme',nt); store('deck-theme',nt);
+    document.dispatchEvent(new Event('themechange'));
+  }
+  var th=load('deck-theme'); if(th)document.documentElement.setAttribute('data-theme',th);
+  document.querySelector('[data-act=prev]').onclick=function(){go(i-1)};
+  document.querySelector('[data-act=next]').onclick=function(){go(i+1)};
+  document.querySelector('[data-act=grid]').onclick=function(){ov.classList.toggle('on')};
+  document.querySelector('[data-act=notes]').onclick=function(){np.classList.toggle('on')};
+  document.querySelector('[data-act=theme]').onclick=toggleTheme;
+  [].forEach.call(document.querySelectorAll('.th'),function(t){
+    t.onclick=function(){go(+t.getAttribute('data-i'));ov.classList.remove('on')};
+  });
+  addEventListener('resize',fit); fit();
+  var start=0, h=parseInt((location.hash||'').replace('#',''),10);
+  if(h>0){start=h-1}else{var v=load(KEY); if(v!==null)start=+v||0}
+  go(start,true);
+})();
+
+</script>
+</body></html>
