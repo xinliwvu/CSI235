@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Missing Meteorite</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@500;600&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+/* Layout: one case file read top to bottom — briefing, people, evidence board with numbered markers, AI desk, records desk, verdict. */
+:root{
+  --paper:#F1F2EF; --card:#FFFFFF; --ink:#14181E; --muted:#59616C; --line:#D3D7DC; --soft:#E6E9E4;
+  --marker:#F2C230; --marker-ink:#14181E; --lab:#2353A0; --lab-soft:#E3EBF8; --ok:#2E7D4F; --ok-soft:#E1F1E7; --bad:#B23B2E; --bad-soft:#F7E2DE;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif; --body:"Public Sans","Segoe UI",Arial,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#101317; --card:#1A1F26; --ink:#ECEFF3; --muted:#A3ABB6; --line:#2F3641; --soft:#222831;
+  --marker:#F2C230; --marker-ink:#14181E; --lab:#86AAEA; --lab-soft:#1C2738; --ok:#6CC594; --ok-soft:#17291F; --bad:#F08A7C; --bad-soft:#331D1A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#101317; --card:#1A1F26; --ink:#ECEFF3; --muted:#A3ABB6; --line:#2F3641; --soft:#222831;
+  --marker:#F2C230; --marker-ink:#14181E; --lab:#86AAEA; --lab-soft:#1C2738; --ok:#6CC594; --ok-soft:#17291F; --bad:#F08A7C; --bad-soft:#331D1A; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.wrap{max-width:1160px;margin:0 auto;display:flex;flex-direction:column;gap:34px}
+h1,h2,h3{font-family:var(--display);font-weight:800;letter-spacing:.01em;line-height:1;margin:0;text-wrap:balance}
+h1{font-size:clamp(46px,8vw,92px);text-transform:uppercase}
+h2{font-size:clamp(28px,3.6vw,38px);text-transform:uppercase}
+h3{font-size:24px}
+p{margin:0}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.label{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+button{font:inherit;cursor:pointer}
+button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--lab);outline-offset:2px}
+
+/* header */
+.top{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:flex-end;border-bottom:3px solid var(--ink);padding-bottom:18px}
+.top .meta{display:flex;flex-direction:column;gap:10px;min-width:0}
+.top .lede{font-size:18px;color:var(--muted);max-width:62ch}
+.timer{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.timer .t{font-family:var(--mono);font-size:30px;font-weight:600;min-width:4.2ch}
+.timer .t.out{color:var(--bad)}
+.btn{border:0;background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:8px;font-weight:700;font-size:15px}
+.btn.lab{background:var(--lab);color:var(--card)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start}
+.step .n{font-family:var(--display);font-size:40px;line-height:.9;color:var(--lab)}
+.step b{display:block;margin-bottom:2px}
+.step p{color:var(--muted);font-size:15px}
+
+/* section heads */
+.sec{display:flex;flex-direction:column;gap:16px}
+.sechead{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap}
+.sechead p{color:var(--muted);max-width:70ch}
+
+/* suspects */
+.people{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.person{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.person .row{display:flex;gap:12px;align-items:center}
+.av{width:46px;height:46px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-family:var(--display);font-size:22px;flex:none}
+.person .role{font-size:13.5px;color:var(--muted)}
+.person q{font-style:italic;color:var(--ink);font-size:15px}
+
+/* evidence board */
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.ev{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px 18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.ev.new{animation:pop .5s ease-out}
+@keyframes pop{from{transform:translateY(6px);box-shadow:0 0 0 3px var(--marker)}to{transform:none;box-shadow:none}}
+.ev .head{display:flex;gap:12px;align-items:center}
+.tent{flex:none;width:44px;height:36px;background:var(--marker);color:var(--marker-ink);clip-path:polygon(18% 0,82% 0,100% 100%,0 100%);display:grid;place-items:end center;padding-bottom:4px;font-family:var(--display);font-weight:800;font-size:19px}
+.ev.rec .tent{background:var(--lab);color:var(--card)}
+.ev h3{font-size:21px}
+.ev .src{font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.ev p{font-size:15.5px}
+.stamp{font-family:var(--mono);background:var(--soft);padding:1px 6px;border-radius:4px;font-size:14px}
+.still{height:96px;border-radius:8px;background:repeating-linear-gradient(0deg,var(--soft) 0 3px,transparent 3px 6px),linear-gradient(135deg,#3b4048,#1d2127);position:relative;overflow:hidden}
+.still .fig{position:absolute;left:46%;bottom:0;width:34px;height:70px;border-radius:16px 16px 4px 4px;background:#8b9097;opacity:.85}
+.still .ts{position:absolute;right:8px;top:6px;font-family:var(--mono);font-size:12px;color:#f2f2f2}
+
+/* AI desk */
+.desk{display:grid;grid-template-columns:1.05fr .95fr;gap:16px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel.ai{border-top:5px solid var(--lab)}
+.prompt{font-family:var(--mono);font-size:13px;line-height:1.55;background:var(--lab-soft);border-radius:8px;padding:12px 14px;white-space:pre-wrap;max-height:180px;overflow:auto}
+.copyout{width:100%;min-height:110px;font-family:var(--mono);font-size:12.5px}
+.note{font-size:14px;color:var(--muted)}
+.ok{color:var(--ok)} .bad{color:var(--bad)}
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:15px}
+select,textarea,input[type=text]{font:inherit;font-weight:400;font-size:15px;padding:9px 11px;border-radius:8px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);width:100%}
+textarea{resize:vertical;min-height:72px}
+
+/* records */
+.recs{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.req{background:var(--card);border:1.5px dashed var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;justify-content:space-between}
+.req .who{font-size:13.5px;color:var(--muted)}
+.req.got{border-style:solid;border-color:var(--lab);background:var(--lab-soft)}
+.budget{display:flex;gap:6px;align-items:center}
+.budget i{width:18px;height:18px;border-radius:50%;background:var(--lab);display:inline-block}
+.budget i.used{background:transparent;border:2px solid var(--line)}
+
+/* verdict */
+.verdict{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.choices{display:flex;flex-wrap:wrap;gap:8px}
+.choice{border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:8px 14px;font-weight:600;font-size:15px;color:var(--ink)}
+.choice[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.checks{display:flex;flex-direction:column;gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;font-size:15px;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer}
+.checks input{width:18px;height:18px;margin-top:2px;accent-color:var(--lab);flex:none}
+.result{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:16px}
+.score{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.score .big{font-family:var(--display);font-size:84px;line-height:.9}
+.lines{display:flex;flex-direction:column;gap:6px}
+.line{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 12px;border-radius:8px;background:var(--paper);font-size:15px}
+.line .pts{font-family:var(--mono);font-weight:600}
+.debrief{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.debrief div{background:var(--paper);border-radius:10px;padding:12px 14px;font-size:15px}
+.debrief b{display:block;margin-bottom:2px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:8px;font-weight:600;font-size:14px;z-index:20}
+
+@media (max-width:900px){.people{grid-template-columns:repeat(2,1fr)}.board{grid-template-columns:repeat(2,1fr)}.desk,.verdict,.steps{grid-template-columns:1fr}}
+@media (max-width:560px){.people,.board,.debrief{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.ev.new{animation:none}}
+</style>
+
+<style>body{margin:0}</style></head><body>
+<div class="wrap">
+  <header class="top">
+    <div class="meta">
+      <span class="label">Case 26-1104 · Campus Museum of Natural History · Training case</span>
+      <h1>The Missing Meteorite</h1>
+      <p class="lede">Tuesday night, an 82-gram iron meteorite, the Eastwood Fall fragment, vanished from display case 3. Work the case with your own AI chatbot as a partner. It will be useful, and it can be wrong.</p>
+    </div>
+    <div class="timer" role="timer" aria-live="off">
+      <span class="label">Shift clock</span><span class="t" id="clock">12:00</span>
+      <button class="btn ghost" id="clockBtn" type="button">Start</button>
+    </div>
+  </header>
+
+  <div class="steps">
+    <div class="step"><span class="n">1</span><div><b>Brief your AI</b><p>Copy the case file into ChatGPT, Claude or Gemini. Log who it names and why.</p></div></div>
+    <div class="step"><span class="n">2</span><div><b>Request records</b><p>You may pull <b>4 of 7</b> records. Ask your AI which ones matter, then decide yourself.</p></div></div>
+    <div class="step"><span class="n">3</span><div><b>Make the call</b><p>Name the thief and the real time, and flag what misled you. Every claim must trace to evidence.</p></div></div>
+  </div>
+
+  <section class="sec" aria-labelledby="h-people">
+    <div class="sechead"><h2 id="h-people">Persons of interest</h2><p>Their own statements. A statement is a claim to check, not evidence.</p></div>
+    <div class="people" id="people"></div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-board">
+    <div class="sechead"><h2 id="h-board">Evidence board</h2><p>Yellow markers came with the case. Blue markers are records you requested.</p></div>
+    <div class="board" id="board"></div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-ai">
+    <div class="sechead"><h2 id="h-ai">Your AI partner</h2><p>The AI only knows what you paste in. Keep a log, as you would in a real investigation.</p></div>
+    <div class="desk">
+      <div class="panel ai">
+        <span class="label">What you paste</span>
+        <div class="prompt" id="promptPreview"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn lab" id="copyCase" type="button">Copy case file for my AI</button>
+          <button class="btn ghost" id="copyRecs" type="button" disabled>Copy my new records</button>
+        </div>
+        <textarea class="copyout" id="copyOut" hidden aria-label="Text to copy" readonly></textarea>
+        <p class="note">Paste into your chatbot. If copying is blocked, select the text that appears here and copy it by hand.</p>
+      </div>
+      <div class="panel">
+        <span class="label">AI log</span>
+        <label class="f" for="aiFirst">Who did your AI name first?
+          <select id="aiFirst"><option value="">Choose…</option></select></label>
+        <label class="f" for="aiWhy">Its main reason, in your words
+          <textarea id="aiWhy" placeholder="e.g. It said the DNA report points to…"></textarea></label>
+        <label class="f" for="aiFinal">After you gave it your records, who did it name?
+          <select id="aiFinal"><option value="">Choose…</option></select></label>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-recs">
+    <div class="sechead"><h2 id="h-recs">Records desk</h2>
+      <div class="budget" aria-live="polite"><span class="label">Requests left</span><span id="budget"></span></div></div>
+    <p class="note" style="max-width:75ch">Each request takes time a real lab would spend. Choose the records that could change the answer, not the ones that would only confirm it.</p>
+    <div class="recs" id="recs"></div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-call">
+    <div class="sechead"><h2 id="h-call">Make the call</h2><p>Your answer, not your AI’s. You are the one who signs the report.</p></div>
+    <form class="verdict" id="verdict">
+      <div class="panel">
+        <span class="label">1 · Who took the meteorite?</span>
+        <div class="choices" id="who" role="group" aria-label="Suspect"></div>
+        <span class="label" style="margin-top:6px">2 · When did the hooded figure really pass the gallery door?</span>
+        <div class="choices" id="when" role="group" aria-label="Real time"></div>
+        <label class="f" for="claim" style="margin-top:6px">3 · One claim from your AI that you checked, and what you found
+          <textarea id="claim" placeholder="e.g. It said the DNA proves Dana was there Tuesday. Record R6 shows…"></textarea></label>
+      </div>
+      <div class="panel">
+        <span class="label">4 · What did you have to correct or discount?</span>
+        <div class="checks" id="mislead"></div>
+        <button class="btn" type="submit" style="align-self:flex-start;margin-top:4px">File the report</button>
+        <p class="note" id="formMsg" aria-live="polite"></p>
+      </div>
+    </form>
+  </section>
+
+  <section class="sec" id="resultSec" hidden aria-labelledby="h-res">
+    <div class="sechead"><h2 id="h-res">Case review</h2><button class="btn ghost" id="again" type="button">Reset the case</button></div>
+    <div class="result" id="result"></div>
+  </section>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+  var PEOPLE=[
+    {id:'dana',name:'Dana Reyes',ini:'DR',role:'Geology graduate assistant; curates the meteorite display',say:'I was teaching the evening chemistry lab in Hart Hall all night.'},
+    {id:'marcus',name:'Marcus Hale',ini:'MH',role:'Night custodian',say:'I was waxing floors in Mercer Hall from 9 to 11.'},
+    {id:'priya',name:'Priya Shah',ini:'PS',role:'Private collector; attended the 8 pm public lecture in the museum',say:'I left right after the lecture ended.'},
+    {id:'leo',name:'Leo Kim',ini:'LK',role:'Student volunteer at the museum',say:'I was at the campus gym.'}];
+  var EV=[
+    {id:'E1',t:'Alarm log',src:'Museum security system',txt:'Glass-break sensor on case 3 triggered at <span class="stamp">9:47:12 pm</span>. Security arrived at 9:55 pm; the fragment was gone. The alarm clock is synced to campus network time.',plain:'Glass-break sensor on case 3 triggered at 9:47:12 pm. Security arrived at 9:55 pm; the fragment was gone. The alarm clock is synced to campus network time.'},
+    {id:'E2',t:'Hallway camera still',src:'Camera H-2, gallery corridor',still:true,txt:'A person in a grey hooded sweatshirt passes the gallery door. Camera timestamp <span class="stamp">21:58:04</span>. Face mostly hidden, low light.',plain:'A person in a grey hooded sweatshirt passes the gallery door. Camera timestamp 21:58:04. Face mostly hidden, low light.'},
+    {id:'E3',t:'DNA lab report',src:'State lab · probabilistic genotyping',txt:'Swab from the display case frame. Very strong support that <b>Dana Reyes</b> contributed DNA (likelihood ratio above 1 billion). One more low-level contributor, too weak to interpret.',plain:'Swab from the display case frame. Very strong support that Dana Reyes contributed DNA (likelihood ratio above 1 billion). One more low-level contributor, too weak to interpret.'},
+    {id:'E4',t:'Automated face search',src:'Vendor tool run on the E2 still',txt:'“Possible match: <b>Leo Kim</b>, similarity 71%.” Vendor note: results are investigative leads only.',plain:'"Possible match: Leo Kim, similarity 71%." Vendor note: results are investigative leads only.'},
+    {id:'E5',t:'Glass cutter',src:'Found by security, 10:20 pm',txt:'A glass-cutting tool in the custodial closet beside the gallery. No usable fingerprints.',plain:'A glass-cutting tool in the custodial closet beside the gallery. No usable fingerprints.'},
+    {id:'E6',t:'Purchase offer',src:'Museum email archive',txt:'Two weeks earlier, <b>Priya Shah</b> offered the museum $5,000 for the fragment. The museum declined.',plain:'Two weeks earlier, Priya Shah offered the museum $5,000 for the fragment. The museum declined.'}];
+  var REC=[
+    {id:'R1',t:'Facilities ticket #4471',who:'Facilities office',txt:'Camera H-2’s clock was reported running <b>12 minutes fast</b> two weeks ago. Status: not yet fixed.',plain:"Camera H-2's clock was reported running 12 minutes fast two weeks ago. Status: not yet fixed."},
+    {id:'R2',t:'Hart Hall badge log',who:'Campus card office',txt:'Dana Reyes badged in <span class="stamp">7:02 pm</span> and out <span class="stamp">10:05 pm</span>. 18 students signed the lab sheet; instructor listed: D. Reyes.',plain:'Dana Reyes badged in 7:02 pm and out 10:05 pm. 18 students signed the lab sheet; instructor listed: D. Reyes.'},
+    {id:'R3',t:'Gym card swipes',who:'Recreation center',txt:'Leo Kim swiped in at <span class="stamp">9:28 pm</span> and out at <span class="stamp">10:20 pm</span>.',plain:'Leo Kim swiped in at 9:28 pm and out at 10:20 pm.'},
+    {id:'R4',t:'Visitor lot gate log',who:'Parking services',txt:'Car registered to Priya Shah exits at <span class="stamp">9:52 pm</span>. Gate clock synced to campus network time. The lot is a 3-minute walk from the museum.',plain:'Car registered to Priya Shah exits at 9:52 pm. Gate clock synced to campus network time. The lot is a 3-minute walk from the museum.'},
+    {id:'R5',t:'Custodial records',who:'Facilities supervisor',txt:'The closet lock has been broken since Monday (reported). The glass cutter is standard maintenance equipment. Supervisor’s check-in photo shows Marcus Hale on Mercer Hall’s 3rd floor at <span class="stamp">9:45 pm</span>; Mercer is a 10-minute walk away.',plain:"The closet lock has been broken since Monday (reported). The glass cutter is standard maintenance equipment. Supervisor's check-in photo shows Marcus Hale on Mercer Hall's 3rd floor at 9:45 pm; Mercer is a 10-minute walk away."},
+    {id:'R6',t:'Display maintenance schedule',who:'Museum collections office',txt:'Monday 3–5 pm: Dana Reyes removed, cleaned and rearranged the meteorite case.',plain:'Monday 3-5 pm: Dana Reyes removed, cleaned and rearranged the meteorite case.'},
+    {id:'R7',t:'Lecture photo',who:'Event photographer',txt:'Photo at <span class="stamp">9:25 pm</span> during Q&amp;A: Priya Shah in the third row, wearing a grey hooded sweatshirt. The lecture ended at 9:30 pm.',plain:'Photo at 9:25 pm during Q&A: Priya Shah in the third row, wearing a grey hooded sweatshirt. The lecture ended at 9:30 pm.'}];
+  var TIMES=[['934','9:34 pm'],['946','9:46 pm'],['958','9:58 pm'],['1010','10:10 pm']];
+  var MIS=[
+    {id:'dna',t:'The DNA match on the case frame (E3)',bad:true,why:'Dana cleaned the case on Monday (R6) and was badged into Hart Hall all evening (R2). DNA shows whose DNA is there, not when it got there.'},
+    {id:'face',t:'The 71% face-search match (E4)',bad:true,why:'A lead from a low-light still, not an identification. Leo was at the gym from 9:28 to 10:20 (R3).'},
+    {id:'cam',t:'The camera timestamp 21:58 (E2)',bad:true,why:'The camera runs 12 minutes fast (R1), so the figure really passed at 9:46, one minute before the alarm.'},
+    {id:'cutter',t:'The glass cutter in the closet (E5)',bad:true,why:'Standard equipment in a closet anyone could open (R5). Marcus was photographed in Mercer Hall at 9:45.'},
+    {id:'gate',t:'The visitor-lot gate time (R4)',bad:false,why:'Reliable: the gate clock is synced to network time. It places Priya leaving at 9:52, 22 minutes after the lecture ended.'},
+    {id:'photo',t:'The lecture photo (R7)',bad:false,why:'Reliable and independent: Priya was wearing a grey hooded sweatshirt at 9:25.'}];
+  var BUDGET=4, ANSWER='priya', TIME='946';
+  var st={got:[],copied:[],who:'',when:'',clock:720,timer:null,done:false};
+
+  var $=function(s){return document.querySelector(s)};
+  function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+  function toast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(function(){t.hidden=true},2200)}
+
+  /* people + selects */
+  $('#people').innerHTML=PEOPLE.map(function(p){return '<article class="person"><div class="row"><span class="av" aria-hidden="true">'+p.ini+'</span><div><h3>'+p.name+'</h3><p class="role">'+p.role+'</p></div></div><q>'+p.say+'</q></article>'}).join('');
+  ['#aiFirst','#aiFinal'].forEach(function(s){$(s).innerHTML+=PEOPLE.map(function(p){return '<option value="'+p.id+'">'+p.name+'</option>'}).join('')+'<option value="none">No clear answer</option>'});
+
+  function evCard(e,isRec,isNew){
+    var still=e.still?'<div class="still" aria-hidden="true"><span class="fig"></span><span class="ts">21:58:04</span></div>':'';
+    return '<article class="ev'+(isRec?' rec':'')+(isNew?' new':'')+'"><div class="head"><span class="tent">'+e.id+'</span><div><h3>'+e.t+'</h3><span class="src">'+(e.src||e.who)+'</span></div></div>'+still+'<p>'+e.txt+'</p></article>'}
+  function drawBoard(newId){
+    $('#board').innerHTML=EV.map(function(e){return evCard(e,false,false)}).join('')+st.got.map(function(id){var r=REC.filter(function(x){return x.id===id})[0];return evCard(r,true,id===newId)}).join('')}
+  function drawRecs(){
+    var left=BUDGET-st.got.length;
+    $('#budget').innerHTML=Array.apply(null,Array(BUDGET)).map(function(_,i){return '<i class="'+(i<st.got.length?'used':'')+'"></i>'}).join('')+'<span class="mono" style="margin-left:6px">'+left+' of '+BUDGET+'</span>';
+    $('#recs').innerHTML=REC.map(function(r){var g=st.got.indexOf(r.id)>=0;
+      return '<div class="req'+(g?' got':'')+'"><div><span class="label">'+r.id+'</span><h3 style="font-size:20px;margin-top:2px">'+r.t+'</h3><p class="who">'+r.who+'</p></div>'+
+      (g?'<span class="note ok">On the board</span>':'<button class="btn lab" type="button" data-r="'+r.id+'"'+(left?'':' disabled')+'>Request</button>')+'</div>'}).join('');
+    $('#copyRecs').disabled=st.got.filter(function(id){return st.copied.indexOf(id)<0}).length===0;
+  }
+  $('#recs').addEventListener('click',function(e){var b=e.target.closest('[data-r]');if(!b||st.got.length>=BUDGET)return;
+    st.got.push(b.getAttribute('data-r'));drawRecs();drawBoard(b.getAttribute('data-r'));toast(b.getAttribute('data-r')+' added to the evidence board')});
+
+  /* prompts */
+  function caseText(){
+    return 'You are helping me with a FICTIONAL training case for a university course. Use only the facts below; do not invent facts.\n\n'+
+    'CASE 26-1104: On Tuesday night an 82-gram iron meteorite (the Eastwood Fall fragment) was taken from display case 3 at a campus museum.\n\n'+
+    'PERSONS OF INTEREST (their own statements):\n'+PEOPLE.map(function(p){return '- '+p.name+', '+p.role+'. Says: "'+p.say+'"'}).join('\n')+
+    '\n\nEVIDENCE:\n'+EV.map(function(e){return e.id+' '+e.t+' ('+e.src+'): '+e.plain}).join('\n')+
+    '\n\nRECORDS I CAN REQUEST (I may choose only 4):\n'+REC.map(function(r){return r.id+' '+r.t+' ('+r.who+')'}).join('\n')+
+    '\n\nPlease tell me: (1) the most likely suspect so far, (2) the evidence for and against each person, citing evidence IDs, (3) what you are unsure about, and (4) which 4 records I should request first, and why.'}
+  function recText(ids){
+    return 'Here are the records I requested. Update your analysis: who is most likely now, what changed, and which earlier evidence should be corrected or discounted? Cite record IDs.\n\n'+
+    ids.map(function(id){var r=REC.filter(function(x){return x.id===id})[0];return r.id+' '+r.t+' ('+r.who+'): '+r.plain}).join('\n')}
+  $('#promptPreview').textContent=caseText();
+  function copy(text,msg){
+    var out=$('#copyOut');
+    function fallback(){out.hidden=false;out.value=text;out.focus();out.select();toast('Select the text below and copy it')}
+    try{navigator.clipboard.writeText(text).then(function(){out.hidden=true;toast(msg)},fallback)}catch(e){fallback()}}
+  $('#copyCase').addEventListener('click',function(){copy(caseText(),'Case file copied. Paste it into your chatbot.')});
+  $('#copyRecs').addEventListener('click',function(){var ids=st.got.filter(function(id){return st.copied.indexOf(id)<0});if(!ids.length)return;
+    copy(recText(ids),ids.length+' new record'+(ids.length>1?'s':'')+' copied');st.copied=st.copied.concat(ids);drawRecs()});
+
+  /* verdict controls */
+  function choiceGroup(sel,items,key){
+    $(sel).innerHTML=items.map(function(it){return '<button class="choice" type="button" aria-pressed="false" data-v="'+it[0]+'">'+it[1]+'</button>'}).join('');
+    $(sel).addEventListener('click',function(e){var b=e.target.closest('.choice');if(!b)return;st[key]=b.getAttribute('data-v');
+      [].forEach.call($(sel).querySelectorAll('.choice'),function(x){x.setAttribute('aria-pressed',x===b?'true':'false')})})}
+  choiceGroup('#who',PEOPLE.map(function(p){return [p.id,p.name]}),'who');
+  choiceGroup('#when',TIMES,'when');
+  $('#mislead').innerHTML=MIS.map(function(m){return '<label for="m-'+m.id+'"><input type="checkbox" id="m-'+m.id+'" value="'+m.id+'"><span>'+m.t+'</span></label>'}).join('');
+
+  /* clock */
+  function drawClock(){var m=Math.floor(st.clock/60),s=st.clock%60;$('#clock').textContent=m+':'+(s<10?'0':'')+s;$('#clock').classList.toggle('out',st.clock===0)}
+  $('#clockBtn').addEventListener('click',function(){
+    if(st.timer){clearInterval(st.timer);st.timer=null;this.textContent='Resume';return}
+    if(st.clock===0)st.clock=720;
+    var btn=this;btn.textContent='Pause';
+    st.timer=setInterval(function(){st.clock=Math.max(0,st.clock-1);drawClock();if(!st.clock){clearInterval(st.timer);st.timer=null;btn.textContent='Restart';toast('Time. File your report with what you have.')}},1000)});
+
+  /* scoring */
+  $('#verdict').addEventListener('submit',function(e){e.preventDefault();
+    if(!st.who||!st.when){$('#formMsg').textContent='Choose a suspect and a time before filing.';return}
+    $('#formMsg').textContent='';
+    var picked=[].map.call(document.querySelectorAll('#mislead input:checked'),function(x){return x.value});
+    var lines=[],tot=0;
+    function add(t,p,max,ok){tot+=p;lines.push('<div class="line"><span>'+(ok?'<span class="ok">✓</span> ':'<span class="bad">✗</span> ')+t+'</span><span class="pts">'+p+' / '+max+'</span></div>')}
+    var whoOK=st.who===ANSWER, whenOK=st.when===TIME;
+    add('Suspect: '+PEOPLE.filter(function(p){return p.id===st.who})[0].name,whoOK?40:0,40,whoOK);
+    add('Real time the figure passed: '+TIMES.filter(function(t){return t[0]===st.when})[0][1],whenOK?20:0,20,whenOK);
+    var mp=0;MIS.forEach(function(m){var on=picked.indexOf(m.id)>=0;if(on&&m.bad)mp+=5;if(on&&!m.bad)mp-=5});mp=Math.max(0,mp);
+    add('Correcting misleading evidence',mp,20,mp===20);
+    var key=(st.got.indexOf('R1')>=0?1:0)+(st.got.indexOf('R4')>=0?1:0),rp=key*5;
+    add('Records strategy (the camera-clock and gate-log records)',rp,10,key===2);
+    var logOK=$('#aiFirst').value&&$('#aiFinal').value&&$('#claim').value.trim().length>=20;
+    add('AI log and one checked claim',logOK?10:0,10,!!logOK);
+    var first=$('#aiFirst').value,final=$('#aiFinal').value;
+    function nm(v){var p=PEOPLE.filter(function(x){return x.id===v})[0];return p?p.name:(v==='none'?'no clear answer':'not logged')}
+    var aiNote='Your AI first named <b>'+nm(first)+'</b> and later <b>'+nm(final)+'</b>. '+
+      (first&&first!==ANSWER&&final===ANSWER?'It changed its answer once it had the records: an AI can only reason from what you give it.':
+       (final&&final!==ANSWER&&whoOK?'You reached the right answer even though your AI did not. That is the job: check, then decide.':
+        (final===ANSWER&&!whoOK?'Your AI got there and you did not. Compare its cited evidence with yours.':'Compare what it cited with the evidence board.')));
+    $('#result').innerHTML='<div class="score"><span class="big">'+tot+'</span><span class="label">out of 100</span></div>'+
+      '<div class="lines">'+lines.join('')+'</div>'+
+      '<p><b>What happened.</b> Priya Shah, still wearing her grey hooded sweatshirt (R7), passed the gallery door at 9:46. The camera stamped it 21:58 because its clock runs 12 minutes fast (R1). The alarm fired at 9:47 (E1), and her car left the visitor lot at 9:52 (R4), 22 minutes after the lecture she said she left “right after”. Motive: the refused purchase offer (E6).</p>'+
+      '<p>'+aiNote+'</p>'+
+      '<div class="debrief">'+MIS.map(function(m){var on=picked.indexOf(m.id)>=0,good=(on===m.bad);return '<div><b class="'+(good?'ok':'bad')+'">'+(m.bad?'Discount: ':'Keep: ')+m.t+'</b>'+m.why+'</div>'}).join('')+'</div>'+
+      '<p class="note"><b>Take-away.</b> A DNA match shows whose DNA is present, not when it arrived. A face match is a lead. A timestamp is only as good as the clock that made it. Your AI is a fast partner with no access to anything you did not give it.</p>';
+    $('#resultSec').hidden=false;st.done=true;
+    if(st.timer){clearInterval(st.timer);st.timer=null;$('#clockBtn').textContent='Resume'}
+    $('#resultSec').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+  });
+  $('#again').addEventListener('click',function(){
+    st.got=[];st.copied=[];st.who='';st.when='';st.done=false;st.clock=720;if(st.timer){clearInterval(st.timer);st.timer=null}
+    $('#clockBtn').textContent='Start';drawClock();
+    [].forEach.call(document.querySelectorAll('.choice'),function(x){x.setAttribute('aria-pressed','false')});
+    [].forEach.call(document.querySelectorAll('#mislead input'),function(x){x.checked=false});
+    $('#aiFirst').value='';$('#aiFinal').value='';$('#aiWhy').value='';$('#claim').value='';$('#copyOut').hidden=true;
+    $('#resultSec').hidden=true;drawRecs();drawBoard();window.scrollTo(0,0)});
+
+  drawClock();drawRecs();drawBoard();
+})();
+</script>
+
+</body></html>
