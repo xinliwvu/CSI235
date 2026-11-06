@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI and Ethics</title><meta name="description" content="Interactive 40-slide lecture: ethical lenses, privacy and autonomy, safety and control, social impacts, and governance of AI."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,600;1,8..60,500&display=swap"><style>*,*::before,*::after{box-sizing:border-box}
+:root{
+  --ground:#EFEBE3; --stage:#FFFDF8; --ink:#1E1B17; --body:#433E37; --muted:#6E675D;
+  --line:#D8D1C4; --hair:#E9E3D8; --chip:#F4EFE6;
+  --terra:#B04E2F; --gold:#8C640E; --sage:#4C7044; --slate:#3F617A; --plum:#7A4A6A;
+  --tterra:#F8E7DF; --tgold:#F7EED9; --tsage:#E6EFE3; --tslate:#E3ECF2; --tplum:#F2E6EE; --tneutral:#F1ECE3;
+  --ok:#2F7A4F; --tok:#E1F1E7; --bad:#B0402F; --tbad:#F8E2DD;
+  --shadow:0 1px 2px rgba(30,27,23,.06),0 14px 44px rgba(30,27,23,.12);
+  --scrim:rgba(255,253,248,.93); --codebg:#F3EEE4;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0E0D0C; --stage:#191715; --ink:#FCF7EA; --body:#D8D1C2; --muted:#A39B8E;
+  --line:#3A3631; --hair:#2A2724; --chip:#24211E;
+  --terra:#E07A57; --gold:#E2B55A; --sage:#97B88E; --slate:#8FB0C8; --plum:#C995B8;
+  --tterra:#33221B; --tgold:#30281A; --tsage:#1F2A1D; --tslate:#1C2730; --tplum:#2C1F28; --tneutral:#23201D;
+  --ok:#7CC995; --tok:#18291E; --bad:#F08A76; --tbad:#33201C;
+  --shadow:0 1px 2px rgba(0,0,0,.45),0 18px 50px rgba(0,0,0,.5);
+  --scrim:rgba(25,23,21,.92); --codebg:#221F1C;
+}}
+:root[data-theme="dark"]{
+  --ground:#0E0D0C; --stage:#191715; --ink:#FCF7EA; --body:#D8D1C2; --muted:#A39B8E;
+  --line:#3A3631; --hair:#2A2724; --chip:#24211E;
+  --terra:#E07A57; --gold:#E2B55A; --sage:#97B88E; --slate:#8FB0C8; --plum:#C995B8;
+  --tterra:#33221B; --tgold:#30281A; --tsage:#1F2A1D; --tslate:#1C2730; --tplum:#2C1F28; --tneutral:#23201D;
+  --ok:#7CC995; --tok:#18291E; --bad:#F08A76; --tbad:#33201C;
+  --shadow:0 1px 2px rgba(0,0,0,.45),0 18px 50px rgba(0,0,0,.5);
+  --scrim:rgba(25,23,21,.92); --codebg:#221F1C;
+}
+html,body{height:100%}
+body{margin:0;background:var(--ground);color:var(--ink);overflow:hidden;
+  font-family:"Source Sans 3","Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+.wrap{position:fixed;inset:0 0 40px 0;display:grid;place-items:center}
+.stage{width:1280px;height:720px;flex:none;background:var(--stage);border-radius:10px;box-shadow:var(--shadow);
+  position:relative;overflow:hidden;transform-origin:center center}
+.slide{position:absolute;inset:0;padding:50px 64px 58px;display:none;flex-direction:column}
+.slide.on{display:flex}
+.eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--acc,var(--terra));font-weight:600;margin:0 0 12px}
+h1{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:40px;line-height:1.12;margin:0;color:var(--ink);
+  letter-spacing:-.012em;text-wrap:balance;max-width:24ch}
+h1.wide{max-width:none}
+.sub{font-size:18px;color:var(--muted);margin:10px 0 0;max-width:64ch;line-height:1.45}
+.body{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:16px;padding-top:14px}
+.foot{position:absolute;left:64px;right:64px;bottom:20px;display:flex;justify-content:space-between;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.kick{font-size:17px;color:var(--muted);line-height:1.45;margin:0;max-width:80ch}
+.kick b{color:var(--ink)}
+.note-line{font-size:15.5px;line-height:1.45;color:var(--acc,var(--gold));margin:0;font-weight:600}
+b,strong{font-weight:700;color:var(--ink)}
+a{color:var(--slate)}
+
+/* section + title slides */
+.title-slide .body,.section-slide .body{justify-content:center}
+.title-slide h1{font-size:60px;max-width:13ch;line-height:1.04}
+.tmeta{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc,var(--terra));margin:0 0 18px;font-weight:600}
+.tnote{font-size:14.5px;color:var(--muted);margin:26px 0 0;line-height:1.6;max-width:52ch}
+.tnote b{color:var(--ink)}
+.secnum{font-family:"Source Serif 4",Georgia,serif;font-size:120px;font-weight:600;line-height:.9;color:var(--acc,var(--terra));margin:0 0 10px}
+.section-slide h1{font-size:54px;max-width:16ch}
+
+/* photographs */
+.bleed{position:absolute;inset:0;overflow:hidden}
+.bleed img{width:100%;height:100%;object-fit:cover;display:block}
+.bleed::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg,var(--scrim) 0%,var(--scrim) 40%,color-mix(in srgb,var(--scrim) 60%,transparent) 60%,color-mix(in srgb,var(--scrim) 8%,transparent) 100%)}
+.onphoto{position:relative;z-index:2;max-width:640px}
+.split{display:grid;grid-template-columns:1.1fr .9fr;gap:34px;align-items:center;flex:1;min-height:0}
+.split.even{grid-template-columns:1fr 1fr}
+.split.wideL{grid-template-columns:1.35fr .65fr}
+.col{min-width:0;display:flex;flex-direction:column;gap:16px;justify-content:center}
+.shot{border-radius:10px;overflow:hidden;background:var(--tneutral);width:100%;box-shadow:0 1px 2px rgba(0,0,0,.08),0 10px 30px rgba(0,0,0,.14)}
+.shot img{width:100%;height:100%;max-height:440px;object-fit:cover;display:block}
+.cap{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:8px 0 0;text-align:right}
+.bleed-cap{position:absolute;right:22px;bottom:20px;z-index:3;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:#fff;background:rgba(0,0,0,.45);padding:4px 8px;border-radius:4px}
+
+/* labelled blocks */
+.lab{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:600;color:var(--acc,var(--terra));margin:0 0 7px}
+.blk p{margin:0;font-size:19px;line-height:1.45;color:var(--body)}
+.blk{border-left:3px solid var(--acc,var(--terra));padding:2px 0 2px 16px}
+.rows{display:flex;flex-direction:column;gap:0}
+.row{display:grid;grid-template-columns:230px 1fr;gap:24px;align-items:baseline;padding:20px 0;border-bottom:1px solid var(--hair)}
+.row:last-child{border-bottom:0}
+.row .k{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--acc,var(--terra));
+  border-left:3px solid var(--acc,var(--terra));padding-left:12px}
+.row .v{font-size:21px;line-height:1.42;color:var(--body)}
+
+/* cards */
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)} .g5{grid-template-columns:repeat(5,1fr)}
+.card{background:var(--tint,var(--tneutral));border-radius:10px;padding:20px 22px;min-width:0}
+.card .ct{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;font-weight:600;color:var(--acc,var(--terra));margin:0 0 9px}
+.card h3{font-family:"Source Serif 4",Georgia,serif;font-size:23px;font-weight:600;margin:0 0 8px;color:var(--ink);line-height:1.15}
+.card p{margin:0;font-size:17px;line-height:1.45;color:var(--body)}
+.card .big{font-family:"Source Serif 4",Georgia,serif;font-size:44px;font-weight:600;line-height:1;color:var(--acc,var(--terra));margin:2px 0 10px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.t-terra{--tint:var(--tterra);--acc:var(--terra)} .t-gold{--tint:var(--tgold);--acc:var(--gold)} .t-sage{--tint:var(--tsage);--acc:var(--sage)}
+.t-slate{--tint:var(--tslate);--acc:var(--slate)} .t-plum{--tint:var(--tplum);--acc:var(--plum)} .t-neutral{--tint:var(--tneutral);--acc:var(--muted)}
+.a-terra{--acc:var(--terra)} .a-gold{--acc:var(--gold)} .a-sage{--acc:var(--sage)} .a-slate{--acc:var(--slate)} .a-plum{--acc:var(--plum)}
+
+/* quote */
+.quote{border-left:4px solid var(--acc,var(--gold));padding:6px 0 6px 20px;margin:0}
+.quote p{font-family:"Source Serif 4",Georgia,serif;font-size:24px;line-height:1.35;margin:0;color:var(--ink);font-style:italic}
+.quote .by{font-size:14px;color:var(--muted);margin-top:8px;font-style:normal;font-family:"Source Sans 3",sans-serif}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:16.5px}
+.tbl th{text-align:left;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--acc,var(--gold));
+  font-weight:600;padding:10px 14px;border-bottom:2px solid var(--line)}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--hair);color:var(--body);line-height:1.38;vertical-align:top}
+.tbl td:first-child{color:var(--ink);font-weight:600}
+.tbl tr.hl td{background:var(--tgold)}
+.tbl tbody tr{transition:background .15s}
+.tbl tbody tr:hover td{background:var(--tneutral)}
+.chip{display:inline-block;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.06em;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.c-ok{background:var(--tok);color:var(--ok)} .c-mid{background:var(--tgold);color:var(--gold)} .c-no{background:var(--tbad);color:var(--bad)} .c-n{background:var(--tneutral);color:var(--muted)}
+
+/* code */
+.code{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:21px;line-height:1.55;background:var(--codebg);border:1px solid var(--hair);
+  border-radius:10px;padding:20px 24px;color:var(--ink);white-space:pre;margin:0}
+.code .kw{color:var(--terra);font-weight:600} .code .ty{color:var(--slate)} .code .tac{color:var(--sage);font-weight:600} .code .bad{color:var(--bad);font-weight:600}
+.math{font-family:"Source Serif 4",Georgia,serif;font-size:44px;color:var(--gold);font-weight:600;letter-spacing:.01em}
+
+/* ask / reveal */
+.ask{background:var(--tgold);border-radius:12px;padding:20px 24px;border:1px solid color-mix(in srgb,var(--gold) 30%,transparent);display:flex;flex-direction:column;gap:12px}
+.ask .lbl{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.ask .q{font-size:21px;font-weight:600;line-height:1.32;color:var(--ink);font-family:"Source Serif 4",Georgia,serif;margin:0}
+.btn{border:0;background:var(--ink);color:var(--stage);font-size:14px;font-weight:600;padding:9px 16px;border-radius:7px;cursor:pointer;align-self:flex-start;letter-spacing:.01em}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn:hover{opacity:.86}
+.btn:focus-visible,.opt:focus-visible,.tog:focus-visible{outline:3px solid var(--slate);outline-offset:2px}
+.ans{display:none;font-size:16.5px;line-height:1.5;color:var(--body);border-top:1px solid color-mix(in srgb,var(--gold) 35%,transparent);padding-top:12px}
+.ans.show{display:block}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* clickable options (polls, votes, quizzes) */
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:grid;grid-template-columns:42px 1fr auto;gap:14px;align-items:center;text-align:left;cursor:pointer;
+  background:var(--tneutral);border:1.5px solid transparent;border-radius:10px;padding:13px 16px;position:relative;overflow:hidden}
+.opt:hover{border-color:var(--line)}
+.opt .L{font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;font-size:18px;color:var(--acc,var(--terra));text-align:center;position:relative;z-index:1}
+.opt .T{font-size:18px;line-height:1.35;color:var(--ink);position:relative;z-index:1}
+.opt .N{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:15px;font-weight:600;color:var(--muted);min-width:36px;text-align:right;position:relative;z-index:1}
+.opt .fill{position:absolute;left:0;top:0;bottom:0;background:color-mix(in srgb,var(--acc,var(--terra)) 16%,transparent);width:0;transition:width .25s}
+.opt.right{border-color:var(--ok);background:var(--tok)} .opt.wrong{border-color:var(--bad);background:var(--tbad)}
+.opt .why{grid-column:2/4;font-size:15px;color:var(--body);display:none;line-height:1.4;position:relative;z-index:1}
+.opt.right .why,.opt.wrong .why{display:block}
+.fb{font-size:16px;line-height:1.45;color:var(--body);min-height:24px;margin:0}
+.fb b{color:var(--ink)}
+
+/* flow */
+.flow{display:grid;gap:12px;align-items:stretch}
+.step{background:var(--tint,var(--tneutral));border-radius:10px;padding:18px 18px;position:relative;cursor:default}
+.step .sn{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--acc,var(--terra));display:block;margin-bottom:8px}
+.step h3{font-family:"Source Serif 4",Georgia,serif;font-size:22px;margin:0 0 6px;color:var(--ink);font-weight:600}
+.step p{margin:0;font-size:15.5px;line-height:1.42;color:var(--body)}
+.step.dim{opacity:.38}
+.step.lit{outline:2px solid var(--acc,var(--terra));outline-offset:0}
+.arrow{align-self:center;color:var(--muted);font-size:22px;text-align:center}
+
+/* timeline */
+.tl{display:grid;gap:0;position:relative;margin-top:6px}
+.tl::before{content:"";position:absolute;left:0;right:0;top:27px;height:2px;background:var(--line)}
+.tli{position:relative;padding:44px 12px 0 0;cursor:pointer;border:0;background:none;text-align:left;display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start}
+.tli::before{content:"";position:absolute;left:0;top:20px;width:16px;height:16px;border-radius:50%;background:var(--stage);border:3px solid var(--acc,var(--terra))}
+.tli.on::before{background:var(--acc,var(--terra))}
+.tli .y{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;font-weight:600;letter-spacing:.08em;color:var(--acc,var(--terra))}
+.tli .h{font-family:"Source Serif 4",Georgia,serif;font-size:19px;font-weight:600;color:var(--ink);margin:4px 0 4px;line-height:1.2}
+.tli .d{font-size:14.5px;line-height:1.4;color:var(--body)}
+.tldetail{background:var(--tneutral);border-radius:10px;padding:16px 20px;font-size:16.5px;line-height:1.48;color:var(--body);min-height:84px}
+.tldetail b{color:var(--ink)}
+
+/* toggles */
+.tog{border:1px solid var(--line);background:var(--stage);color:var(--body);border-radius:999px;padding:7px 14px;font-size:14px;cursor:pointer;font-weight:600}
+.tog.on{background:var(--ink);color:var(--stage);border-color:var(--ink)}
+.panel{background:var(--tneutral);border-radius:12px;padding:16px 18px}
+.readout{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:15px;color:var(--body);line-height:1.6}
+.readout b{color:var(--ink)}
+.big-read{font-family:"Source Serif 4",Georgia,serif;font-size:34px;font-weight:600;color:var(--ink);line-height:1.15;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--terra)}
+input[type=number],input[type=text],select{font:inherit;font-size:17px;padding:7px 10px;border-radius:7px;border:1px solid var(--line);background:var(--stage);color:var(--ink)}
+svg text{font-family:"Source Sans 3","Segoe UI",Arial,sans-serif}
+.ok{color:var(--ok)} .no{color:var(--bad)}
+
+/* chrome */
+.bar{position:fixed;left:0;right:0;bottom:0;height:3px;z-index:20}
+.bar i{display:block;height:100%;background:var(--terra);transition:width .22s ease}
+.hud{position:fixed;right:14px;bottom:12px;display:flex;gap:6px;z-index:21}
+.hud button{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.08em;border:1px solid var(--line);background:var(--stage);color:var(--muted);
+  border-radius:6px;padding:6px 10px;cursor:pointer}
+.hud button:hover{color:var(--ink);border-color:var(--muted)}
+.ov{position:fixed;inset:0;background:var(--ground);z-index:30;display:none;overflow:auto;padding:28px}
+.ov.on{display:block}
+.ov h2{font-family:"Source Serif 4",Georgia,serif;font-size:22px;margin:0 0 4px;color:var(--ink);max-width:1180px;margin-inline:auto}
+.ov .hint{font-size:13px;color:var(--muted);margin:0 auto 20px;max-width:1180px}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-width:1180px;margin:0 auto}
+.th{background:var(--stage);border:1px solid var(--hair);border-left:3px solid var(--tacc,var(--line));border-radius:7px;padding:11px 13px;cursor:pointer;text-align:left;min-height:76px}
+.th:hover{border-color:var(--terra)}
+.th .tn{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;color:var(--muted);letter-spacing:.1em}
+.th .tt{font-size:13px;line-height:1.3;color:var(--ink);margin-top:5px;font-weight:600}
+.th.cur{border-color:var(--terra);box-shadow:0 0 0 2px var(--terra)}
+.notes{display:none}
+.np{position:fixed;left:14px;bottom:52px;width:min(520px,calc(100vw - 28px));max-height:46vh;overflow:auto;z-index:25;background:var(--stage);border:1px solid var(--line);
+  border-radius:10px;box-shadow:var(--shadow);padding:16px 18px;display:none;font-size:14.5px;line-height:1.5;color:var(--body)}
+.np.on{display:block}
+.np h4{margin:0 0 8px;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.np p{margin:0 0 8px} .np a{word-break:break-all}
+.help{position:fixed;left:14px;bottom:13px;z-index:21;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted)}
+@media (max-width:700px){.help{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* widget pieces */
+.pstrip{display:grid;grid-template-columns:repeat(14,1fr);gap:5px}
+.pc{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;text-align:center;padding:6px 0;border-radius:5px;background:var(--tneutral);color:var(--muted)}
+.pc.yes{background:var(--tok);color:var(--ok);font-weight:600} .pc.no{background:var(--bad);color:var(--stage);font-weight:700}
+.card.flip{cursor:pointer;position:relative}
+.card.flip .back{display:none}
+.card.flip.show .back{display:block} .card.flip.show .front{display:none}
+.card.flip .front{font-size:15px;color:var(--muted);font-style:italic}
+.sitem{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:10px 14px;border-radius:9px;background:var(--tneutral);border:1.5px solid transparent}
+.sitem .st{font-size:17px;line-height:1.35;color:var(--ink)}
+.sitem .sw{grid-column:1/3;font-size:14.5px;color:var(--body);display:none}
+.sitem.right{border-color:var(--ok);background:var(--tok)} .sitem.wrong{border-color:var(--bad);background:var(--tbad)}
+.sitem.right .sw,.sitem.wrong .sw{display:block}
+.sitem .btnrow{gap:6px}
+.mrow{display:grid;grid-template-columns:34px 1fr 270px;gap:14px;align-items:center;padding:11px 14px;border-radius:9px;background:var(--tneutral);border:1.5px solid transparent}
+.mrow .mn{font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;font-size:18px;color:var(--terra);text-align:center}
+.mrow .mt{font-size:17px;line-height:1.35;color:var(--ink)}
+.mrow .mwhy{grid-column:2/4;font-size:14.5px;color:var(--body);display:none;line-height:1.4}
+.mrow.right{border-color:var(--ok);background:var(--tok)} .mrow.wrong{border-color:var(--bad);background:var(--tbad)}
+.door{cursor:pointer;border:2px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--stage);text-align:left;display:flex;flex-direction:column;gap:6px}
+.door:hover{border-color:var(--muted)}
+.door .dl{font-family:"Source Serif 4",Georgia,serif;font-size:34px;font-weight:600;color:var(--acc,var(--slate));line-height:1}
+.door .dt{font-size:16.5px;color:var(--ink);font-weight:600;line-height:1.3}
+.door.claim{background:var(--tterra);border-color:var(--terra)}
+.door.sel{box-shadow:0 0 0 3px var(--gold)}
+.rung{display:grid;grid-template-columns:30px 220px 1fr 140px;gap:14px;align-items:center;padding:11px 16px;border-radius:9px;background:var(--tneutral);cursor:pointer;border:1.5px solid transparent;text-align:left;width:100%}
+.rung:hover{border-color:var(--line)} .rung.sel{border-color:var(--gold);background:var(--tgold)}
+.rung .rn{font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;color:var(--muted);font-size:14px}
+.rung .rk{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.rung .rq{font-size:16.5px;color:var(--body);line-height:1.35}
+.rung .chip{justify-self:end}
+.ccarow{display:grid;grid-template-columns:1fr auto;gap:10px 16px;align-items:center;padding:12px 16px;border-radius:9px;background:var(--tneutral)}
+.ccarow .ct2{font-size:17.5px;color:var(--ink);line-height:1.35} .ccarow .ct2 small{display:block;font-size:12px;color:var(--muted);font-family:"IBM Plex Mono",ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.ccarow .ccawhy{grid-column:1/3;font-size:14.5px;color:var(--body);display:none;line-height:1.4}
+.tog.sugg{box-shadow:0 0 0 3px var(--ok)}
+.eq{font-family:"Source Serif 4",Georgia,serif;font-size:34px;color:var(--ink);display:flex;flex-wrap:wrap;align-items:center;gap:6px;justify-content:center}
+.eq [data-t]{padding:4px 10px;border-radius:8px;cursor:pointer;transition:background .15s}
+.eq [data-t].on{background:var(--tgold);box-shadow:inset 0 -3px 0 var(--gold)}
+.eq .op{color:var(--muted)}
+.card.lit{outline:2px solid var(--acc,var(--terra))} .card.dim{opacity:.4}
+.bars .bl{display:grid;grid-template-columns:260px 1fr 70px;gap:14px;align-items:center;margin:10px 0}
+.bars .bn{font-size:16px;color:var(--ink);line-height:1.3} .bars .bn small{display:block;color:var(--muted);font-size:13px}
+.bars .bb{height:26px;border-radius:5px;background:var(--acc,var(--slate))}
+.bars .bv{font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;font-size:17px;color:var(--ink)}
+.chk{display:flex;flex-direction:column;gap:8px}
+.chk label{display:flex;gap:12px;align-items:flex-start;font-size:17px;line-height:1.35;color:var(--ink);background:var(--tneutral);padding:10px 14px;border-radius:9px;cursor:pointer}
+.chk input{width:20px;height:20px;margin-top:2px;accent-color:var(--sage);flex:none}
+.links a{display:block;font-size:14px;line-height:1.5;color:var(--slate);text-decoration:none;word-break:break-all}
+.links a:hover{text-decoration:underline}
+.rows.compact .row{padding:8px 0;grid-template-columns:185px 1fr;gap:14px}
+.rows.compact .row .v{font-size:16.5px}
+.rows.compact .row .k{font-size:11.5px}
+.door{min-height:190px}
+.door .dt{font-size:19px}
+.mrow{padding:9px 14px}
+.mrow .mwhy{font-size:14px}
+
+/* week 10 additions */
+textarea{font:inherit;font-size:16px;line-height:1.45;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--stage);color:var(--ink);width:100%;resize:none}
+.tab{border:1px solid var(--line);background:var(--stage);color:var(--body);border-radius:999px;padding:7px 14px;font-size:14px;cursor:pointer;font-weight:600}
+.tab.on{background:var(--ink);color:var(--stage);border-color:var(--ink)}
+.cstack{display:flex;flex-direction:column;gap:5px;max-height:330px;overflow:auto;padding-right:4px}
+.cb{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;padding:7px 12px;border-radius:7px;flex:none}
+.cb.sys{background:var(--tslate);color:var(--slate);font-weight:600} .cb.usr{background:var(--tgold);color:var(--gold);margin-left:40px} .cb.ast{background:var(--tterra);color:var(--terra);margin-right:40px}
+.pcard{background:var(--stage);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+.prow{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:5px 0;border-bottom:1px solid var(--hair);font-size:15px}
+.prow:last-child{border-bottom:0}
+.pk{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--terra);font-weight:600;padding-top:2px}
+.pv{color:var(--ink)} .pv.empty{color:var(--muted)}
+.pform{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.pform label{display:flex;flex-direction:column;gap:3px;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.pform input{font-family:"Source Sans 3",sans-serif;font-size:15px;padding:6px 9px;letter-spacing:0;text-transform:none}
+mark{background:var(--tgold);color:var(--ink);padding:1px 3px;border-radius:3px}
+.prompt{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:16.5px;line-height:1.55;background:var(--codebg);border:1px solid var(--hair);border-left:4px solid var(--acc,var(--terra));
+  border-radius:9px;padding:14px 18px;color:var(--ink);white-space:pre-wrap;margin:0}
+.prompt.bad{--acc:var(--bad)} .prompt.good{--acc:var(--ok)}
+.plab{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;margin:0 0 6px;color:var(--acc,var(--muted))}
+.vend{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.vcol{background:var(--tneutral);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;border-top:4px solid var(--acc)}
+.vcol .vh{display:flex;gap:12px;align-items:center}
+.vcol .vg{width:36px;height:36px;border-radius:50%;background:var(--acc);color:var(--stage);display:grid;place-items:center;font-weight:700;font-family:"IBM Plex Mono",monospace;font-size:16px;flex:none}
+.vcol .vt{font-family:"Source Serif 4",Georgia,serif;font-size:22px;font-weight:600;color:var(--ink)}
+.vcol .vl{font-size:16px;color:var(--body);font-style:italic;margin:0}
+.vcol ul{margin:0;padding-left:20px} .vcol li{font-size:16.5px;line-height:1.4;color:var(--body);margin:0 0 6px}
+.vcol .prompt{font-size:14.5px;padding:10px 14px}
+.v-g{--acc:var(--terra)} .v-c{--acc:var(--slate)}
+.rw{display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:center;padding:7px 12px;border-radius:8px;background:var(--tneutral);font-size:15.5px;color:var(--body)}
+.rw .mk{font-weight:700;color:var(--muted);text-align:center} .rw.hit{background:var(--tok);color:var(--ink)} .rw.hit .mk{color:var(--ok)}
+.erow{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:8px 14px;border-radius:8px;background:var(--tneutral);font-size:16px;color:var(--ink)}
+.chat{display:flex;flex-direction:column;gap:8px}
+.msg{max-width:84%;padding:10px 14px;border-radius:12px;font-size:16.5px;line-height:1.4}
+.msg.u{align-self:flex-end;background:var(--tgold);color:var(--ink)} .msg.a{align-self:flex-start;background:var(--tslate);color:var(--ink)}
+.msg .who{display:block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.bigline{font-family:"Source Serif 4",Georgia,serif;font-size:38px;line-height:1.22;font-weight:600;color:var(--ink);margin:0;max-width:30ch}
+.bigline em{color:var(--terra);font-style:normal}
+.zlab{font-size:13px;font-weight:700;fill:var(--ink);pointer-events:none}
+.pyr{display:flex;flex-direction:column;gap:7px;align-items:flex-start}
+.pyr .pb{border-radius:8px;padding:11px 16px;display:flex;gap:16px;align-items:baseline;background:var(--tint)}
+.pyr .pb b{font-family:"Source Serif 4",Georgia,serif;font-size:21px;min-width:150px} .pyr .pb span{font-size:16px;color:var(--body)}
+
+
+/* week 11 additions */
+.ctrl{display:grid;grid-template-columns:200px 1fr 120px;gap:12px;align-items:center;font-size:15.5px;color:var(--body)}
+.ctrl b{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:14px;color:var(--ink);text-align:right}
+.dots{display:grid;grid-template-columns:repeat(20,1fr);gap:4px}
+.dots span{aspect-ratio:1;border-radius:3px;background:var(--tbad);border:1px solid color-mix(in srgb,var(--bad) 40%,transparent)}
+.dots span.tp{background:var(--ok);border-color:var(--ok)}
+.rbar{height:26px;border-radius:5px;transition:width .2s}
+.pq{display:block;width:100%;text-align:left;cursor:pointer;background:var(--tneutral);border:1.5px solid transparent;border-radius:9px;padding:9px 14px;font-size:16px;line-height:1.35;color:var(--ink)}
+.pq:hover{border-color:var(--line)}
+.pq.on{border-color:var(--gold);background:var(--tgold)}
+.pq.good{box-shadow:inset 4px 0 0 var(--ok)} .pq.weak{box-shadow:inset 4px 0 0 var(--bad);opacity:.75}
+.cands{display:flex;flex-direction:column;gap:7px}
+.cand{display:grid;grid-template-columns:40px 130px 1fr 54px;gap:12px;align-items:center;padding:8px 14px;border-radius:8px;background:var(--tneutral);font-size:16px;border:1.5px solid transparent}
+.cand span{font-family:"IBM Plex Mono",ui-monospace,monospace;color:var(--muted);font-weight:600}
+.cand i{display:block;height:14px;border-radius:4px;background:var(--slate);opacity:.7}
+.cand em{font-style:normal;font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;color:var(--ink);text-align:right}
+.cand.top.ok{border-color:var(--ok);background:var(--tok)} .cand.top.bad{border-color:var(--bad);background:var(--tbad)} .cand.top.muted{opacity:.55}
+.stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.disc{font-size:13px;color:var(--muted);font-style:italic;margin:0}
+.links a{font-size:15.5px;line-height:1.75}
+
+.fdots{display:grid;grid-template-columns:repeat(25,1fr);gap:2px}
+.fd{aspect-ratio:1;border-radius:50%;background:var(--tneutral);border:1.5px solid var(--line)}
+.fd.q{background:var(--sage);border-color:var(--sage)}
+.fd.s{box-shadow:0 0 0 2.5px var(--gold)}
+.fx td small{display:block;font-size:12px;color:var(--muted);font-weight:400}
+.fx td{padding:7px 12px}
+</style></head>
+<body>
+<div class="wrap"><div class="stage"><section class="slide title-slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 1"><div class="body"><p class="tmeta">AI for All · Week 13 · Part II</p><h1 style="font-size:62px;max-width:15ch;line-height:1.03">AI and Ethics</h1><p class="sub" style="font-size:22px">What should we build, use — and refuse?</p><div class="grid g4" style="max-width:820px;margin-top:22px;gap:10px"><div class="card t-slate" style="padding:12px 14px"><p class="ct" style="margin:0">Purposes</p></div><div class="card t-terra" style="padding:12px 14px"><p class="ct" style="margin:0">Rights</p></div><div class="card t-gold" style="padding:12px 14px"><p class="ct" style="margin:0">Responsibility</p></div><div class="card t-sage" style="padding:12px 14px"><p class="ct" style="margin:0">Remedies</p></div></div><p class="tnote">CSI 235 · AI for All · Xin Li · Fall 2026<br><b>← →</b> move · <b>O</b> all slides · <b>N</b> speaker notes · <b>R</b> reveal · <b>T</b> theme · <b>F</b> fullscreen</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>01 / 40</span></div><aside class="notes"><p>The second module broadens the analysis from disparities to choices about purposes, rights and responsibility. It combines ethical reasoning with practical decision tools.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 2"><p class="eyebrow">The route</p><h1>Five parts, one decision memo</h1><div class="body" style=""><div class="grid g5"><button class="card t-slate" type="button" style="text-align:left;cursor:pointer;border:0;min-height:250px" onclick="goSlide(3)"><div class="big">01</div><h3 style="font-size:20px">Ways of reasoning</h3><p style="font-size:15.5px">Ethics vs law, stakeholders, four lenses.</p></button><button class="card t-terra" type="button" style="text-align:left;cursor:pointer;border:0;min-height:250px" onclick="goSlide(11)"><div class="big">02</div><h3 style="font-size:20px">Privacy and autonomy</h3><p style="font-size:15.5px">Data, consent, surveillance, manipulation, children.</p></button><button class="card t-plum" type="button" style="text-align:left;cursor:pointer;border:0;min-height:250px" onclick="goSlide(17)"><div class="big">03</div><h3 style="font-size:20px">Safety and control</h3><p style="font-size:15.5px">Errors, agents, robots, oversight, accountability.</p></button><button class="card t-gold" type="button" style="text-align:left;cursor:pointer;border:0;min-height:250px" onclick="goSlide(26)"><div class="big">04</div><h3 style="font-size:20px">AI in society</h3><p style="font-size:15.5px">Credit, copyright, truth, work, energy, power.</p></button><button class="card t-sage" type="button" style="text-align:left;cursor:pointer;border:0;min-height:250px" onclick="goSlide(34)"><div class="big">05</div><h3 style="font-size:20px">Deciding well</h3><p style="font-size:15.5px">Governance, a proctoring dilemma, a review board.</p></button></div><p class="kick" style="">By the end you will write a <b>one-page ethical decision memo</b> for a real-feeling campus case.</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>02 / 40</span></div><aside class="notes"><p>Click a part to jump. The memo template is on slide 38.</p></aside></section><section class="slide " data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 3"><p class="eyebrow">Poll · gut reaction</p><h1>Your university proposes AI proctoring for remote exams</h1><div class="body" style=""><div class="split even" style="align-items:start"><div class="col"><p class="kick" style="font-size:17px">The tool records students at home and flags “unusual movement” to instructors.</p><div class="opts" data-w="poll"><button class="opt" type="button"><span class="fill"></span><span class="L">A</span><span class="T">Good idea — it reduces cheating</span><span class="N"></span></button><button class="opt" type="button"><span class="fill"></span><span class="L">B</span><span class="T">Only with strict limits and an appeal</span><span class="N"></span></button><button class="opt" type="button"><span class="fill"></span><span class="L">C</span><span class="T">Use a different kind of assessment instead</span><span class="N"></span></button><button class="opt" type="button"><span class="fill"></span><span class="L">D</span><span class="T">Bad idea — too intrusive</span><span class="N"></span></button></div><div class="btnrow"><button class="btn ghost reset" type="button">Reset tally</button><span class="kick" style="font-size:13.5px">Click to add a vote · right-click to remove one</span></div></div><div class="col"><div class="ask"><span class="lbl">Hold that thought</span><p class="q">Keep your vote. What one piece of evidence would change your mind?</p><button class="btn reveal" type="button">Reveal</button><div class="ans">We return to this exact case on slide 37 — with roles, evidence and a decision memo. Compare your gut reaction with your reasoned one.</div></div></div></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>03 / 40</span></div><aside class="notes"><p>A fictional case, not a claim about any current product.</p></aside></section><section class="slide section-slide" data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 4"><div class="body"><div class="secnum">01</div><h1>Ways of reasoning</h1><p class="sub" style="font-size:21px">Ethics asks what we should do — and why. Law, safety and fairness ask related but different questions.</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>04 / 40</span></div><aside class="notes"><p>Part 1 gives the vocabulary and the four lenses used in the rest of the deck.</p></aside></section><section class="slide " data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 5"><p class="eyebrow">Sort it · four perspectives</p><h1>Ethics, law, safety or fairness?</h1><div class="body" style=""><div class="grid g1" data-w="sort2" style="gap:8px"><div class="sitem" data-cat="e" style="padding:9px 12px"><span class="st" style="font-size:15.5px">Should we build an emotion-detecting classroom camera at all?</span><span class="btnrow"><button class="tog" data-v="e" type="button">Ethics</button><button class="tog" data-v="l" type="button">Law</button><button class="tog" data-v="s" type="button">Safety</button><button class="tog" data-v="f" type="button">Fairness</button></span><span class="sw">Ethics: what should we do, and why?</span></div><div class="sitem" data-cat="l" style="padding:9px 12px"><span class="st" style="font-size:15.5px">Does this data use require consent under state law?</span><span class="btnrow"><button class="tog" data-v="e" type="button">Ethics</button><button class="tog" data-v="l" type="button">Law</button><button class="tog" data-v="s" type="button">Safety</button><button class="tog" data-v="f" type="button">Fairness</button></span><span class="sw">Law: what obligations apply here?</span></div><div class="sitem" data-cat="s" style="padding:9px 12px"><span class="st" style="font-size:15.5px">Could the delivery robot block a wheelchair ramp?</span><span class="btnrow"><button class="tog" data-v="e" type="button">Ethics</button><button class="tog" data-v="l" type="button">Law</button><button class="tog" data-v="s" type="button">Safety</button><button class="tog" data-v="f" type="button">Fairness</button></span><span class="sw">Safety: how could it cause harm?</span></div><div class="sitem" data-cat="f" style="padding:9px 12px"><span class="st" style="font-size:15.5px">Does the screening tool reject one group more often?</span><span class="btnrow"><button class="tog" data-v="e" type="button">Ethics</button><button class="tog" data-v="l" type="button">Law</button><button class="tog" data-v="s" type="button">Safety</button><button class="tog" data-v="f" type="button">Fairness</button></span><span class="sw">Fairness: how does it treat different people?</span></div><div class="sitem" data-cat="e" style="padding:9px 12px"><span class="st" style="font-size:15.5px">Is it acceptable to monitor employees’ keystrokes?</span><span class="btnrow"><button class="tog" data-v="e" type="button">Ethics</button><button class="tog" data-v="l" type="button">Law</button><button class="tog" data-v="s" type="button">Safety</button><button class="tog" data-v="f" type="button">Fairness</button></span><span class="sw">Ethics — even if it is legal.</span></div><div class="sitem" data-cat="s" style="padding:9px 12px"><span class="st" style="font-size:15.5px">What happens if the planner suggests a dangerous action?</span><span class="btnrow"><button class="tog" data-v="e" type="button">Ethics</button><button class="tog" data-v="l" type="button">Law</button><button class="tog" data-v="s" type="button">Safety</button><button class="tog" data-v="f" type="button">Fairness</button></span><span class="sw">Safety.</span></div></div><p class="kick score" style="font-size:15px"></p><p class="kick" style="font-size:15px">A system can meet a legal minimum and still leave an ethical concern unresolved.</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>05 / 40</span></div><aside class="notes"><p>A serious ethical concern is not automatically a legal finding, and vice versa.</p></aside></section><section class="slide " data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 6"><p class="eyebrow">Benefits deserve careful attention</p><h1>Ethics is not only about harms</h1><div class="body" style=""><div class="split even"><div class="col"><div class="rows compact"><div class="row" style="--acc:var(--sage)"><div class="k">Real gains</div><div class="v">AI can reduce routine work and widen access to information.</div></div><div class="row" style="--acc:var(--slate)"><div class="k">Evidence</div><div class="v">Who <b>actually</b> receives the benefit?</div></div><div class="row" style="--acc:var(--gold)"><div class="k">Alternatives</div><div class="v">Compare with realistic options — including simpler tools.</div></div></div></div><div class="col"><div class="ask"><span class="lbl">Think first, then reveal</span><p class="q">Automatic captions for every lecture: clear win?</p><button class="btn reveal" type="button">Reveal</button><div class="ans">Often a real benefit for deaf and hard-of-hearing students, non-native speakers and anyone in a noisy room. But <b>inaccurate</b> captions — on accents or technical terms — can exclude the very users they are meant to help. Check accuracy for them, and keep a correction route.</div></div></div></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>06 / 40</span></div><aside class="notes"><p>Compare the proposed system with existing assistive services.</p></aside></section><section class="slide " data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 7"><p class="eyebrow">Stakeholders and power</p><h1>Who gains, who pays, who decides? — a hiring tool</h1><div class="body" style=""><div class="grid g3" data-w="flip"><div class="card flip t-slate" style="min-height:150px"><p class="ct">Employer</p><h3>Buys the tool</h3><p class="front">Gains? Pays? Can opt out?</p><p class="back">Gains time; pays money; <b>chooses</b> to use it.</p></div><div class="card flip t-terra" style="min-height:150px"><p class="ct">Applicant</p><h3>Is judged by it</h3><p class="front">Gains? Pays? Can opt out?</p><p class="back">Carries the most risk; supplies the data; usually <b>cannot opt out</b>.</p></div><div class="card flip t-gold" style="min-height:150px"><p class="ct">Vendor</p><h3>Sells the tool</h3><p class="front">Gains? Pays? Can opt out?</p><p class="back">Gains revenue; may never meet an applicant.</p></div><div class="card flip t-plum" style="min-height:150px"><p class="ct">Recruiter</p><h3>Uses the ranking</h3><p class="front">Gains? Pays? Can opt out?</p><p class="back">Saves time; may defer to the score under pressure.</p></div><div class="card flip t-sage" style="min-height:150px"><p class="ct">Current staff</p><h3>Shape the “ideal”</h3><p class="front">Gains? Pays? Can opt out?</p><p class="back">Their profiles may become the template for “a good hire”.</p></div><div class="card flip t-neutral" style="min-height:150px"><p class="ct">Regulators</p><h3>Oversee</h3><p class="front">Gains? Pays? Can opt out?</p><p class="back">Can act only if harm becomes visible.</p></div></div><div class="btnrow"><button class="btn ghost flipall" type="button">Turn all over</button></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>07 / 40</span></div><aside class="notes"><p>The buyer, the user and the person affected may be different people. The people carrying the largest risk may have the least influence.</p></aside></section><section class="slide " data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 8"><p class="eyebrow">Lens 1 · consequences</p><h1>A better average can hide a worse burden</h1><div class="body" style=""><div class="split even" style="align-items:start"><div class="col"><table class="tbl"><thead><tr><th>Emergency routing (fictional)</th><th>Policy A</th><th>Policy B</th></tr></thead><tbody><tr><td>Average wait</td><td><b>9 min</b></td><td>11 min</td></tr><tr><td>Rural neighbourhood wait</td><td><b>28 min</b>, every time</td><td>14 min</td></tr><tr><td>Calls reached in under 15 min</td><td>91%</td><td>88%</td></tr></tbody></table><div class="opts" data-w="poll"><button class="opt" type="button"><span class="fill"></span><span class="L">A</span><span class="T">Policy A — better on average</span><span class="N"></span></button><button class="opt" type="button"><span class="fill"></span><span class="L">B</span><span class="T">Policy B — no area is left behind</span><span class="N"></span></button><button class="opt" type="button"><span class="fill"></span><span class="L">C</span><span class="T">Need more information</span><span class="N"></span></button></div><div class="btnrow"><button class="btn ghost reset" type="button">Reset tally</button><span class="kick" style="font-size:13.5px">Click to add a vote · right-click to remove one</span></div></div><div class="col"><div class="blk a-slate"><div class="lab">Consequences lens</div><p>Weigh likely benefits and harms across everyone — including rare severe outcomes and delayed effects.</p></div><div class="blk a-terra"><div class="lab">The catch</div><p>A large total benefit can conceal an unacceptable burden on a smaller group.</p></div><p class="disc">Invented numbers for discussion.</p></div></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>08 / 40</span></div><aside class="notes"><p>A simplified introduction to consequentialist reasoning.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 9"><p class="eyebrow">Lens 2 · rights and duties</p><h1>Some things need justification even if they are efficient</h1><div class="body" style=""><div class="split even"><div class="col"><div class="rows compact"><div class="row" style="--acc:var(--terra)"><div class="k">Constraints</div><div class="v">Privacy, autonomy and equal treatment can limit a design.</div></div><div class="row" style="--acc:var(--slate)"><div class="k">Dignity</div><div class="v">UNESCO’s recommendation puts human rights and dignity at the centre of AI ethics.</div></div><div class="row" style="--acc:var(--plum)"><div class="k">Power</div><div class="v">When one side has little bargaining power, “they agreed” means less.</div></div></div></div><div class="col"><div class="ask"><span class="lbl">Think first, then reveal</span><p class="q">A warehouse requires workers to wear AI badges that track every movement. Workers signed the contract. Is that enough?</p><button class="btn reveal" type="button">Reveal</button><div class="ans">Signing a contract to keep a job is <b>weak consent</b>. Ask: what legitimate purpose does tracking serve, is there a less intrusive way, and can workers see and contest the data?</div></div></div></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>09 / 40</span></div><aside class="notes"><p>UNESCO Recommendation on the Ethics of AI (2021).</p></aside></section><section class="slide " data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 10"><p class="eyebrow">Lens 3 & 4 · care and professional character</p><h1>Which message would you rather receive?</h1><div class="body" style=""><div class="grid g2"><div class="card t-neutral" style=""><p class="ct">Message A</p><p style="">“Application status: DECLINED. Code 4471. This decision is final.”</p></div><div class="card t-sage" style=""><p class="ct">Message B</p><p style="">“We weren’t able to approve your application this time, mainly because your transcript is missing. You can upload it here, or call us to talk it through.”</p></div></div><div class="split even" style="align-items:start"><div class="col"><div class="opts" data-w="poll"><button class="opt" type="button"><span class="fill"></span><span class="L">A</span><span class="T">Message A</span><span class="N"></span></button><button class="opt" type="button"><span class="fill"></span><span class="L">B</span><span class="T">Message B</span><span class="N"></span></button></div><div class="btnrow"><button class="btn ghost reset" type="button">Reset tally</button><span class="kick" style="font-size:13.5px">Click to add a vote · right-click to remove one</span></div></div><div class="col"><div class="blk a-sage"><div class="lab">Care</div><p>How does a decision affect people in their particular situation?</p></div><div class="blk a-gold"><div class="lab">Professional character</div><p>What do honesty and responsible judgment require? (ACM Code of Ethics, 2018)</p></div></div></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>10 / 40</span></div><aside class="notes"><p>A respectful response can matter even when a rule permits the action.</p></aside></section><section class="slide " data-acc="var(--slate)" style="--acc:var(--slate)" aria-label="Slide 11"><p class="eyebrow">Applying several lenses</p><h1>A campus chatbot for student support</h1><div class="body" style=""><div data-w="tabs" style="display:flex;flex-direction:column;gap:16px"><div class="btnrow"><button class="tab" data-k="c" type="button">Consequences</button><button class="tab" data-k="r" type="button">Rights and duties</button><button class="tab" data-k="k" type="button">Care</button><button class="tab" data-k="p" type="button">Professional judgment</button></div><div class="tpane" data-k="c"><div class="blk a-slate"><div class="lab">Question</div><p>Does it improve support — and for whom? Who waits longer if it routes badly?</p></div></div><div class="tpane" data-k="r"><div class="blk a-terra"><div class="lab">Question</div><p>What data collection can we justify? Who can read the chat logs?</p></div></div><div class="tpane" data-k="k"><div class="blk a-sage"><div class="lab">Question</div><p>How does it respond to a student in distress? When does it hand over to a person?</p></div></div><div class="tpane" data-k="p"><div class="blk a-gold"><div class="lab">Question</div><p>Can we explain its limits honestly — “I am a bot and may be wrong”?</p></div></div></div><p class="kick" style="">No single lens decides the case. A good recommendation explains how the lenses interact.</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>11 / 40</span></div><aside class="notes"><p>A service can provide substantial benefit while still needing limits on data and clear handover rules.</p></aside></section><section class="slide section-slide" data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 12"><div class="body"><div class="secnum">02</div><h1>Privacy and autonomy</h1><p class="sub" style="font-size:21px">Who sees your data, who steers your choices, and who protects children.</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>12 / 40</span></div><aside class="notes"><p>Part 2: privacy across the data life cycle, consent, proportionality, manipulation and vulnerable users.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 13"><p class="eyebrow">Privacy across the data life cycle</p><h1>Ordinary records can add up to something sensitive</h1><div class="body" style=""><div class="flow" data-w="stepper" style="grid-template-columns:repeat(4,1fr)"><div class="step t-terra" data-ex="Collection creates an obligation to justify later uses."><span class="sn">1</span><h3>Collect</h3><p>Justify what you take.</p></div><div class="step t-plum" data-ex="Attendance + Wi-Fi location + library logs can reveal routines, health visits or religious practice that &lt;b&gt;no single source&lt;/b&gt; shows."><span class="sn">2</span><h3>Combine</h3><p>Records reveal more together.</p></div><div class="step t-gold" data-ex="Retention limits and access controls reduce exposure if something leaks."><span class="sn">3</span><h3>Retain</h3><p>Keep only as long as needed.</p></div><div class="step t-slate" data-ex="Biometric and behavioural data invite reuse. Each new purpose needs its own justification."><span class="sn">4</span><h3>Reuse</h3><p>New use, new question.</p></div></div><div class="btnrow"><button class="btn stepbtn" type="button">Start</button></div><div class="panel stepout readout" data-start="Press Start to walk through it." style="font-family:inherit;font-size:16.5px;min-height:62px"></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>13 / 40</span></div><aside class="notes"><p>Ask whether the original service needs all the data it collects.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 14"><p class="eyebrow">Meaningful consent</p><h1>Is this real consent?</h1><div class="body" style=""><div class="split even" style="align-items:start"><div class="col"><div class="chk" data-w="chkc"><label><input type="checkbox"><span>People understand what they are agreeing to</span></label><label><input type="checkbox"><span>There is a realistic way to say no</span></label><label><input type="checkbox"><span>Saying no carries no hidden penalty</span></label><label><input type="checkbox"><span>A new use of old data asks again</span></label><label><input type="checkbox"><span>People can withdraw later</span></label></div><p class="kick cout4" style="font-size:15px"></p></div><div class="col"><div class="ask"><span class="lbl">Think first, then reveal</span><p class="q">A study app’s 40-page terms say recordings may be used “to improve our services”. Two years later they train a voice model on them. Consent?</p><button class="btn reveal" type="button">Reveal</button><div class="ans">Weak. Few people read 40 pages, and “improve our services” did not describe training a voice model. A <b>new use</b> deserves a new, understandable question.</div></div></div></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>14 / 40</span></div><aside class="notes"><p>The Belmont Report’s attention to information, comprehension and voluntariness is a useful teaching reference.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 15"><p class="eyebrow">Sort it · surveillance and proportionality</p><h1>Lost lab equipment: which response is proportionate?</h1><div class="body" style=""><div class="grid g2" data-w="sort2" style="gap:8px"><div class="sitem" data-cat="p" style="padding:9px 12px"><span class="st" style="font-size:15px">Put tracking tags on the equipment itself</span><span class="btnrow"><button class="tog" data-v="p" type="button">Proportionate</button><button class="tog" data-v="x" type="button">Too intrusive</button></span><span class="sw">Targets the actual goal with little intrusion.</span></div><div class="sitem" data-cat="x" style="padding:9px 12px"><span class="st" style="font-size:15px">Continuous facial identification of everyone entering the building</span><span class="btnrow"><button class="tog" data-v="p" type="button">Proportionate</button><button class="tog" data-v="x" type="button">Too intrusive</button></span><span class="sw">Tracks every person, including bystanders, to find objects.</span></div><div class="sitem" data-cat="p" style="padding:9px 12px"><span class="st" style="font-size:15px">A sign-out sheet or check-out scanner</span><span class="btnrow"><button class="tog" data-v="p" type="button">Proportionate</button><button class="tog" data-v="x" type="button">Too intrusive</button></span><span class="sw">Simple and transparent.</span></div><div class="sitem" data-cat="x" style="padding:9px 12px"><span class="st" style="font-size:15px">Record and keep all hallway video for a year</span><span class="btnrow"><button class="tog" data-v="p" type="button">Proportionate</button><button class="tog" data-v="x" type="button">Too intrusive</button></span><span class="sw">Far beyond what the goal needs.</span></div><div class="sitem" data-cat="p" style="padding:9px 12px"><span class="st" style="font-size:15px">Lockable cabinets with logged access</span><span class="btnrow"><button class="tog" data-v="p" type="button">Proportionate</button><button class="tog" data-v="x" type="button">Too intrusive</button></span><span class="sw">Proportionate access control.</span></div><div class="sitem" data-cat="x" style="padding:9px 12px"><span class="st" style="font-size:15px">Monitor students’ phones for location near the lab</span><span class="btnrow"><button class="tog" data-v="p" type="button">Proportionate</button><button class="tog" data-v="x" type="button">Too intrusive</button></span><span class="sw">Disproportionate, no meaningful opt-out.</span></div></div><p class="kick score" style="font-size:15px"></p><p class="kick" style="font-size:15px">A legitimate goal does not justify every form of monitoring. Look for the least intrusive way to reach it.</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>15 / 40</span></div><aside class="notes"><p>Hypothetical case: a campus proposes continuous facial identification to find lost equipment.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 16"><p class="eyebrow">Sort it · autonomy and manipulation</p><h1>Does the design help you — or steer you?</h1><div class="body" style=""><div class="grid g2" data-w="sort2" style="gap:8px"><div class="sitem" data-cat="h" style="padding:9px 12px"><span class="st" style="font-size:15px">Shows a side-by-side price comparison you asked for</span><span class="btnrow"><button class="tog" data-v="h" type="button">Helps me</button><button class="tog" data-v="s" type="button">Steers me</button></span><span class="sw">Supports your own goal.</span></div><div class="sitem" data-cat="s" style="padding:9px 12px"><span class="st" style="font-size:15px">Notices you hesitate and flashes “Only 2 left!” again and again</span><span class="btnrow"><button class="tog" data-v="h" type="button">Helps me</button><button class="tog" data-v="s" type="button">Steers me</button></span><span class="sw">Emotional pressure and urgency cues.</span></div><div class="sitem" data-cat="s" style="padding:9px 12px"><span class="st" style="font-size:15px">Pre-ticks “share my data with partners”</span><span class="btnrow"><button class="tog" data-v="h" type="button">Helps me</button><button class="tog" data-v="s" type="button">Steers me</button></span><span class="sw">A default chosen for the provider.</span></div><div class="sitem" data-cat="h" style="padding:9px 12px"><span class="st" style="font-size:15px">Lets you set a daily time limit</span><span class="btnrow"><button class="tog" data-v="h" type="button">Helps me</button><button class="tog" data-v="s" type="button">Steers me</button></span><span class="sw">Respects your choice.</span></div><div class="sitem" data-cat="s" style="padding:9px 12px"><span class="st" style="font-size:15px">Hides the cancel button three menus deep</span><span class="btnrow"><button class="tog" data-v="h" type="button">Helps me</button><button class="tog" data-v="s" type="button">Steers me</button></span><span class="sw">Friction designed against you.</span></div><div class="sitem" data-cat="h" style="padding:9px 12px"><span class="st" style="font-size:15px">Explains why an item was recommended</span><span class="btnrow"><button class="tog" data-v="h" type="button">Helps me</button><button class="tog" data-v="s" type="button">Steers me</button></span><span class="sw">Transparent personalization.</span></div></div><p class="kick score" style="font-size:15px"></p></div><div class="foot"><span>AI and Ethics · Part II</span><span>16 / 40</span></div><aside class="notes"><p>Immersive interfaces (e.g. headsets) create new ways to influence attention.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 17"><p class="eyebrow">Children and vulnerable users</p><h1>A homework companion that wants to keep chatting</h1><div class="body" style=""><div class="split even"><div class="col"><div class="rows compact"><div class="row" style="--acc:var(--terra)"><div class="k">Perception</div><div class="v">Children may treat an AI persona as a friend.</div></div><div class="row" style="--acc:var(--gold)"><div class="k">Design for</div><div class="v">Age, dependence and a limited ability to judge risk.</div></div><div class="row" style="--acc:var(--sage)"><div class="k">Boundaries</div><div class="v">Serve the child’s interests — not engagement numbers.</div></div></div></div><div class="col"><div class="ask"><span class="lbl">Think first, then reveal</span><p class="q">The app says “Don’t go! Tell me more about your day.” when a 10-year-old tries to log off. What would you change?</p><button class="btn reveal" type="button">Reveal</button><div class="ans">Remove engagement hooks, end sessions gracefully, avoid collecting personal stories, give parents clear controls, and point to a trusted adult for anything worrying (see UNICEF guidance on AI and children, 2025).</div></div></div></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>17 / 40</span></div><aside class="notes"><p>UNICEF guidance on AI and children (version 3, 2025).</p></aside></section><section class="slide section-slide" data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 18"><div class="body"><div class="secnum">03</div><h1>Safety, trust and control</h1><p class="sub" style="font-size:21px">Confident errors, agents that act, robots in shared space — and who answers for them.</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>18 / 40</span></div><aside class="notes"><p>Part 3: safety vs security, misplaced trust, agents, oversight, explanation, accountability and repair.</p></aside></section><section class="slide " data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 19"><p class="eyebrow">Sort it · safety, security, reliability</p><h1>Accident, attack or breakdown?</h1><div class="body" style=""><div class="grid g2" data-w="sort2" style="gap:8px"><div class="sitem" data-cat="s" style="padding:9px 12px"><span class="st" style="font-size:15px">A planning assistant proposes a dangerous chemistry step</span><span class="btnrow"><button class="tog" data-v="s" type="button">Safety</button><button class="tog" data-v="x" type="button">Security</button><button class="tog" data-v="r" type="button">Reliability</button></span><span class="sw">Safety: test limits and escalation.</span></div><div class="sitem" data-cat="x" style="padding:9px 12px"><span class="st" style="font-size:15px">A hidden instruction in a web page redirects an agent</span><span class="btnrow"><button class="tog" data-v="s" type="button">Safety</button><button class="tog" data-v="x" type="button">Security</button><button class="tog" data-v="r" type="button">Reliability</button></span><span class="sw">Security: restrict permissions.</span></div><div class="sitem" data-cat="r" style="padding:9px 12px"><span class="st" style="font-size:15px">A model that worked in English fails on Spanish forms</span><span class="btnrow"><button class="tog" data-v="s" type="button">Safety</button><button class="tog" data-v="x" type="button">Security</button><button class="tog" data-v="r" type="button">Reliability</button></span><span class="sw">Reliability: monitor and provide a fallback.</span></div><div class="sitem" data-cat="x" style="padding:9px 12px"><span class="st" style="font-size:15px">A stolen password lets someone reconfigure a robot</span><span class="btnrow"><button class="tog" data-v="s" type="button">Safety</button><button class="tog" data-v="x" type="button">Security</button><button class="tog" data-v="r" type="button">Reliability</button></span><span class="sw">Security.</span></div><div class="sitem" data-cat="r" style="padding:9px 12px"><span class="st" style="font-size:15px">Heavy snow makes a delivery robot lose its way</span><span class="btnrow"><button class="tog" data-v="s" type="button">Safety</button><button class="tog" data-v="x" type="button">Security</button><button class="tog" data-v="r" type="button">Reliability</button></span><span class="sw">Reliability under new conditions.</span></div><div class="sitem" data-cat="s" style="padding:9px 12px"><span class="st" style="font-size:15px">A chatbot gives risky medical advice confidently</span><span class="btnrow"><button class="tog" data-v="s" type="button">Safety</button><button class="tog" data-v="x" type="button">Security</button><button class="tog" data-v="r" type="button">Reliability</button></span><span class="sw">Safety.</span></div></div><p class="kick score" style="font-size:15px"></p><p class="kick" style="font-size:15px">A secure system can still give unsafe advice; an accurate one can become dangerous if an attacker changes its inputs.</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>19 / 40</span></div><aside class="notes"><p>Accidental failure and malicious interference require different tests.</p></aside></section><section class="slide " data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 20"><p class="eyebrow">Confident errors and misplaced trust</p><h1>The chatbot invents a scholarship deadline</h1><div class="body" style=""><div class="split even"><div class="col"><div class="rows compact"><div class="row" style="--acc:var(--plum)"><div class="k">Plausible</div><div class="v">Generative systems can produce fluent, false statements (“confabulation”).</div></div><div class="row" style="--acc:var(--terra)"><div class="k">Hidden gaps</div><div class="v">A smooth explanation can hide a missing source.</div></div><div class="row" style="--acc:var(--gold)"><div class="k">Scale checks</div><div class="v">The bigger the consequence, the more verification you need.</div></div></div></div><div class="col"><div class="ask"><span class="lbl">Think first, then reveal</span><p class="q">A chatbot tells you the scholarship deadline is March 15. What do you do before relying on it?</p><button class="btn reveal" type="button">Reveal</button><div class="ans">Check the official scholarship page or email the office. A deadline is cheap to verify and expensive to get wrong.</div></div></div></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>20 / 40</span></div><aside class="notes"><p>NIST’s Generative AI Profile (2024) lists confabulation among its risk areas.</p></aside></section><section class="slide " data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 21"><p class="eyebrow">Quick check · agents</p><h1>You asked an agent to compare flights. It bought a ticket.</h1><div class="body" style=""><div class="opts" data-w="quiz" data-ans="1"><button class="opt" type="button"><span class="fill"></span><span class="L">A</span><span class="T">No problem — it found the cheapest flight</span><span class="N"></span><span class="why">Price is not the issue; authority is.</span></button><button class="opt" type="button"><span class="fill"></span><span class="L">B</span><span class="T">The failure is the scope of authorization: comparing is not buying</span><span class="N"></span><span class="why">Right.</span></button><button class="opt" type="button"><span class="fill"></span><span class="L">C</span><span class="T">The model was not accurate enough</span><span class="N"></span><span class="why">It may have been accurate — and still overstepped.</span></button><button class="opt" type="button"><span class="fill"></span><span class="L">D</span><span class="T">You should have used a different chatbot</span><span class="N"></span><span class="why">The design question remains for any agent.</span></button></div><p class="fb" data-right="&lt;b&gt;Right.&lt;/b&gt; Approvals before spending, action logs and reversible steps keep human control meaningful." data-wrong="Not quite — read the other options again."></p></div><div class="foot"><span>AI and Ethics · Part II</span><span>21 / 40</span></div><aside class="notes"><p>Connected tools turn suggestions into actions. An assistant’s authority should match the task and the user’s intent.</p></aside></section><section class="slide " data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 22"><p class="eyebrow">Robots in shared spaces</p><h1>The delivery robot blocks the curb ramp</h1><div class="body" style=""><div class="split even"><div class="col"><div class="rows compact"><div class="row" style="--acc:var(--plum)"><div class="k">Bystanders</div><div class="v">Physical actions affect people who never chose to interact.</div></div><div class="row" style="--acc:var(--gold)"><div class="k">Context</div><div class="v">Accessibility and local layout matter for safe operation.</div></div><div class="row" style="--acc:var(--sage)"><div class="k">Intervention</div><div class="v">Someone responsible must be able to step in.</div></div></div></div><div class="col"><div class="ask"><span class="lbl">Think first, then reveal</span><p class="q">A wheelchair user is stuck behind a robot waiting for its customer on a curb ramp. Whose problem is it, and what should exist?</p><button class="btn reveal" type="button">Reveal</button><div class="ans">The service operator’s. Routing that avoids ramps, pickup rules, a visible contact number, and a remote operator who can move the robot.</div></div></div></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>22 / 40</span></div><aside class="notes"><p>Evaluate the complete service, including routing, pickup rules and a contact route.</p></aside></section><section class="slide " data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 23"><p class="eyebrow">Quick check · human oversight</p><h1>Which reviewer provides meaningful oversight?</h1><div class="body" style=""><div class="opts" data-w="quiz" data-ans="2"><button class="opt" type="button"><span class="fill"></span><span class="L">A</span><span class="T">Approves 300 flagged applications an hour without seeing the evidence</span><span class="N"></span><span class="why">A rubber stamp.</span></button><button class="opt" type="button"><span class="fill"></span><span class="L">B</span><span class="T">Sees the evidence but is not allowed to overrule the system</span><span class="N"></span><span class="why">No authority to disagree.</span></button><button class="opt" type="button"><span class="fill"></span><span class="L">C</span><span class="T">Has the evidence, enough time, relevant knowledge, and authority to stop the process</span><span class="N"></span><span class="why">Right.</span></button><button class="opt" type="button"><span class="fill"></span><span class="L">D</span><span class="T">Is told the AI is 99% accurate so they should agree</span><span class="N"></span><span class="why">Pressure toward automation bias.</span></button></div><p class="fb" data-right="&lt;b&gt;Right.&lt;/b&gt; Oversight needs information, time, expertise and real authority." data-wrong="Not quite — read the other options again."></p></div><div class="foot"><span>AI and Ethics · Part II</span><span>23 / 40</span></div><aside class="notes"><p>A rubber stamp can give the appearance of control without changing outcomes.</p></aside></section><section class="slide " data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 24"><p class="eyebrow">Explanation for a real audience</p><h1>Same decision, four explanations</h1><div class="body" style=""><div data-w="tabs" style="display:flex;flex-direction:column;gap:16px"><div class="btnrow"><button class="tab" data-k="a" type="button">Applicant</button><button class="tab" data-k="t" type="button">Teacher</button><button class="tab" data-k="d" type="button">Developer</button><button class="tab" data-k="u" type="button">Auditor</button></div><div class="tpane" data-k="a"><div class="blk a-plum"><div class="lab">Needs</div><p>What affected my result, and what can I correct or appeal?</p></div></div><div class="tpane" data-k="t"><div class="blk a-gold"><div class="lab">Needs</div><p>Is this tool’s advice reliable enough to use with my students?</p></div></div><div class="tpane" data-k="d"><div class="blk a-slate"><div class="lab">Needs</div><p>Which inputs and failure cases drive the output?</p></div></div><div class="tpane" data-k="u"><div class="blk a-sage"><div class="lab">Needs</div><p>Can I reconstruct and check what actually happened?</p></div></div></div><p class="kick" style="">NIST’s four principles: give an explanation, make it meaningful, make it accurate, and state the system’s knowledge limits. A persuasive story that does not match the real process is misleading.</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>24 / 40</span></div><aside class="notes"><p>NIST IR 8312, Four Principles of Explainable AI (2021).</p></aside></section><section class="slide " data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 25"><p class="eyebrow">Accountability across organizations</p><h1>Outsourcing a component does not outsource responsibility</h1><div class="body" style=""><table class="tbl"><thead><tr><th>Actor</th><th>Question they should be able to answer</th></tr></thead><tbody><tr><td>Developer</td><td>What limits did evaluation reveal?</td></tr><tr><td>Vendor</td><td>What changed in this release?</td></tr><tr><td>Deploying organization</td><td>Why is this use justified here?</td></tr><tr><td>Decision owner</td><td>Who can correct or reverse the result?</td></tr></tbody></table><p class="kick" style="font-size:15px">A suggested allocation for discussion — not a universal legal rule.</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>25 / 40</span></div><aside class="notes"><p>Responsibility should connect to authority and practical remedies.</p></aside></section><section class="slide " data-acc="var(--plum)" style="--acc:var(--plum)" aria-label="Slide 26"><p class="eyebrow">Incident response and repair</p><h1>The assistant published the wrong eligibility rule</h1><div class="body" style=""><div class="flow" data-w="stepper" style="grid-template-columns:repeat(4,1fr)"><div class="step t-plum" data-ex="Take the wrong answer offline or pause the assistant for that topic."><span class="sn">1</span><h3>Stop</h3><p>Limit the harmful behaviour.</p></div><div class="step t-slate" data-ex="Save logs and versions so you can understand what happened."><span class="sn">2</span><h3>Preserve</h3><p>Keep the evidence.</p></div><div class="step t-gold" data-ex="Correct the page, find downstream copies, and notify applicants who may have been misled."><span class="sn">3</span><h3>Correct</h3><p>Fix records and tell people.</p></div><div class="step t-sage" data-ex="Does the same mistake affect other users or other rules?"><span class="sn">4</span><h3>Check</h3><p>Look for the same failure elsewhere.</p></div></div><div class="btnrow"><button class="btn stepbtn" type="button">Start</button></div><div class="panel stepout readout" data-start="Press Start to walk through it." style="font-family:inherit;font-size:16.5px;min-height:62px"></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>26 / 40</span></div><aside class="notes"><p>Repair includes correcting downstream copies and telling affected people what changes matter to them.</p></aside></section><section class="slide section-slide" data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 27"><div class="body"><div class="secnum">04</div><h1>AI in society</h1><p class="sub" style="font-size:21px">Credit and copyright, truth, learning, work, energy and power.</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>27 / 40</span></div><aside class="notes"><p>Part 4: social impacts. Keep separating principles, empirical estimates and jurisdiction-specific law.</p></aside></section><section class="slide " data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 28"><p class="eyebrow">Sort it · copyright is several questions</p><h1>Which copyright question is this?</h1><div class="body" style=""><div class="grid g1" data-w="sort2" style="gap:8px"><div class="sitem" data-cat="t" style="padding:9px 12px"><span class="st" style="font-size:15px">Can a company use published novels to train a model?</span><span class="btnrow"><button class="tog" data-v="t" type="button">Training</button><button class="tog" data-v="o" type="button">Ownership</button><button class="tog" data-v="s" type="button">Similarity</button><button class="tog" data-v="r" type="button">Replica</button></span><span class="sw">Training: use of existing works as inputs.</span></div><div class="sitem" data-cat="o" style="padding:9px 12px"><span class="st" style="font-size:15px">Who owns an image produced from a one-line prompt?</span><span class="btnrow"><button class="tog" data-v="t" type="button">Training</button><button class="tog" data-v="o" type="button">Ownership</button><button class="tog" data-v="s" type="button">Similarity</button><button class="tog" data-v="r" type="button">Replica</button></span><span class="sw">Output ownership: human authorship.</span></div><div class="sitem" data-cat="s" style="padding:9px 12px"><span class="st" style="font-size:15px">An output closely copies a famous photograph</span><span class="btnrow"><button class="tog" data-v="t" type="button">Training</button><button class="tog" data-v="o" type="button">Ownership</button><button class="tog" data-v="s" type="button">Similarity</button><button class="tog" data-v="r" type="button">Replica</button></span><span class="sw">Output similarity: possible infringement.</span></div><div class="sitem" data-cat="r" style="padding:9px 12px"><span class="st" style="font-size:15px">An app clones a singer’s voice for a new song</span><span class="btnrow"><button class="tog" data-v="t" type="button">Training</button><button class="tog" data-v="o" type="button">Ownership</button><button class="tog" data-v="s" type="button">Similarity</button><button class="tog" data-v="r" type="button">Replica</button></span><span class="sw">Digital replica: likeness and voice.</span></div><div class="sitem" data-cat="o" style="padding:9px 12px"><span class="st" style="font-size:15px">A student revises an AI draft heavily — is it copyrightable?</span><span class="btnrow"><button class="tog" data-v="t" type="button">Training</button><button class="tog" data-v="o" type="button">Ownership</button><button class="tog" data-v="s" type="button">Similarity</button><button class="tog" data-v="r" type="button">Replica</button></span><span class="sw">Depends on human creative contribution.</span></div><div class="sitem" data-cat="t" style="padding:9px 12px"><span class="st" style="font-size:15px">A model is trained on news articles without a licence</span><span class="btnrow"><button class="tog" data-v="t" type="button">Training</button><button class="tog" data-v="o" type="button">Ownership</button><button class="tog" data-v="s" type="button">Similarity</button><button class="tog" data-v="r" type="button">Replica</button></span><span class="sw">Training.</span></div></div><p class="kick score" style="font-size:15px"></p><p class="kick" style="font-size:15px">The U.S. Copyright Office treats these in separate reports. Separately: disclose material AI help honestly.</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>28 / 40</span></div><aside class="notes"><p>U.S. Copyright Office, Copyright and Artificial Intelligence reports.</p></aside></section><section class="slide " data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 29"><p class="eyebrow">Quick check · synthetic media</p><h1>A video carries an “AI-generated” label. What does that tell you?</h1><div class="body" style=""><div class="opts" data-w="quiz" data-ans="1"><button class="opt" type="button"><span class="fill"></span><span class="L">A</span><span class="T">That the claim in the video is false</span><span class="N"></span><span class="why">A label is about origin, not truth.</span></button><button class="opt" type="button"><span class="fill"></span><span class="L">B</span><span class="T">Something about where it came from — not whether its claim is true</span><span class="N"></span><span class="why">Right.</span></button><button class="opt" type="button"><span class="fill"></span><span class="L">C</span><span class="T">That it is harmless</span><span class="N"></span><span class="why">Labelled media can still mislead or harass.</span></button><button class="opt" type="button"><span class="fill"></span><span class="L">D</span><span class="T">Nothing at all</span><span class="N"></span><span class="why">Provenance is useful information.</span></button></div><p class="fb" data-right="&lt;b&gt;Right.&lt;/b&gt; Authenticity is not truth: a real clip can mislead without context, and a labelled simulation can teach." data-wrong="Not quite — read the other options again."></p></div><div class="foot"><span>AI and Ethics · Part II</span><span>29 / 40</span></div><aside class="notes"><p>NIST Generative AI Profile (2024) discusses provenance; labels support but do not settle trust.</p></aside></section><section class="slide " data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 30"><p class="eyebrow">Education and original thinking</p><h1>What shows that the thinking is yours?</h1><div class="body" style=""><div class="split even" style="align-items:start"><div class="col"><div class="chk" data-w="chkc"><label><input type="checkbox"><span>An initial claim written before using AI</span></label><label><input type="checkbox"><span>A comparison of two sources</span></label><label><input type="checkbox"><span>A revision note: what changed and why</span></label><label><input type="checkbox"><span>A short oral defence of one choice</span></label><label><input type="checkbox"><span>A clear statement of what AI was used for</span></label></div><p class="kick cout4" style="font-size:15px"></p></div><div class="col"><div class="blk a-gold"><div class="lab">Design idea</div><p>Assignments that ask students to <b>explain choices and defend evidence</b> reveal more than a polished final answer.</p></div><div class="blk a-slate"><div class="lab">Clarity</div><p>Clear AI-use expectations tell students which work they must do themselves.</p></div></div></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>30 / 40</span></div><aside class="notes"><p>Evaluate reasoning that students can explain.</p></aside></section><section class="slide " data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 31"><p class="eyebrow">Quick check · work</p><h1>An index says many tasks in your future job are “exposed” to AI. What does that mean?</h1><div class="body" style=""><div class="opts" data-w="quiz" data-ans="1"><button class="opt" type="button"><span class="fill"></span><span class="L">A</span><span class="T">The job will disappear within five years</span><span class="N"></span><span class="why">Exposure is not a forecast of job loss.</span></button><button class="opt" type="button"><span class="fill"></span><span class="L">B</span><span class="T">AI could assist some tasks — organizations still choose how pay, workload and staffing change</span><span class="N"></span><span class="why">Right (ILO, 2025).</span></button><button class="opt" type="button"><span class="fill"></span><span class="L">C</span><span class="T">You should not study for that job</span><span class="N"></span><span class="why">Tasks change; jobs often adapt.</span></button><button class="opt" type="button"><span class="fill"></span><span class="L">D</span><span class="T">Nothing will change</span><span class="N"></span><span class="why">Tasks and tools do change.</span></button></div><p class="fb" data-right="&lt;b&gt;Right.&lt;/b&gt; And someone — often unseen — labels data and reviews content behind “automatic” services. Their pay and working conditions are part of the ethics too." data-wrong="Not quite — read the other options again."></p></div><div class="foot"><span>AI and Ethics · Part II</span><span>31 / 40</span></div><aside class="notes"><p>The ILO’s 2025 index estimates occupational exposure, not realized unemployment.</p></aside></section><section class="slide " data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 32"><p class="eyebrow">Energy use and local impacts</p><h1>Data centres are using more electricity</h1><div class="body" style=""><div class="bars"><div class="bl"><span class="bn">2025<small>IEA estimate · all data centres</small></span><span class="bb" style="width:48.5%;background:var(--slate)"></span><span class="bv">485 TWh</span></div><div class="bl"><span class="bn">2030<small>IEA central projection</small></span><span class="bb" style="width:95.0%;background:var(--terra)"></span><span class="bv">≈ 950 TWh</span></div></div><p class="kick" style="">Both figures cover <b>all</b> data centres, including non-AI work, and 2030 is a projection. Efficiency gains can enable more use, so total consumption still matters.</p><div class="ask"><span class="lbl">Think first, then reveal</span><p class="q">When is a large model worth its energy cost?</p><button class="btn reveal" type="button">Reveal</button><div class="ans">Compare the task’s benefit with realistic alternatives. A small model may do a narrow task well; the energy source and local water and grid effects matter too.</div></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>32 / 40</span></div><aside class="notes"><p>IEA, Key Questions on Energy and AI (2026); Energy and AI (2025). TWh = terawatt-hours.</p></aside></section><section class="slide " data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 33"><p class="eyebrow">Access, power and culture</p><h1>Who controls AI — and whose context does it understand?</h1><div class="body" style=""><div class="grid g3"><div class="card t-gold" style="min-height:230px;"><p class="ct">Concentrated power</p><h3>Dependence</h3><p style="font-size:15.5px">Control over compute, data and distribution shapes who can build AI. A university built on one proprietary assistant depends on its prices and policies.</p></div><div class="card t-slate" style="min-height:230px;"><p class="ct">Alternatives</p><h3>Options</h3><p style="font-size:15.5px">Interoperability and public-interest options can reduce that dependence.</p></div><div class="card t-terra" style="min-height:230px;"><p class="ct">Culture and language</p><h3>Local voice</h3><p style="font-size:15.5px">A translation can be accurate yet use a form of address that feels disrespectful. Local participation reveals what is missing.</p></div></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>33 / 40</span></div><aside class="notes"><p>Respect for cultural difference still requires attention to individual rights.</p></aside></section><section class="slide " data-acc="var(--gold)" style="--acc:var(--gold)" aria-label="Slide 34"><p class="eyebrow">AI in research with people</p><h1>Recorded classroom conversations, processed by a vendor</h1><div class="body" style=""><div class="split even"><div class="col"><div class="rows compact"><div class="row" style="--acc:var(--gold)"><div class="k">Identifiable</div><div class="v">Data can stay identifiable after names are removed — voices, details, context.</div></div><div class="row" style="--acc:var(--slate)"><div class="k">Justify</div><div class="v">Collection, reuse and access each need a reason.</div></div><div class="row" style="--acc:var(--sage)"><div class="k">Protect</div><div class="v">Protections must follow the actual study, not the convenience of the tool.</div></div></div></div><div class="col"><div class="ask"><span class="lbl">Think first, then reveal</span><p class="q">What changes when a third-party AI vendor transcribes the recordings?</p><button class="btn reveal" type="button">Reveal</button><div class="ans">Consent forms must mention it, the vendor’s retention and training policies matter, and confidentiality now depends on another organization.</div></div></div></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>34 / 40</span></div><aside class="notes"><p>The Belmont Report.</p></aside></section><section class="slide section-slide" data-acc="var(--sage)" style="--acc:var(--sage)" aria-label="Slide 35"><div class="body"><div class="secnum">05</div><h1>Deciding well</h1><p class="sub" style="font-size:21px">Principles, frameworks and law — then a hard case, a review board and a memo.</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>35 / 40</span></div><aside class="notes"><p>Part 5 turns reasoning into a decision process.</p></aside></section><section class="slide " data-acc="var(--sage)" style="--acc:var(--sage)" aria-label="Slide 36"><p class="eyebrow">Sort it · governance instruments</p><h1>Which instrument plays which role?</h1><div class="body" style=""><div class="grid g1" data-w="sort2" style="gap:8px"><div class="sitem" data-cat="p" style="padding:9px 12px"><span class="st" style="font-size:15.5px">UNESCO Recommendation on the Ethics of AI (2021)</span><span class="btnrow"><button class="tog" data-v="p" type="button">Principles</button><button class="tog" data-v="f" type="button">Framework</button><button class="tog" data-v="l" type="button">Law</button><button class="tog" data-v="i" type="button">Local policy</button></span><span class="sw">Shared ethical principles.</span></div><div class="sitem" data-cat="f" style="padding:9px 12px"><span class="st" style="font-size:15.5px">NIST AI Risk Management Framework (Govern, Map, Measure, Manage)</span><span class="btnrow"><button class="tog" data-v="p" type="button">Principles</button><button class="tog" data-v="f" type="button">Framework</button><button class="tog" data-v="l" type="button">Law</button><button class="tog" data-v="i" type="button">Local policy</button></span><span class="sw">A voluntary way to organize risk work.</span></div><div class="sitem" data-cat="l" style="padding:9px 12px"><span class="st" style="font-size:15.5px">EU AI Act</span><span class="btnrow"><button class="tog" data-v="p" type="button">Principles</button><button class="tog" data-v="f" type="button">Framework</button><button class="tog" data-v="l" type="button">Law</button><button class="tog" data-v="i" type="button">Local policy</button></span><span class="sw">Legal duties tied to scope and risk level.</span></div><div class="sitem" data-cat="i" style="padding:9px 12px"><span class="st" style="font-size:15.5px">Your university’s AI policy</span><span class="btnrow"><button class="tog" data-v="p" type="button">Principles</button><button class="tog" data-v="f" type="button">Framework</button><button class="tog" data-v="l" type="button">Law</button><button class="tog" data-v="i" type="button">Local policy</button></span><span class="sw">Local responsibilities and operating rules.</span></div></div><p class="kick score" style="font-size:15px"></p><p class="kick" style="font-size:15px">And an <b>assurance claim</b> should say what evidence covers it: a policy states intent, an evaluation tests behaviour under stated conditions, monitoring checks what happens after release.</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>36 / 40</span></div><aside class="notes"><p>UNESCO (2021), NIST AI RMF 1.0 (2023), European Commission AI Act overview.</p></aside></section><section class="slide " data-acc="var(--sage)" style="--acc:var(--sage)" aria-label="Slide 37"><p class="eyebrow">Dilemma + role-play · 14 minutes</p><h1>Campus AI review board: the proctoring tool</h1><div class="body" style=""><div data-w="tabs" style="display:flex;flex-direction:column;gap:16px"><div class="btnrow"><button class="tab" data-k="s" type="button">Student</button><button class="tab" data-k="i" type="button">Instructor</button><button class="tab" data-k="a" type="button">Accessibility specialist</button><button class="tab" data-k="t" type="button">IT and security</button></div><div class="tpane" data-k="s"><div class="blk a-terra"><div class="lab">Represent</div><p>Privacy at home and a meaningful appeal against false flags.</p></div></div><div class="tpane" data-k="i"><div class="blk a-gold"><div class="lab">Represent</div><p>Assessment quality and workload.</p></div></div><div class="tpane" data-k="a"><div class="blk a-sage"><div class="lab">Represent</div><p>Equivalent participation — tics, screen readers, caregiving interruptions.</p></div></div><div class="tpane" data-k="t"><div class="blk a-slate"><div class="lab">Represent</div><p>Access, retention and incident response for home video.</p></div></div></div><p class="kick" style="">Each role gives <b>one reason and one condition</b>. Distinguish measured benefits from assumptions. Options: approve, approve with conditions, run a limited pilot, or reject — and name a less intrusive assessment that could meet the same learning goal.</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>37 / 40</span></div><aside class="notes"><p>Assign roles; let groups deliberate for about eight minutes. Then compare with the opening poll.</p></aside></section><section class="slide " data-acc="var(--sage)" style="--acc:var(--sage)" aria-label="Slide 38"><p class="eyebrow">Your turn</p><h1>A one-page ethical decision memo</h1><div class="body" style=""><div class="split even" data-w="pitch" style="align-items:start"><div class="col" style="gap:8px"><div class="pform"><label>Purpose<input data-f="Purpose" type="text" placeholder="what problem, for whom"></label><label>Alternatives considered<input data-f="Alternatives considered" type="text" placeholder="including non-AI options"></label><label>Affected people<input data-f="Affected people" type="text" placeholder="and their strongest concern"></label><label>Evidence<input data-f="Evidence" type="text" placeholder="what we know vs assume"></label><label>Decision<input data-f="Decision" type="text" placeholder="approve / conditions / pilot / reject"></label><label>Owner and review date<input data-f="Owner and review date" type="text" placeholder="and what would trigger a change"></label></div><div class="btnrow"><button class="btn ghost pex" type="button" data-v="[&quot;Reduce cheating in remote exams&quot;, &quot;Open-book exams, oral check-ins, in-person testing&quot;, &quot;Students at home; concern: privacy and false flags&quot;, &quot;No local data on false-flag rates; benefits assumed&quot;, &quot;Reject the tool; pilot oral check-ins in two courses&quot;, &quot;Assessment committee; review in May or after 3 complaints&quot;]">Fill an example</button></div></div><div class="col"><div class="pcard"></div><p class="kick" style="font-size:15px">Grade yourself: does every decision connect to a reason and a piece of evidence?</p></div></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>38 / 40</span></div><aside class="notes"><p>Assignment option: one-page memo plus a source appendix.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 39"><p class="eyebrow">A reasoned decision</p><h1>Fair and ethical AI, in four lines</h1><div class="body" style=""><div class="rows"><div class="row" style="--acc:var(--terra)"><div class="k">Fairness</div><div class="v">How does the system distribute treatment, opportunity and error?</div></div><div class="row" style="--acc:var(--slate)"><div class="k">Ethics</div><div class="v">Are its purpose and methods justified?</div></div><div class="row" style="--acc:var(--gold)"><div class="k">Defensible</div><div class="v">Evidence connected to responsibilities and usable remedies.</div></div><div class="row" style="--acc:var(--sage)"><div class="k">Practice</div><div class="v">Check claims, respect entrusted data, disclose limits, raise concerns (ACM Code).</div></div></div><div class="ask"><span class="lbl">Exit ticket</span><p class="q">Exit ticket: what would make <i>you</i> revise your proctoring decision?</p><button class="btn reveal" type="button">Reveal</button><div class="ans">Collect answers. Strong ones name a specific piece of evidence.</div></div></div><div class="foot"><span>AI and Ethics · Part II</span><span>39 / 40</span></div><aside class="notes"><p>Ask students to explain one difference between a fairness metric and an ethical justification.</p></aside></section><section class="slide " data-acc="var(--terra)" style="--acc:var(--terra)" aria-label="Slide 40"><p class="eyebrow">Sources</p><h1>Selected readings</h1><div class="body" style=""><div class="split even" style="align-items:start"><div class="col"><div class="links"><a href="https://www.acm.org/binaries/content/assets/about/acm-code-of-ethics-and-professional-conduct.pdf" target="_blank" rel="noopener">ACM Code of Ethics and Professional Conduct (2018)</a><a href="https://www.unesco.org/ethics-ai/en/recommendation" target="_blank" rel="noopener">UNESCO Recommendation on the Ethics of AI (2021)</a><a href="https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/read-the-belmont-report/index.html" target="_blank" rel="noopener">The Belmont Report</a><a href="https://www.unicef.org/innocenti/reports/policy-guidance-ai-children" target="_blank" rel="noopener">UNICEF · Policy guidance on AI for children</a><a href="https://airc.nist.gov/airmf-resources/airmf/5-sec-core/" target="_blank" rel="noopener">NIST AI RMF · core functions</a><a href="https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence" target="_blank" rel="noopener">NIST Generative AI Profile (2024)</a><a href="https://nvlpubs.nist.gov/nistpubs/ir/2021/NIST.IR.8312.pdf" target="_blank" rel="noopener">NIST IR 8312 · Four Principles of Explainable AI</a></div></div><div class="col"><div class="links"><a href="https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai" target="_blank" rel="noopener">European Commission · AI Act overview</a><a href="https://www.copyright.gov/ai/" target="_blank" rel="noopener">U.S. Copyright Office · Copyright and AI</a><a href="https://www.ilo.org/publications/generative-ai-and-jobs-refined-global-index-occupational-exposure" target="_blank" rel="noopener">ILO · Generative AI and jobs (2025)</a><a href="https://www.iea.org/reports/key-questions-on-energy-and-ai/executive-summary" target="_blank" rel="noopener">IEA · Key Questions on Energy and AI (2026)</a><a href="https://www.iea.org/reports/energy-and-ai/energy-demand-from-aI" target="_blank" rel="noopener">IEA · Energy and AI (2025)</a></div></div></div><p class="kick" style="font-size:14px">Scenarios and numbers on slides 3, 8, 10 and 38 are invented for discussion.</p></div><div class="foot"><span>AI and Ethics · Part II</span><span>40 / 40</span></div><aside class="notes"><p>Based on Part II of the AI and Ethics 80-slide course presentation. Policy pages may change.</p></aside></section></div></div>
+<div class="bar"><i></i></div>
+<div class="help">← → move · O overview · N notes · R reveal · T theme · F fullscreen</div>
+<div class="hud"><button data-act="prev" aria-label="Previous slide">◀</button><button data-act="grid">Slides</button><button data-act="notes">Notes</button><button data-act="theme">Theme</button><button data-act="next" aria-label="Next slide">▶</button></div>
+<div class="np" role="dialog" aria-label="Speaker notes"><h4>Speaker notes</h4><div class="npb"></div></div>
+<div class="ov" role="dialog" aria-label="All slides"><h2>AI and Ethics</h2><p class="hint">Click a slide to jump to it. Press O or Esc to close.</p><div class="thumbs"><button class="th" data-i="0" style="--tacc:var(--terra)"><div class="tn">01</div><div class="tt">AI and Ethics</div></button><button class="th" data-i="1" style="--tacc:var(--terra)"><div class="tn">02</div><div class="tt">Five parts, one decision memo</div></button><button class="th" data-i="2" style="--tacc:var(--gold)"><div class="tn">03</div><div class="tt">Your university proposes AI proctoring for remote exams</div></button><button class="th" data-i="3" style="--tacc:var(--slate)"><div class="tn">04</div><div class="tt">01 · Ways of reasoning</div></button><button class="th" data-i="4" style="--tacc:var(--slate)"><div class="tn">05</div><div class="tt">Ethics, law, safety or fairness?</div></button><button class="th" data-i="5" style="--tacc:var(--slate)"><div class="tn">06</div><div class="tt">Ethics is not only about harms</div></button><button class="th" data-i="6" style="--tacc:var(--slate)"><div class="tn">07</div><div class="tt">Who gains, who pays, who decides? — a hiring tool</div></button><button class="th" data-i="7" style="--tacc:var(--slate)"><div class="tn">08</div><div class="tt">A better average can hide a worse burden</div></button><button class="th" data-i="8" style="--tacc:var(--terra)"><div class="tn">09</div><div class="tt">Some things need justification even if they are efficient</div></button><button class="th" data-i="9" style="--tacc:var(--slate)"><div class="tn">10</div><div class="tt">Which message would you rather receive?</div></button><button class="th" data-i="10" style="--tacc:var(--slate)"><div class="tn">11</div><div class="tt">A campus chatbot for student support</div></button><button class="th" data-i="11" style="--tacc:var(--terra)"><div class="tn">12</div><div class="tt">02 · Privacy and autonomy</div></button><button class="th" data-i="12" style="--tacc:var(--terra)"><div class="tn">13</div><div class="tt">Ordinary records can add up to something sensitive</div></button><button class="th" data-i="13" style="--tacc:var(--terra)"><div class="tn">14</div><div class="tt">Is this real consent?</div></button><button class="th" data-i="14" style="--tacc:var(--terra)"><div class="tn">15</div><div class="tt">Lost lab equipment: which response is proportionate?</div></button><button class="th" data-i="15" style="--tacc:var(--terra)"><div class="tn">16</div><div class="tt">Does the design help you — or steer you?</div></button><button class="th" data-i="16" style="--tacc:var(--terra)"><div class="tn">17</div><div class="tt">A homework companion that wants to keep chatting</div></button><button class="th" data-i="17" style="--tacc:var(--plum)"><div class="tn">18</div><div class="tt">03 · Safety, trust and control</div></button><button class="th" data-i="18" style="--tacc:var(--plum)"><div class="tn">19</div><div class="tt">Accident, attack or breakdown?</div></button><button class="th" data-i="19" style="--tacc:var(--plum)"><div class="tn">20</div><div class="tt">The chatbot invents a scholarship deadline</div></button><button class="th" data-i="20" style="--tacc:var(--plum)"><div class="tn">21</div><div class="tt">You asked an agent to compare flights. It bought a ticket.</div></button><button class="th" data-i="21" style="--tacc:var(--plum)"><div class="tn">22</div><div class="tt">The delivery robot blocks the curb ramp</div></button><button class="th" data-i="22" style="--tacc:var(--plum)"><div class="tn">23</div><div class="tt">Which reviewer provides meaningful oversight?</div></button><button class="th" data-i="23" style="--tacc:var(--plum)"><div class="tn">24</div><div class="tt">Same decision, four explanations</div></button><button class="th" data-i="24" style="--tacc:var(--plum)"><div class="tn">25</div><div class="tt">Outsourcing a component does not outsource responsibility</div></button><button class="th" data-i="25" style="--tacc:var(--plum)"><div class="tn">26</div><div class="tt">The assistant published the wrong eligibility rule</div></button><button class="th" data-i="26" style="--tacc:var(--gold)"><div class="tn">27</div><div class="tt">04 · AI in society</div></button><button class="th" data-i="27" style="--tacc:var(--gold)"><div class="tn">28</div><div class="tt">Which copyright question is this?</div></button><button class="th" data-i="28" style="--tacc:var(--gold)"><div class="tn">29</div><div class="tt">A video carries an “AI-generated” label. What does that tell you?</div></button><button class="th" data-i="29" style="--tacc:var(--gold)"><div class="tn">30</div><div class="tt">What shows that the thinking is yours?</div></button><button class="th" data-i="30" style="--tacc:var(--gold)"><div class="tn">31</div><div class="tt">An index says many tasks in your future job are “exposed” to AI. What does that mean?</div></button><button class="th" data-i="31" style="--tacc:var(--gold)"><div class="tn">32</div><div class="tt">Data centres are using more electricity</div></button><button class="th" data-i="32" style="--tacc:var(--gold)"><div class="tn">33</div><div class="tt">Who controls AI — and whose context does it understand?</div></button><button class="th" data-i="33" style="--tacc:var(--gold)"><div class="tn">34</div><div class="tt">Recorded classroom conversations, processed by a vendor</div></button><button class="th" data-i="34" style="--tacc:var(--sage)"><div class="tn">35</div><div class="tt">05 · Deciding well</div></button><button class="th" data-i="35" style="--tacc:var(--sage)"><div class="tn">36</div><div class="tt">Which instrument plays which role?</div></button><button class="th" data-i="36" style="--tacc:var(--sage)"><div class="tn">37</div><div class="tt">Campus AI review board: the proctoring tool</div></button><button class="th" data-i="37" style="--tacc:var(--sage)"><div class="tn">38</div><div class="tt">A one-page ethical decision memo</div></button><button class="th" data-i="38" style="--tacc:var(--terra)"><div class="tn">39</div><div class="tt">Fair and ethical AI, in four lines</div></button><button class="th" data-i="39" style="--tacc:var(--terra)"><div class="tn">40</div><div class="tt">Selected readings</div></button></div></div>
+<script>window.WIDGETS={};
+(function(W){
+  var NS="http://www.w3.org/2000/svg";
+  function $(r,s){return r.querySelector(s)} function $$(r,s){return [].slice.call(r.querySelectorAll(s))}
+  function svgEl(tag,a){var e=document.createElementNS(NS,tag);for(var k in a)e.setAttribute(k,a[k]);return e}
+  function fmt(x){return Math.round(x).toLocaleString("en-US")}
+/* ---------- generic: live poll tally ---------- */
+  W.poll=function(el){
+    var opts=$$(el,'.opt'), counts=opts.map(function(){return 0});
+    function draw(){var mx=Math.max.apply(null,counts.concat([1]));
+      opts.forEach(function(o,k){$(o,'.N').textContent=counts[k]||'';$(o,'.fill').style.width=(counts[k]/mx*100)+'%'})}
+    opts.forEach(function(o,k){
+      o.addEventListener('click',function(){counts[k]++;draw()});
+      o.addEventListener('contextmenu',function(e){e.preventDefault();counts[k]=Math.max(0,counts[k]-1);draw()});
+    });
+    var r=el.parentNode.querySelector('.reset'); if(r)r.onclick=function(){counts=counts.map(function(){return 0});draw()};
+  };
+
+  /* ---------- generic: single-answer quiz ---------- */
+  W.quiz=function(el){
+    var ans=+el.getAttribute('data-ans'), opts=$$(el,'.opt'), fb=el.parentNode.querySelector('.fb');
+    opts.forEach(function(o,k){o.addEventListener('click',function(){
+      if(k===ans){o.classList.add('right'); if(fb)fb.innerHTML=fb.getAttribute('data-right')||'<b>Yes.</b>'}
+      else{o.classList.add('wrong'); if(fb)fb.innerHTML=fb.getAttribute('data-wrong')||'Not quite. Try another.'}
+    })});
+  };
+
+  /* ---------- generic: timeline ---------- */
+  W.tl=function(el){
+    var items=$$(el,'.tli'), box=el.parentNode.querySelector('.tldetail');
+    function pick(k){items.forEach(function(t,j){t.classList.toggle('on',j<=k)});box.innerHTML=items[k].getAttribute('data-detail')}
+    items.forEach(function(t,k){t.addEventListener('click',function(){pick(k)})});
+    pick(0);
+  };
+
+  /* ---------- generic: stepper (light one step at a time) ---------- */
+  W.stepper=function(el){
+    var steps=$$(el,'.step'), k=-1, btn=el.parentNode.querySelector('.stepbtn'), out=el.parentNode.querySelector('.stepout');
+    function draw(){steps.forEach(function(s,j){s.classList.toggle('dim',k>=0&&j>k);s.classList.toggle('lit',j===k)});
+      if(out)out.innerHTML=k>=0?(steps[k].getAttribute('data-ex')||''):(out.getAttribute('data-start')||'');
+      if(btn)btn.textContent=k>=steps.length-1?'Start over':(k<0?'Start':'Next step')}
+    steps.forEach(function(s,j){s.classList.add('click');s.addEventListener('click',function(){k=j;draw()})});
+    if(btn)btn.onclick=function(){k=k>=steps.length-1?-1:k+1;draw()};
+    draw();
+  };
+
+  /* ---------- generic: flip cards ---------- */
+  W.flip=function(el){
+    $$(el,'.card.flip').forEach(function(c){c.addEventListener('click',function(){c.classList.toggle('show')})});
+    var all=el.parentNode.querySelector('.flipall'); if(all)all.onclick=function(){$$(el,'.card.flip').forEach(function(c){c.classList.add('show')})};
+  };
+
+  /* ---------- generic: sort items into two bins ---------- */
+  W.sort2=function(el){
+    var score=el.parentNode.querySelector('.score');
+    function upd(){if(!score)return;var r=$$(el,'.sitem.right').length,t=$$(el,'.sitem').length;score.textContent=r+' / '+t+' correct'}
+    $$(el,'.sitem').forEach(function(it){
+      var c=it.getAttribute('data-cat');
+      $$(it,'.tog').forEach(function(b){b.addEventListener('click',function(){
+        $$(it,'.tog').forEach(function(x){x.classList.remove('on')}); b.classList.add('on');
+        var ok=b.getAttribute('data-v')===c; it.classList.toggle('right',ok); it.classList.toggle('wrong',!ok); upd();
+      })});
+    });
+    upd();
+  };
+
+  /* ---------- generic tabs: .tab[data-k] shows .pane[data-k] ---------- */
+  W.tabs=function(el){
+    var tabs=$$(el,'.tab'),panes=$$(el,'.tpane');
+    function pick(k){tabs.forEach(function(t){t.classList.toggle('on',t.getAttribute('data-k')===k)});panes.forEach(function(p){p.style.display=p.getAttribute('data-k')===k?'':'none'})}
+    tabs.forEach(function(t){t.addEventListener('click',function(){pick(t.getAttribute('data-k'))})});
+    pick(tabs[0].getAttribute('data-k'));
+  };
+
+  /* ---------- reveal list items one at a time ---------- */
+  W.revlist=function(el){
+    var items=$$(el,'li'),k=0,btn=el.parentNode.querySelector('.revnext');
+    items.forEach(function(li){li.style.visibility='hidden'});
+    btn.onclick=function(){if(k<items.length){items[k].style.visibility='visible';k++}
+      btn.textContent=k<items.length?'Reveal the next one ('+(items.length-k)+' left)':'All revealed'};
+    btn.textContent='Reveal the next one ('+items.length+' left)';
+  };
+
+  /* ---------- design-challenge pitch card ---------- */
+  W.pitch=function(el){
+    var out=$(el,'.pcard');
+    function upd(){var h='';$$(el,'[data-f]').forEach(function(i){var v=i.value.trim();h+='<div class="prow"><span class="pk">'+i.getAttribute('data-f')+'</span><span class="pv'+(v?'':' empty')+'">'+(v?v.replace(/</g,'&lt;'):'—')+'</span></div>'});out.innerHTML=h}
+    $$(el,'[data-f]').forEach(function(i){i.addEventListener('input',upd)});
+    var ex=$(el,'.pex');if(ex)ex.onclick=function(){var vals=JSON.parse(ex.getAttribute('data-v'));$$(el,'[data-f]').forEach(function(i,j){i.value=vals[j]||''});upd()};
+    upd();
+  };
+
+  
+  /* ---------- week 11: threshold explorer (two score distributions) ---------- */
+  W.thresh=function(el){
+    var svg=$(el,'svg'),sl=$(el,'input'),rd=$(el,'.tout'),Wd=600,Ht=250,pad=30;
+    var G={m:70,s:9},I={m:38,s:10};
+    function pdf(x,d){return Math.exp(-0.5*Math.pow((x-d.m)/d.s,2))/(d.s*Math.sqrt(2*Math.PI))}
+    function cdf(x,d){var z=(x-d.m)/(d.s*Math.SQRT2),t=1/(1+0.3275911*Math.abs(z));
+      var y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-z*z);
+      return 0.5*(1+(z>=0?y:-y))}
+    function X(v){return pad+v/100*(Wd-2*pad)} var top=pdf(70,G);
+    function Y(p){return Ht-pad-p/top*(Ht-2*pad-36)}
+    function curve(d,from,to){var s='M '+X(from)+' '+Y(0);for(var v=from;v<=to+0.01;v+=0.5)s+=' L '+X(v)+' '+Y(pdf(v,d));return s+' L '+X(to)+' '+Y(0)+' Z'}
+    function line(d){var s='';for(var v=0;v<=100;v+=0.5)s+=(v?' L ':'M ')+X(v)+' '+Y(pdf(v,d));return s}
+    function draw(){
+      var t=+sl.value;while(svg.firstChild)svg.removeChild(svg.firstChild);
+      svg.appendChild(svgEl('line',{x1:pad,y1:Ht-pad,x2:Wd-pad,y2:Ht-pad,style:'stroke:var(--line);stroke-width:2'}));
+      svg.appendChild(svgEl('path',{d:curve(I,t,100),style:'fill:var(--bad);opacity:.35'}));
+      svg.appendChild(svgEl('path',{d:curve(G,0,t),style:'fill:var(--gold);opacity:.45'}));
+      svg.appendChild(svgEl('path',{d:line(I),style:'fill:none;stroke:var(--slate);stroke-width:2.5'}));
+      svg.appendChild(svgEl('path',{d:line(G),style:'fill:none;stroke:var(--sage);stroke-width:2.5'}));
+      svg.appendChild(svgEl('line',{x1:X(t),y1:30,x2:X(t),y2:Ht-pad,style:'stroke:var(--ink);stroke-width:2.5;stroke-dasharray:6 4'}));
+      [['Different people',X(38)-50,Y(pdf(38,I))-10,'var(--slate)'],['Same person',X(70)-40,Y(pdf(70,G))-10,'var(--sage)'],['threshold '+t,X(t)-34,20,'var(--ink)'],['similarity score →',Wd-pad-120,Ht-8,'var(--muted)']].forEach(function(a){
+        var tx=svgEl('text',{x:a[1],y:a[2],style:'fill:'+a[3]+';font-size:13px;font-weight:600'});tx.textContent=a[0];svg.appendChild(tx)});
+      var fm=(1-cdf(t,I))*100,fn=cdf(t,G)*100;
+      rd.innerHTML='Threshold <b>'+t+'</b> &nbsp;·&nbsp; <span style="color:var(--bad)">false matches</span> (a stranger accepted): <b>'+(fm<0.1?fm.toFixed(3):fm.toFixed(1))+'%</b> &nbsp;·&nbsp; <span style="color:var(--gold)">false rejections</span> (the right person refused): <b>'+(fn<0.1?fn.toFixed(3):fn.toFixed(1))+'%</b>';
+    }
+    sl.addEventListener('input',draw);
+    $$(el,'[data-t]').forEach(function(b){b.onclick=function(){sl.value=b.getAttribute('data-t');draw()}});
+    draw();
+  };
+
+  /* ---------- week 11: search scale (gallery size x false-match rate) ---------- */
+  W.scale=function(el){
+    var a=$(el,'.sN'),b=$(el,'.sP'),rd=$(el,'.sout');
+    var NS_=[100,1000,10000,100000,1000000,10000000,100000000],PS=[0.01,0.001,0.0001,0.00001,0.000001];
+    function upd(){var N=NS_[+a.value],p=PS[+b.value],ex=N*p,one=1-Math.pow(1-p,N);
+      $(el,'.vN').textContent=fmt(N);$(el,'.vP').textContent=(p*100)+'% (1 in '+fmt(1/p)+')';
+      rd.innerHTML='Expected false matches per search: <b class="big-read" style="font-size:30px">'+(ex<1?ex.toFixed(2):fmt(ex))+'</b><br>Chance a search returns at least one wrong person above the threshold: <b>'+(one>0.999?'≈ 100':(one*100).toFixed(1))+'%</b>'}
+    a.addEventListener('input',upd);b.addEventListener('input',upd);upd();
+  };
+
+  /* ---------- week 11: base rates for plate-reader alerts ---------- */
+  W.baserate=function(el){
+    var t=$(el,'.bT'),f=$(el,'.bF'),d=$(el,'.bD'),grid=$(el,'.dots'),rd=$(el,'.bout');
+    for(var k=0;k<100;k++){var c=document.createElement('span');grid.appendChild(c)}
+    function upd(){var T=+t.value,F=+f.value/10,D=+d.value,N=10000;
+      $(el,'.vT').textContent=T;$(el,'.vF').textContent=F.toFixed(1)+'%';$(el,'.vD').textContent=D+'%';
+      var tp=T*D/100,fp=(N-T)*F/100,share=tp/(tp+fp||1),g=Math.round(share*100);
+      [].forEach.call(grid.children,function(s,j){s.className=j<g?'tp':'fp'});
+      rd.innerHTML='Out of 10,000 vehicles: <b>'+fmt(tp+fp)+'</b> alerts — <b class="ok">'+fmt(tp)+'</b> real targets and <b class="no">'+fmt(fp)+'</b> false alarms.<br>So about <b>'+g+' in 100</b> alerts point at the right vehicle (shown in the grid).'}
+    [t,f,d].forEach(function(x){x.addEventListener('input',upd)});upd();
+  };
+
+  /* ---------- week 11: recall vs precision slider ---------- */
+  W.recall=function(el){
+    var sl=$(el,'input'),rd=$(el,'.rout2');
+    function upd(){var s=+sl.value/100,rel=Math.round(60+30*s),irr=Math.round(10+80*s);
+      $(el,'.rb1').style.width=rel*0.6+'%';$(el,'.rb2').style.width=irr*0.6+'%';
+      $(el,'.rv1').textContent=rel;$(el,'.rv2').textContent=irr;
+      rd.innerHTML='<b>Recall</b> '+rel+' of 100 relevant documents found ('+rel+'%) &nbsp;·&nbsp; <b>Precision</b> '+rel+' of '+(rel+irr)+' returned are relevant ('+Math.round(rel/(rel+irr)*100)+'%) &nbsp;·&nbsp; missed: <b class="no">'+(100-rel)+'</b> &nbsp;·&nbsp; pages to read: <b>'+(rel+irr)+'</b>'}
+    sl.addEventListener('input',upd);upd();
+  };
+
+  /* ---------- week 11: choose at most N questions, then reveal ---------- */
+  W.pickn=function(el){
+    var max=+el.getAttribute('data-max')||4,items=$$(el,'.pq'),rd=$(el,'.pout');
+    function upd(){var k=$$(el,'.pq.on').length;rd.innerHTML='Questions chosen: <b>'+k+' / '+max+'</b>'+(k===max?' — now decide: pilot, restrict or decline?':'')}
+    items.forEach(function(it){it.onclick=function(){if(!it.classList.contains('on')&&$$(el,'.pq.on').length>=max)return;it.classList.toggle('on');upd()}});
+    $(el,'.pshow').onclick=function(){items.forEach(function(it){it.classList.add(it.getAttribute('data-g')==='1'?'good':'weak')})};
+    $(el,'.pclr').onclick=function(){items.forEach(function(it){it.classList.remove('on','good','weak')});upd()};
+    upd();
+  };
+
+  /* ---------- week 11: checklist counter ---------- */
+  W.chkc=function(el){
+    var bx=$$(el,'input[type=checkbox]'),rd=el.parentNode.querySelector('.cout4');
+    function upd(){var k=bx.filter(function(b){return b.checked}).length;var dn=el.getAttribute('data-done')||'<b class="ok">Complete.</b>',td=el.getAttribute('data-todo')||'checked.';rd.innerHTML=k===bx.length?dn:'<b>'+k+' of '+bx.length+'</b> '+td}
+    bx.forEach(function(b){b.addEventListener('change',upd)});upd();
+  };
+
+  /* ---------- week 11: closed test vs open investigation ---------- */
+  W.openset=function(el){
+    var box=$(el,'.cands'),rd=$(el,'.oout'),inDb=true,none=false;
+    var C=[['Print A',0.62],['Print B',0.58],['Print C',0.55],['Print D',0.41],['Print E',0.37]];
+    function draw(){
+      var list=C.map(function(c){return c.slice()});
+      if(inDb)list[2]=['True source',0.81];
+      list.sort(function(a,b){return b[1]-a[1]});
+      var thr=0.70,topOk=list[0][0]==='True source';
+      box.innerHTML=list.map(function(c,j){var cls=j===0?(c[0]==='True source'?'top ok':(none&&c[1]<thr?'top muted':'top bad')):'';
+        return '<div class="cand '+cls+'"><span>#'+(j+1)+'</span><b>'+c[0]+'</b><i style="width:'+(c[1]*100)+'%"></i><em>'+c[1].toFixed(2)+'</em></div>'}).join('');
+      if(topOk)rd.innerHTML='<b class="ok">The true source is in the database</b> and ranks first — the situation most closed tests measure.';
+      else if(none)rd.innerHTML='The true source is <b>absent</b>. With a minimum score of '+thr.toFixed(2)+', the system answers <b>“none of these”</b> instead of naming someone.';
+      else rd.innerHTML='The true source is <b>absent</b>, yet the system still ranks <b class="no">'+list[0][0]+'</b> first. A ranked list always has a #1.';
+      $$(el,'.tog').forEach(function(b){var k=b.getAttribute('data-k');b.classList.toggle('on',(k==='in'&&inDb)||(k==='out'&&!inDb)||(k==='none'&&none))});
+    }
+    $$(el,'.tog').forEach(function(b){b.onclick=function(){var k=b.getAttribute('data-k');if(k==='in')inDb=true;else if(k==='out')inDb=false;else none=!none;draw()}});
+    draw();
+  };
+
+
+  /* ---------- week 13: fairness metrics explorer (two groups, two thresholds) ---------- */
+  W.fairx=function(el){
+    function rng(a){return function(){a|=0;a=(a+0x6D2B79F5)|0;var t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296}}
+    function gauss(r){var u=0,v=0;while(!u)u=r();while(!v)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+    function people(nq,seed){var r=rng(seed),P=[];for(var i=0;i<100;i++){var q=i<nq;P.push({q:q,s:Math.max(1,Math.min(99,Math.round((q?66:42)+12*gauss(r))))})}
+      P.sort(function(a,b){return b.s-a.s});return P}
+    var G={A:people(60,7),B:people(40,11)},sA=$(el,'.tA'),sB=$(el,'.tB');
+    function stats(P,t){var tp=0,fp=0,fn=0,tn=0;P.forEach(function(p){var sel=p.s>=t;if(p.q&&sel)tp++;else if(p.q)fn++;else if(sel)fp++;else tn++});
+      return {tp:tp,fp:fp,fn:fn,tn:tn,sel:tp+fp,sr:(tp+fp)/100,tpr:tp/(tp+fn),fpr:fp/(fp+tn),ppv:(tp+fp)?tp/(tp+fp):0}}
+    function dots(P,t,box){box.innerHTML=P.slice().sort(function(a,b){return (b.q-a.q)||(b.s-a.s)}).map(function(p){return '<span class="fd'+(p.q?' q':'')+(p.s>=t?' s':'')+'"></span>'}).join('')}
+    function pct(x){return Math.round(x*100)+'%'}
+    function badge(a,b){var ok=Math.abs(a-b)<=0.05;return '<span class="chip '+(ok?'c-ok':'c-no')+'">'+(ok?'equal':'gap '+Math.round(Math.abs(a-b)*100)+' pts')+'</span>'}
+    function draw(){var tA=+sA.value,tB=+sB.value,a=stats(G.A,tA),b=stats(G.B,tB);
+      $(el,'.vA').textContent=tA;$(el,'.vB').textContent=tB;dots(G.A,tA,$(el,'.dA'));dots(G.B,tB,$(el,'.dB'));
+      $(el,'.fx tbody').innerHTML=[
+        ['Selection rate','Demographic parity',a.sr,b.sr,a.sel+' of 100',b.sel+' of 100'],
+        ['Qualified who are selected (TPR)','Equal opportunity',a.tpr,b.tpr,a.tp+' of 60',b.tp+' of 40'],
+        ['Unqualified who are selected (FPR)','Equalized odds (with TPR)',a.fpr,b.fpr,a.fp+' of 40',b.fp+' of 60'],
+        ['Selected who are qualified (PPV)','Predictive parity',a.ppv,b.ppv,a.tp+' of '+a.sel,b.tp+' of '+b.sel]
+      ].map(function(r){return '<tr><td>'+r[0]+'<small>'+r[1]+'</small></td><td>'+pct(r[2])+'<small>'+r[4]+'</small></td><td>'+pct(r[3])+'<small>'+r[5]+'</small></td><td>'+badge(r[2],r[3])+'</td></tr>'}).join('');
+      var n=[Math.abs(a.sr-b.sr)<=.05,Math.abs(a.tpr-b.tpr)<=.05,Math.abs(a.tpr-b.tpr)<=.05&&Math.abs(a.fpr-b.fpr)<=.05,Math.abs(a.ppv-b.ppv)<=.05].filter(Boolean).length;
+      $(el,'.fxout').innerHTML='<b>'+n+' of 4</b> criteria met (within 5 points). Try to make all four equal at once.'}
+    function best(f){var bv=1e9,bt=50;for(var t=1;t<100;t++){var v=f(t);if(v<bv){bv=v;bt=t}}return bt}
+    $$(el,'[data-p]').forEach(function(b){b.onclick=function(){var p=b.getAttribute('data-p'),tA=+sA.value,a=stats(G.A,tA);
+      if(p==='same')sB.value=tA;
+      if(p==='dp')sB.value=best(function(t){return Math.abs(stats(G.B,t).sr-a.sr)});
+      if(p==='eo')sB.value=best(function(t){return Math.abs(stats(G.B,t).tpr-a.tpr)});
+      if(p==='pp')sB.value=best(function(t){var s=stats(G.B,t);return s.sel<5?9:Math.abs(s.ppv-a.ppv)});
+      draw()}});
+    sA.addEventListener('input',draw);sB.addEventListener('input',draw);draw();
+  };
+
+  /* ---------- week 13: averages hide subgroups ---------- */
+  W.intersect=function(el){
+    var D=[['Lighter-skinned men',400,0.01],['Lighter-skinned women',300,0.07],['Darker-skinned men',200,0.12],['Darker-skinned women',100,0.35]];
+    var V={all:[['Everyone',[0,1,2,3]]],gender:[['Men',[0,2]],['Women',[1,3]]],skin:[['Lighter skin',[0,1]],['Darker skin',[2,3]]],both:D.map(function(d,i){return [d[0],[i]]})};
+    function rate(ix){var n=0,e=0;ix.forEach(function(i){n+=D[i][1];e+=D[i][1]*D[i][2]});return {r:e/n,n:n}}
+    function show(k){$$(el,'.tog').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-k')===k)});
+      $(el,'.ibars').innerHTML=V[k].map(function(g){var x=rate(g[1]);return '<div class="bl"><span class="bn">'+g[0]+'<small>'+x.n+' test images</small></span><span class="bb" style="width:'+(x.r/0.4*100)+'%;background:'+(x.r>0.2?'var(--bad)':'var(--slate)')+'"></span><span class="bv">'+(x.r*100).toFixed(1)+'%</span></div>'}).join('')}
+    $$(el,'.tog').forEach(function(b){b.onclick=function(){show(b.getAttribute('data-k'))}});show('all');
+  };
+
+})(window.WIDGETS);
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var stage=document.querySelector('.stage'), bar=document.querySelector('.bar i');
+  var ov=document.querySelector('.ov'), np=document.querySelector('.np'), n=slides.length, i=0;
+  var KEY='deck:'+document.title;
+  function fit(){
+    var s=Math.min((innerWidth-24)/1280,(innerHeight-64)/720);
+    stage.style.transform='scale('+Math.max(s,0.2)+')';
+  }
+  function store(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  function load(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  function initWidgets(s){
+    if(s._init)return; s._init=true;
+    [].forEach.call(s.querySelectorAll('[data-w]'),function(el){
+      var f=window.WIDGETS&&window.WIDGETS[el.getAttribute('data-w')];
+      if(f){try{f(el)}catch(err){console.error(err)}}
+    });
+  }
+  function notes(){
+    var nt=slides[i].querySelector('.notes');
+    np.querySelector('.npb').innerHTML=nt?nt.innerHTML:'<p>No notes for this slide.</p>';
+  }
+  function go(k,quiet){
+    i=Math.max(0,Math.min(n-1,k));
+    slides.forEach(function(s,j){s.classList.toggle('on',j===i)});
+    initWidgets(slides[i]);
+    bar.style.width=(i/(n-1)*100)+'%';
+    var a=slides[i].getAttribute('data-acc'); bar.style.background=a||'var(--terra)';
+    [].forEach.call(document.querySelectorAll('.th'),function(t,j){t.classList.toggle('cur',j===i)});
+    notes();
+    if(!quiet)store(KEY,String(i));
+  }
+  window.goSlide=go;
+  function interactive(t){return t.closest('button,a,input,select,textarea,label,.int,.opt,.tli,.step.click,.card.flip')}
+  document.addEventListener('keydown',function(e){
+    var tag=(e.target.tagName||'').toLowerCase();
+    if(tag==='input'||tag==='textarea'||tag==='select'){if(e.key==='Escape')e.target.blur();return}
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();go(i+1)}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(i-1)}
+    else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(n-1)}
+    else if(e.key==='o'||e.key==='O'){ov.classList.toggle('on')}
+    else if(e.key==='n'||e.key==='N'){np.classList.toggle('on')}
+    else if(e.key==='t'||e.key==='T'){toggleTheme()}
+    else if(e.key==='Escape'){ov.classList.remove('on');np.classList.remove('on')}
+    else if(e.key==='f'||e.key==='F'){if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}else{document.exitFullscreen()}}
+    else if(e.key==='r'||e.key==='R'){var b=slides[i].querySelector('.reveal');if(b)b.click()}
+  });
+  stage.addEventListener('click',function(e){
+    if(interactive(e.target))return;
+    var r=stage.getBoundingClientRect();
+    go(i+((e.clientX-r.left)/r.width<0.22?-1:1));
+  });
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.reveal'); if(!b)return;
+    var box=b.closest('.ask,.revealbox')||b.parentNode;
+    [].forEach.call(box.querySelectorAll('.ans'),function(a){a.classList.add('show')});
+    b.style.display='none';
+  });
+  function toggleTheme(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    var dark=cur?cur==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+    var nt=dark?'light':'dark'; document.documentElement.setAttribute('data-theme',nt); store('deck-theme',nt);
+    document.dispatchEvent(new Event('themechange'));
+  }
+  var th=load('deck-theme'); if(th)document.documentElement.setAttribute('data-theme',th);
+  document.querySelector('[data-act=prev]').onclick=function(){go(i-1)};
+  document.querySelector('[data-act=next]').onclick=function(){go(i+1)};
+  document.querySelector('[data-act=grid]').onclick=function(){ov.classList.toggle('on')};
+  document.querySelector('[data-act=notes]').onclick=function(){np.classList.toggle('on')};
+  document.querySelector('[data-act=theme]').onclick=toggleTheme;
+  [].forEach.call(document.querySelectorAll('.th'),function(t){
+    t.onclick=function(){go(+t.getAttribute('data-i'));ov.classList.remove('on')};
+  });
+  addEventListener('resize',fit); fit();
+  var start=0, h=parseInt((location.hash||'').replace('#',''),10);
+  if(h>0){start=h-1}else{var v=load(KEY); if(v!==null)start=+v||0}
+  go(start,true);
+})();
+</script>
+</body></html>
