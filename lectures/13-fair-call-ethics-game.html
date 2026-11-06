@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fair Call: The Campus AI Review Board</title>
+<meta name="description" content="A 10-minute hands-on fairness and ethics game for CSI 235: rule on five campus AI proposals with an AI advisor that is sometimes wrong.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+/* Layout: a review-board agenda read top to bottom — meeting header, proposal list, the open proposal (affected people, request, AI advice, evidence, ruling), board review. */
+:root{
+  --bg:#F5F3EE; --card:#FFFFFF; --ink:#111827; --muted:#5B6472; --line:#D6DAE1; --soft:#ECEEF2;
+  --brand:#1F5E4B; --brand-soft:#E2F0E9; --owl:#6B3FA0; --owl-soft:#F1EAF8;
+  --ok:#2E7D4F; --ok-soft:#E1F1E7; --mid:#9A6A00; --mid-soft:#FBF0D6; --bad:#B23B2E; --bad-soft:#F7E2DE; --gold:#E9B10F;
+  --display:"Space Grotesk","Arial Narrow",Arial,sans-serif; --body:"Public Sans","Segoe UI",Arial,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1218; --card:#181C24; --ink:#ECEFF4; --muted:#A3ABB8; --line:#2C3340; --soft:#20252F;
+  --brand:#7CC4A6; --brand-soft:#16271F; --owl:#C3A6E8; --owl-soft:#251C33;
+  --ok:#6CC594; --ok-soft:#17291F; --mid:#E6B652; --mid-soft:#2C2414; --bad:#F08A7C; --bad-soft:#331D1A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1218; --card:#181C24; --ink:#ECEFF4; --muted:#A3ABB8; --line:#2C3340; --soft:#20252F;
+  --brand:#7CC4A6; --brand-soft:#16271F; --owl:#C3A6E8; --owl-soft:#251C33;
+  --ok:#6CC594; --ok-soft:#17291F; --mid:#E6B652; --mid-soft:#2C2414; --bad:#F08A7C; --bad-soft:#331D1A; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding:24px max(16px,env(safe-area-inset-right,0px)) 64px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+h1,h2,h3{font-family:var(--display);font-weight:700;line-height:1.08;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1{font-size:clamp(34px,6vw,60px)} h2{font-size:clamp(22px,3vw,28px)} h3{font-size:19px}
+p{margin:0}
+button{font:inherit;cursor:pointer;color:inherit}
+button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.label{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--mono)}
+.btn{border:0;background:var(--brand);color:var(--card);padding:10px 16px;border-radius:9px;font-weight:700;font-size:15px}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* header */
+.top{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:end;border-bottom:3px solid var(--brand);padding-bottom:16px}
+.top .lede{font-size:17px;color:var(--muted);max-width:64ch;margin-top:8px}
+.hud{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.chipbox{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;gap:2px;min-width:104px}
+.chipbox .v{font-family:var(--mono);font-size:24px;font-weight:600;line-height:1.1}
+.chipbox .v.low{color:var(--bad)}
+.tokens{display:flex;gap:4px;margin-top:4px}
+.tokens i{width:11px;height:11px;border-radius:50%;background:var(--owl)}
+.tokens i.used{background:transparent;border:2px solid var(--line)}
+@media (max-width:760px){.top{grid-template-columns:1fr}.hud{justify-content:flex-start}}
+
+/* briefing */
+.brief{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.brief div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;gap:12px}
+.brief .n{font-family:var(--display);font-size:32px;line-height:.9;color:var(--brand)}
+.brief span>b{display:block}
+.brief p{font-size:14.5px;color:var(--muted)}
+@media (max-width:760px){.brief{grid-template-columns:1fr}}
+.start{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+
+/* console */
+.console{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start}
+@media (max-width:860px){.console{grid-template-columns:1fr}}
+.queue{display:flex;flex-direction:column;gap:8px}
+.tk{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px}
+.tk .ic{width:34px;height:34px;border-radius:8px;background:var(--soft);display:grid;place-items:center;font-size:17px}
+.tk .t{font-weight:700;font-size:14.5px;line-height:1.25}
+.tk .s{font-size:12.5px;color:var(--muted)}
+.tk .st{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:var(--soft);color:var(--muted)}
+.tk.on{border-color:var(--brand);box-shadow:0 0 0 2px var(--brand-soft)}
+.tk.done .st{background:var(--brand-soft);color:var(--brand)}
+@media (max-width:860px){.queue{flex-direction:row;overflow-x:auto;padding-bottom:4px}.tk{min-width:220px}}
+
+.ticket{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.thead{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.msg{background:var(--soft);border-radius:10px;padding:14px 16px;font-size:15.5px;display:flex;flex-direction:column;gap:8px}
+.msg .meta{font-family:var(--mono);font-size:12.5px;color:var(--muted);word-break:break-word}
+.msg .body{white-space:pre-wrap}
+.owl{display:grid;grid-template-columns:40px 1fr;gap:12px;background:var(--owl-soft);border-left:4px solid var(--owl);border-radius:10px;padding:12px 14px}
+.owl .face{width:40px;height:40px;border-radius:50%;background:var(--owl);color:var(--card);display:grid;place-items:center;font-size:21px}
+.owl .who{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--owl)}
+.owl p{font-size:15px}
+.insp{display:flex;flex-direction:column;gap:8px}
+.ib{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;text-align:left;background:var(--card);border:1.5px dashed var(--line);border-radius:10px;padding:10px 12px;font-size:14.5px}
+.ib .k{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--owl);padding-top:2px}
+.ib.open{border-style:solid;border-color:var(--owl);cursor:default}
+.ib .res{grid-column:1/3;font-size:14.5px;background:var(--owl-soft);border-radius:8px;padding:8px 10px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.op{text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:11px 14px;font-weight:600;font-size:15px}
+.op:hover{border-color:var(--brand)}
+.op[aria-pressed="true"]{background:var(--brand);color:var(--card);border-color:var(--brand)}
+.note{font-size:13.5px;color:var(--muted)}
+.empty{padding:40px 20px;text-align:center;color:var(--muted)}
+
+/* review */
+.review{background:var(--card);border:2px solid var(--brand);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:16px}
+.score{display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+.score .big{font-family:var(--display);font-size:80px;line-height:.9;color:var(--brand)}
+.rank{font-family:var(--display);font-size:24px}
+.lines{display:flex;flex-direction:column;gap:8px}
+.line{border-radius:10px;padding:12px 14px;background:var(--soft);display:grid;grid-template-columns:1fr auto;gap:6px 12px}
+.line .pts{font-family:var(--mono);font-weight:600}
+.line .why{grid-column:1/3;font-size:14.5px;color:var(--ink)}
+.line.best{background:var(--ok-soft)} .line.part{background:var(--mid-soft)} .line.wrong{background:var(--bad-soft)}
+.tag{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;margin-left:6px}
+.tag.best{background:var(--ok);color:var(--card)} .tag.part{background:var(--mid);color:var(--card)} .tag.wrong{background:var(--bad);color:var(--card)}
+.owlsum{background:var(--owl-soft);border-radius:10px;padding:12px 14px;font-size:15px}
+.take{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.take div{background:var(--soft);border-radius:10px;padding:12px 14px;font-size:14.5px}
+.take b{display:block;margin-bottom:2px}
+@media (max-width:640px){.take{grid-template-columns:1fr}.score .big{font-size:64px}}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:9px;font-weight:600;font-size:14px;z-index:20;max-width:90vw}
+.foot{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+.themeb{background:transparent;border:1px solid var(--line);border-radius:8px;padding:4px 10px;font-size:13px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pchip{font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--brand-soft);color:var(--brand)}
+</style></head><body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <span class="label">CSI 235 · AI and Fairness / Ethics · Riverbend State University (fictional) · Review board</span>
+      <h1>Fair Call</h1>
+      <p class="lede">You have a seat on the campus AI review board. Five proposals are waiting, and you have 10 minutes. Sage, the board’s AI advisor, gives a recommendation on each one. It is well read and quick — and sometimes it trusts the wrong number.</p>
+    </div>
+    <div class="hud">
+      <div class="chipbox"><span class="label">Meeting clock</span><span class="v" id="clock">10:00</span></div>
+      <div class="chipbox"><span class="label">Requests left</span><span class="v" id="tokN">7</span><span class="tokens" id="tok"></span></div>
+      <div class="chipbox"><span class="label">Decided</span><span class="v" id="doneN">0 / 5</span></div>
+    </div>
+  </header>
+
+  <div class="brief" id="brief">
+    <div><span class="n">1</span><span><b>Read a proposal</b><p>What the office wants, who is affected, and what Sage recommends.</p></span></div>
+    <div><span class="n">2</span><span><b>Ask for evidence</b><p>You have <b>7 requests</b> for 5 proposals: group breakdowns, fine print, or the voice of an affected student.</p></span></div>
+    <div><span class="n">3</span><span><b>Rule</b><p>Approve, approve with conditions, or refuse. You can change your mind until the meeting ends.</p></span></div>
+  </div>
+
+  <div class="start" id="startRow">
+    <button class="btn" id="startBtn" type="button">Open the meeting</button>
+    <span class="note">The clock starts when you open the meeting. At 0:00 the board votes with whatever you have decided.</span>
+  </div>
+
+  <section class="console" id="console" hidden aria-label="Review board">
+    <nav class="queue" id="queue" aria-label="Proposals"></nav>
+    <article class="ticket" id="ticket"><p class="empty">Choose a proposal.</p></article>
+  </section>
+
+  <div class="start" id="endRow" hidden>
+    <button class="btn" id="endBtn" type="button">Close the meeting and see the review</button>
+    <span class="note" id="endNote"></span>
+  </div>
+
+  <section class="review" id="review" hidden aria-labelledby="h-rev"></section>
+
+  <p class="foot">A fictional training exercise for CSI 235. All offices, people, vendors and numbers are invented for teaching; the detector case echoes findings by Liang et al. (2023). No data leaves your browser. <button class="themeb" id="themeBtn" type="button">Theme</button></p>
+</div>
+<div class="toast" id="toast" hidden></div>
+<script>
+(function(){
+  var T=[
+    {id:'tutor',ic:'📚',t:'Early-alert tutoring emails',s:'Student Success Office',
+     who:['All undergraduates','Commuter students','Online students'],
+     meta:'Proposal: an AI model ranks students “at risk” and sends automatic tutoring emails to the top 300 each week.\nTraining signal: low library swipes + few LMS log-ins.',
+     body:'The office says: “Low engagement predicts failing. Last term the model flagged 300 students and we reached them two weeks earlier than before.”',
+     adv:'Low engagement is a strong predictor of failing courses, and earlier outreach helps. The model is accurate on last term’s data. I recommend approving it as proposed.',
+     advRight:false,
+     checks:[{k:'Group breakdown',q:'Who gets flagged, by student type?',r:'Commuter and online students are 30% of undergraduates but 70% of those flagged. Their average grades are the same as everyone else’s.'},
+             {k:'Ask a student',q:'Hear from a commuter student who was flagged',r:'“I study at home after my shift. I’ve been flagged three times and never needed tutoring. It feels like being watched — I just delete the emails now.”'}],
+     opts:[{t:'Approve as proposed — earlier help is good',g:'wrong'},{t:'Approve, but send emails only to students who opt in',g:'part'},{t:'Approve with conditions: drop the library proxy, use course signals (missed work, early grades), check who gets flagged each term',g:'best'}],
+     lesson:'Library swipes are a proxy for “needs help” — and a bad one for commuters and online students, who study elsewhere. The target and the proxy are fairness choices. Opt-in helps consent but keeps the broken proxy.',
+     concept:'Proxies · who disappears in the data'},
+    {id:'detect',ic:'📝',t:'AI-writing detector for all essays',s:'Academic Integrity Office',
+     who:['All students','Non-native English writers','Instructors'],
+     meta:'Proposal: every essay is run through an AI-writing detector. Scores above 80% are sent automatically to the misconduct board.',
+     body:'The vendor says: “98% accurate at spotting AI-generated text in our benchmark.”',
+     adv:'Published research (Liang et al., 2023) found detectors falsely flag non-native English writing far more often. A detector score should start a conversation, never serve as the only evidence. I recommend refusing automatic referrals.',
+     advRight:true,
+     checks:[{k:'Fine print',q:'Read the vendor’s terms of use',r:'“Scores are probabilistic and are not intended as the sole basis for disciplinary action.”'},
+             {k:'Ask a student',q:'Hear from an international student',r:'“I write carefully and simply because English is my third language. My last essay scored 92% ‘AI’. I wrote every word.”'}],
+     opts:[{t:'Approve — 98% accuracy is excellent',g:'wrong'},{t:'Approve, but give flagged students 5 days to appeal',g:'part'},{t:'Refuse scores as evidence; use drafts, process notes and a conversation instead',g:'best'}],
+     lesson:'A benchmark accuracy says little about who carries the false accusations. When errors fall on one group, a fast appeal still puts the burden on innocent students. Here Sage was right.',
+     concept:'False accusations · a score is weak evidence'},
+    {id:'scholar',ic:'🎓',t:'Scholarship shortlisting model',s:'Financial Aid Office',
+     who:['Applicants','First-generation students','Review committee'],
+     meta:'Proposal: a model shortlists 250 of 1,000 scholarship applicants; humans only read the shortlist.\nVendor claim: “92% accurate overall.”',
+     body:'The office says: “The committee can’t read 1,000 files. The model agrees with past committee decisions 92% of the time.”',
+     adv:'92% overall can hide very different error rates for different groups, and “agreeing with past decisions” can copy past bias. I recommend asking for a breakdown by group before deciding.',
+     advRight:true,
+     checks:[{k:'Group breakdown',q:'Qualified applicants who reach the shortlist, by group',r:'Continuing-generation: 88% of qualified applicants shortlisted. First-generation: 61%. Same overall accuracy, very different chances.'},
+             {k:'Top features',q:'Which inputs matter most to the model?',r:'#1: number of prior awards and paid programmes (camps, competitions with entry fees). These track family money as much as merit.'}],
+     opts:[{t:'Approve — 92% agreement is better than tired humans',g:'wrong'},{t:'Approve, but add bonus points to every first-generation applicant',g:'part'},{t:'Pause: remove the money-linked features, re-test qualified rates by group, keep human review and an appeal',g:'best'}],
+     lesson:'Overall accuracy hid an equal-opportunity gap: qualified first-generation students had far lower chances. Fix the cause (a proxy for family resources) and re-test. A blanket bonus may help but leaves the proxy in place and raises its own fairness and legal questions.',
+     concept:'Equal opportunity · averages hide gaps'},
+    {id:'facepay',ic:'🍽️',t:'Face payment in the dining halls',s:'Campus Dining',
+     who:['Everyone who eats on campus','Students with facial differences','Visitors'],
+     meta:'Proposal: replace ID cards with face-recognition payment at every dining hall, mandatory from January.',
+     body:'Dining says: “The pilot cut lines by 40%. No more lost cards.”',
+     adv:'Shorter lines benefit everyone, and face payment is convenient. Making it mandatory maximizes the benefit. I recommend approving it for all students.',
+     advRight:false,
+     checks:[{k:'Data terms',q:'Read the data-retention terms',r:'Face templates are stored on the vendor’s cloud for five years and may be used “to improve services”.'},
+             {k:'Ask a student',q:'Hear from a student in the pilot',r:'“The gate rejected me twice because of my facial difference. I had to ask a cashier in front of a queue. I’d rather keep my card.”'}],
+     opts:[{t:'Approve as mandatory for everyone',g:'wrong'},{t:'Approve as opt-in: cards stay, templates stay local and are deleted on request, performance checked across users',g:'best'},{t:'Refuse — keep ID cards only',g:'part'}],
+     lesson:'A real benefit does not justify making a biometric mandatory. Consent needs a real alternative; data needs limits; accessibility needs a dignified route. Refusing is safe but throws away a benefit some students want.',
+     concept:'Consent · proportionality · accessibility'},
+    {id:'email',ic:'💌',t:'Wellbeing scan of student email',s:'Student Wellbeing Office',
+     who:['All students','Counselling staff','Students in crisis'],
+     meta:'Proposal: an AI scans all student email for distress keywords and alerts counsellors.',
+     body:'The office says: “If it helps even one student in crisis, it’s worth it.”',
+     adv:'Suicide prevention is a serious goal, and the university’s IT policy already allows access to campus email. I recommend approving the scan for all accounts.',
+     advRight:false,
+     checks:[{k:'Policy',q:'Read the IT policy Sage mentioned',r:'IT may access email “for security and legal compliance only”. Wellbeing analysis is not listed. Students were never told.'},
+             {k:'Counsellors',q:'Ask the counselling centre',r:'“A trial flagged 400 students in a week, mostly jokes and song lyrics. We have 9 counsellors. And students who know they’re scanned stop writing honestly.”'}],
+     opts:[{t:'Approve scanning of all student email',g:'wrong'},{t:'Approve scanning only for students who opt in',g:'part'},{t:'Refuse the scan; fund an opt-in support chatbot that hands over to a person, plus more counselling hours',g:'best'}],
+     lesson:'A good goal does not make every method acceptable. Secret, campus-wide monitoring fails proportionality and consent, and false alarms overload the people who actually help. Opt-in scanning is better, but a support service that students choose meets the goal with less intrusion.',
+     concept:'Surveillance · ends and means'}];
+  var PTS={best:16,part:6,wrong:0}, TOK=7, TIME=600, CHECKB=2, TIMEB=10;
+  var st={open:null,used:0,checked:{},pick:{},clock:TIME,timer:null,started:false,ended:false};
+  var $=function(s){return document.querySelector(s)};
+  function toast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(function(){t.hidden=true},2000)}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+  function hud(){var m=Math.floor(st.clock/60),s=st.clock%60;$('#clock').textContent=m+':'+(s<10?'0':'')+s;$('#clock').classList.toggle('low',st.clock<=60);
+    $('#tokN').textContent=TOK-st.used;$('#tok').innerHTML=Array.apply(null,Array(TOK)).map(function(_,i){return '<i class="'+(i<st.used?'used':'')+'"></i>'}).join('');
+    var d=T.filter(function(x){return st.pick[x.id]!=null}).length;$('#doneN').textContent=d+' / '+T.length;
+    $('#endNote').textContent=d<T.length?(T.length-d)+' proposal'+(T.length-d>1?'s':'')+' still undecided. Undecided proposals score 0.':'All proposals decided. Close the meeting when you are ready.'}
+  function queue(){$('#queue').innerHTML=T.map(function(x){var done=st.pick[x.id]!=null;
+    return '<button class="tk'+(st.open===x.id?' on':'')+(done?' done':'')+'" type="button" data-t="'+x.id+'"><span class="ic" aria-hidden="true">'+x.ic+'</span><span><span class="t">'+x.t+'</span><br><span class="s">'+x.s+'</span></span><span class="st">'+(done?'Ruled':'Open')+'</span></button>'}).join('')}
+  function ticket(){var x=T.filter(function(y){return y.id===st.open})[0];if(!x)return;
+    var ch=st.checked[x.id]||[],left=TOK-st.used;
+    $('#ticket').innerHTML='<div class="thead"><h2>'+x.t+'</h2><span class="label">'+x.s+'</span></div>'+
+      '<div class="chips"><span class="label">Affected</span>'+x.who.map(function(w){return '<span class="pchip">'+w+'</span>'}).join('')+'</div>'+
+      '<div class="msg"><div class="meta">'+esc(x.meta).replace(/\n/g,'<br>')+'</div><div class="body">'+esc(x.body)+'</div></div>'+
+      '<div class="owl"><span class="face" aria-hidden="true">🧭</span><div><span class="who">Sage, AI advisor, recommends</span><p>'+esc(x.adv)+'</p></div></div>'+
+      '<div><span class="label">Request evidence · uses 1 of your '+TOK+' requests</span></div><div class="insp">'+x.checks.map(function(c,i){var o=ch.indexOf(i)>=0;
+        return '<button class="ib'+(o?' open':'')+'" type="button" data-c="'+i+'"'+(!o&&(left<=0||st.ended)?' disabled':'')+'><span class="k">'+c.k+'</span><span>'+c.q+'</span>'+(o?'<span class="res">'+esc(c.r)+'</span>':'')+'</button>'}).join('')+'</div>'+
+      '<div><span class="label">Your ruling</span></div><div class="opts">'+x.opts.map(function(o,i){return '<button class="op" type="button" data-o="'+i+'" aria-pressed="'+(st.pick[x.id]===i)+'"'+(st.ended?' disabled':'')+'>'+esc(o.t)+'</button>'}).join('')+'</div>'+
+      '<p class="note">'+(left<=0?'No requests left — rule with what you have.':'Evidence requests are optional. Spend them where they could change your ruling.')+'</p>'}
+  $('#queue').addEventListener('click',function(e){var b=e.target.closest('[data-t]');if(!b)return;st.open=b.getAttribute('data-t');queue();ticket();
+    if(innerWidth<860)$('#ticket').scrollIntoView({behavior:'smooth',block:'start'})});
+  $('#ticket').addEventListener('click',function(e){if(st.ended)return;var x=T.filter(function(y){return y.id===st.open})[0];if(!x)return;
+    var c=e.target.closest('[data-c]'),o=e.target.closest('[data-o]');
+    if(c&&!c.classList.contains('open')){if(st.used>=TOK){toast('No requests left');return}(st.checked[x.id]=st.checked[x.id]||[]).push(+c.getAttribute('data-c'));st.used++;hud();ticket()}
+    if(o){st.pick[x.id]=+o.getAttribute('data-o');hud();queue();ticket();toast('Ruling saved')}});
+
+  function start(){if(st.started)return;st.started=true;$('#startRow').hidden=true;$('#brief').hidden=true;$('#console').hidden=false;$('#endRow').hidden=false;st.open=T[0].id;queue();ticket();hud();
+    st.timer=setInterval(function(){st.clock=Math.max(0,st.clock-1);hud();if(st.clock===0){toast('Time! The board votes now.');end()}},1000)}
+  $('#startBtn').addEventListener('click',start);
+
+  function end(){if(st.ended)return;st.ended=true;clearInterval(st.timer);ticket();
+    var tot=0,lines=[],rf=0,wr=0,wf=0,nr=T.filter(function(x){return x.advRight}).length,nw=T.length-nr,asked=0;
+    T.forEach(function(x){var p=st.pick[x.id],g=p==null?'wrong':x.opts[p].g,ck=(st.checked[x.id]||[]).length,pts=PTS[g]+(ck&&p!=null?CHECKB:0);tot+=pts;
+      if(st.checked[x.id]&&st.checked[x.id].length)asked++;
+      if(x.advRight){if(g==='best')rf++}else{if(g==='best')wr++;if(g==='wrong'&&p!=null)wf++}
+      var best=x.opts.filter(function(o){return o.g==='best'})[0].t;
+      lines.push('<div class="line '+g+'"><span><b>'+x.t+'</b><span class="tag '+g+'">'+(p==null?'not decided':g==='best'?'best':g==='part'?'partly':'harmful')+'</span><br><span class="note">'+x.concept+' · Sage was '+(x.advRight?'<b>right</b>':'<b>wrong</b>')+'</span></span><span class="pts">'+pts+' / '+(PTS.best+CHECKB)+'</span>'+
+        '<span class="why">'+(g!=='best'?'<b>Best ruling:</b> '+esc(best)+'. ':'')+esc(x.lesson)+'</span></div>')});
+    var tb=st.clock>0&&T.every(function(x){return st.pick[x.id]!=null})?TIMEB:0;tot+=tb;
+    var rank=tot>=85?'Board chair':tot>=65?'Trusted board member':tot>=40?'New board member':'Observer — try another meeting';
+    var advLine='Sage was right on '+nr+' proposals and wrong on '+nw+'. You made the best ruling on <b>'+rf+' of '+nr+'</b> where it was right, and resisted it on <b>'+wr+' of '+nw+'</b> where it was wrong.'+
+      (wf?' You followed its harmful advice '+wf+' time'+(wf>1?'s':'')+' — that is automation bias.':' You never followed its harmful advice.')+
+      ' You asked for evidence on '+asked+' of '+T.length+' proposals.';
+    $('#review').innerHTML='<div class="thead"><h2 id="h-rev">Board review</h2><button class="btn ghost" id="again" type="button">Hold another meeting</button></div>'+
+      '<div class="score"><span class="big">'+tot+'</span><span class="label">out of 100</span><span class="rank">'+rank+'</span></div>'+
+      '<p class="note">'+PTS.best+' points for the best ruling, '+PTS.part+' for a partly right one, +'+CHECKB+' for each proposal where you asked for evidence before ruling, +'+TIMEB+' for ruling on all five before time ran out. You used '+st.used+' of '+TOK+' requests.</p>'+
+      '<div class="owlsum">'+advLine+'</div><div class="lines">'+lines.join('')+'</div>'+
+      '<div class="take"><div><b>Ask “for whom?”</b>An overall accuracy number can hide who carries the errors. Ask for the breakdown.</div>'+
+      '<div><b>Check the proxy</b>Library visits, prior awards and keywords stand in for what we really care about — and miss people.</div>'+
+      '<div><b>Consent needs a real “no”</b>A benefit is not a reason to make something mandatory or secret.</div>'+
+      '<div><b>Hear the people affected</b>The student voices often held the evidence the dashboard did not.</div></div>';
+    $('#review').hidden=false;$('#endRow').hidden=true;
+    $('#again').addEventListener('click',function(){location.reload()});
+    $('#review').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}
+  var confirmEnd=false;
+  $('#endBtn').addEventListener('click',function(){var d=T.filter(function(x){return st.pick[x.id]!=null}).length;
+    if(d<T.length&&!confirmEnd){confirmEnd=true;$('#endNote').textContent='Press again to close with '+(T.length-d)+' undecided proposal'+(T.length-d>1?'s':'')+'.';return}end()});
+  $('#themeBtn').addEventListener('click',function(){var r=document.documentElement,cur=r.getAttribute('data-theme'),
+    dark=cur?cur==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.setAttribute('data-theme',dark?'light':'dark')});
+  hud();
+})();
+</script>
+</body></html>
